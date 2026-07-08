@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>En Avant | Escuela de Danza, Música y Arte en Bogotá y Chía</title>
+<meta name="robots" content="noindex"><!-- QUITAR noindex AL CONECTAR EL DOMINIO -->
+<meta name="description" content="Transformando vidas a través del Arte desde el 2009. Escuela certificada por el American Ballet Theatre. Danza, música, artes, fitness y babies en Mazurén, Salitre y Chía.">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://static.wixstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   EN AVANT — Editorial redesign
+   Sober, photographic, gallery-like
+   ============================================================ */
+:root{
+  --purple:#A40FC4;
+  --teal:#06BCBC;
+  --teal-deep:#048F8F;
+  --green:#68C731;
+  --green-deep:#4E9A23;
+  --ink:#121014;
+  --ink-70:rgba(18,16,20,.72);
+  --ink-45:rgba(18,16,20,.45);
+  --line:rgba(18,16,20,.12);
+  --paper:#FAF9F7;
+  --white:#FFFFFF;
+  --wa:#25D366;
+  --font-display:'Fraunces',Georgia,serif;
+  --font-body:'Instrument Sans',Helvetica,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);color:var(--ink);background:var(--paper);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.65;
+}
+::selection{background:var(--purple);color:#fff}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Scroll progress */
+#progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--purple);z-index:1002}
+
+/* Reveals */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal-img{clip-path:inset(8% 8% 8% 8%);opacity:0;transition:clip-path 1.2s var(--ease),opacity 1.2s var(--ease)}
+.reveal-img.in{clip-path:inset(0 0 0 0);opacity:1}
+[data-stagger].in > *{animation:stagUp .9s var(--ease) both}
+@keyframes stagUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+
+/* ============ CURSOR PERSONALIZADO ============ */
+@media (pointer:fine){
+  body.cursor-on,body.cursor-on a,body.cursor-on button,body.cursor-on .disc{cursor:none}
+}
+.cursor-dot,.cursor-ring{
+  position:fixed;top:0;left:0;pointer-events:none;z-index:2000;border-radius:50%;
+  opacity:0;transition:opacity .4s;
+}
+body.cursor-on .cursor-dot,body.cursor-on .cursor-ring{opacity:1}
+.cursor-dot{width:6px;height:6px;background:var(--purple);margin:-3px 0 0 -3px}
+.cursor-ring{
+  width:38px;height:38px;margin:-19px 0 0 -19px;border:1.5px solid rgba(164,15,196,.45);
+  display:grid;place-items:center;
+  transition:opacity .4s,width .35s var(--ease),height .35s var(--ease),margin .35s var(--ease),background .35s,border-color .35s;
+}
+.cursor-ring span{
+  font-size:.56rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#fff;
+  opacity:0;transition:opacity .25s;user-select:none;white-space:nowrap;
+}
+.cursor-ring.is-hover{width:54px;height:54px;margin:-27px 0 0 -27px;background:rgba(164,15,196,.08);border-color:var(--purple)}
+.cursor-ring.is-label{width:86px;height:86px;margin:-43px 0 0 -43px;background:rgba(18,16,20,.86);border-color:transparent}
+.cursor-ring.is-label span{opacity:1}
+@media (pointer:coarse){.cursor-dot,.cursor-ring{display:none}}
+
+/* ============ PALABRAS GIGANTES / SCROLL ============ */
+.scroll-words{overflow:hidden;padding:clamp(44px,6vw,84px) 0;pointer-events:none}
+.sw-line{
+  font-family:var(--font-display);font-style:italic;font-weight:340;white-space:nowrap;
+  font-size:clamp(2.6rem,7.5vw,6rem);line-height:1.2;letter-spacing:-.01em;
+  color:transparent;-webkit-text-stroke:1px rgba(18,16,20,.28);
+  margin-left:-22%;will-change:transform;
+}
+.scroll-words.alt .sw-line{-webkit-text-stroke-color:rgba(164,15,196,.34)}
+[data-plx]{will-change:transform}
+
+/* ============ NAV ============ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:84px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(20px,4.5vw,64px);
+  transition:background .4s,height .4s,box-shadow .4s;
+}
+nav .logo-img{height:48px;width:auto;transition:filter .4s,height .4s}
+nav:not(.scrolled) .logo-img{filter:brightness(0) invert(1)}
+nav.scrolled{
+  background:rgba(250,249,247,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  height:68px;box-shadow:0 1px 0 var(--line);
+}
+nav.scrolled .logo-img{height:42px}
+.nav-links{display:flex;gap:clamp(16px,2.4vw,38px);align-items:center;list-style:none}
+.nav-links a{
+  font-size:.86rem;font-weight:500;letter-spacing:.04em;color:#fff;
+  padding:6px 0;position:relative;transition:color .3s;
+}
+nav.scrolled .nav-links a{color:var(--ink-70)}
+.nav-links a::after{
+  content:"";position:absolute;left:0;bottom:0;height:1.5px;width:0;
+  background:currentColor;transition:width .35s var(--ease);
+}
+.nav-links a:hover::after{width:100%}
+nav.scrolled .nav-links a:hover{color:var(--ink)}
+.nav-cta{
+  border:1px solid rgba(255,255,255,.55);border-radius:2px;padding:11px 22px;
+  font-size:.82rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  transition:all .35s var(--ease);
+}
+.nav-cta::after{display:none}
+.nav-cta:hover{background:#fff;color:var(--ink)!important}
+nav.scrolled .nav-cta{border-color:var(--ink);color:var(--ink)}
+nav.scrolled .nav-cta:hover{background:var(--ink);color:#fff!important}
+.burger{display:none;flex-direction:column;gap:6px;padding:8px;z-index:1001}
+.burger span{width:26px;height:1.5px;background:#fff;transition:.35s var(--ease)}
+nav.scrolled .burger span{background:var(--ink)}
+.burger.open span{background:var(--ink)!important}
+.burger.open span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
+
+/* ============ HERO ============ */
+.hero{min-height:100svh;position:relative;display:flex;align-items:flex-end;overflow:hidden;background:var(--ink)}
+.hero-slides{position:absolute;inset:0}
+.hero-slide{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+  opacity:0;transform:scale(1.06);transition:opacity 2s ease;
+}
+.hero-slide.active{opacity:1;animation:kenburns 9s ease-out forwards}
+@keyframes kenburns{from{transform:scale(1.06)}to{transform:scale(1)}}
+.hero::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(10,8,12,.82) 0%,rgba(10,8,12,.35) 45%,rgba(10,8,12,.25) 100%);
+}
+.hero-content{
+  position:relative;z-index:2;width:100%;max-width:1280px;margin:0 auto;
+  padding:0 clamp(20px,4.5vw,64px) clamp(90px,11vh,130px);color:#fff;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:14px;font-size:.78rem;font-weight:600;
+  letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.85);
+  opacity:0;animation:heroFade 1.2s var(--ease) .3s both;
+}
+.hero-eyebrow::before{content:"";width:44px;height:1px;background:var(--teal)}
+.hero h1{
+  font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;
+  font-size:clamp(2.6rem,7vw,5.6rem);line-height:1.06;margin:24px 0 20px;max-width:14ch;
+}
+.hero h1 .line{display:block;overflow:hidden}
+.hero h1 .line span{display:block;transform:translateY(110%);animation:lineUp 1.2s var(--ease) both}
+.hero h1 .line:nth-child(1) span{animation-delay:.45s}
+.hero h1 .line:nth-child(2) span{animation-delay:.6s}
+@keyframes lineUp{to{transform:none}}
+.hero h1 em{font-style:italic;font-weight:340}
+.hero-sub{
+  max-width:52ch;font-size:clamp(.98rem,1.3vw,1.1rem);color:rgba(255,255,255,.82);
+  opacity:0;animation:heroFade 1.2s var(--ease) .85s both;
+}
+@keyframes heroFade{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-top:38px;opacity:0;animation:heroFade 1.2s var(--ease) 1s both}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  padding:16px 34px;border-radius:2px;font-weight:600;font-size:.85rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  transition:all .4s var(--ease);border:1px solid transparent;
+}
+.btn svg{transition:transform .4s var(--ease)}
+.btn:hover svg{transform:translateX(4px)}
+.btn-solid{background:#fff;color:var(--ink)}
+.btn-solid:hover{background:var(--purple);color:#fff}
+.btn-outline{border-color:rgba(255,255,255,.55);color:#fff}
+.btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-ink:hover{background:var(--purple)}
+.btn-line{border-color:var(--ink);color:var(--ink)}
+.btn-line:hover{background:var(--ink);color:#fff}
+.hero-dots{
+  position:absolute;right:clamp(20px,4.5vw,64px);bottom:44px;z-index:3;
+  display:flex;flex-direction:column;gap:10px;
+}
+.hero-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .4s}
+.hero-dot.active{background:#fff;transform:scale(1.3)}
+
+/* ============ TICKER ============ */
+.ticker{
+  border-bottom:1px solid var(--line);padding:20px 0;overflow:hidden;white-space:nowrap;
+  background:var(--paper);
+}
+.ticker-track{display:inline-flex;animation:marquee 42s linear infinite}
+.ticker-track span{
+  font-size:.78rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ink-45);display:inline-flex;align-items:center;
+}
+.ticker-track span::after{content:"";width:5px;height:5px;border-radius:50%;margin:0 34px;background:var(--line)}
+.ticker-track span:nth-child(4n)::after{background:var(--purple)}
+.ticker-track span:nth-child(4n+1)::after{background:var(--teal)}
+.ticker-track span:nth-child(4n+2)::after{background:var(--green)}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ============ SECTIONS ============ */
+section{padding:clamp(90px,11vw,150px) clamp(20px,4.5vw,64px);position:relative}
+.wrap{max-width:1280px;margin:0 auto}
+.label{
+  display:flex;align-items:center;gap:14px;font-size:.76rem;font-weight:600;
+  letter-spacing:.28em;text-transform:uppercase;margin-bottom:26px;color:var(--ink-45);
+}
+.label::before{content:"";width:44px;height:1px;background:currentColor;opacity:.8}
+.label.c-purple{color:var(--purple)}
+.label.c-teal{color:var(--teal-deep)}
+.label.c-green{color:var(--green-deep)}
+h2{
+  font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;
+  font-size:clamp(2rem,4.4vw,3.4rem);line-height:1.12;
+}
+h2 em{font-style:italic;font-weight:340}
+.lead{font-size:clamp(.98rem,1.25vw,1.08rem);color:var(--ink-70);max-width:58ch}
+
+/* ============ STATS ============ */
+.stats{padding-top:0;padding-bottom:0}
+.stats .wrap{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.stat{padding:clamp(34px,4vw,56px) 24px;text-align:center;position:relative}
+.stat + .stat::before{content:"";position:absolute;left:0;top:26%;bottom:26%;width:1px;background:var(--line)}
+.stat b{
+  font-family:var(--font-display);font-weight:400;font-size:clamp(2.2rem,4vw,3.4rem);
+  display:block;line-height:1.1;
+}
+.stat small{
+  font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-45);font-weight:600;
+}
+.stat i{font-style:normal;font-size:.6em;vertical-align:.25em}
+.stat:nth-child(1) i{color:var(--purple)}
+.stat:nth-child(2) i{color:var(--teal)}
+.stat:nth-child(3) i{color:var(--green)}
+.stat:nth-child(4) i{color:var(--purple)}
+
+/* ============ ACADEMIA ============ */
+.academia .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(44px,7vw,110px);align-items:center}
+.academia-media{position:relative}
+.academia-media img{width:100%;aspect-ratio:6/7;object-fit:cover}
+.academia-media::after{
+  content:"";position:absolute;top:26px;left:26px;right:-26px;bottom:-26px;
+  border:1px solid var(--line);z-index:-1;
+}
+.academia-media .badge-year{
+  position:absolute;bottom:-30px;left:-16px;background:var(--ink);color:#fff;
+  padding:22px 28px;text-align:center;
+}
+.academia-media .badge-year b{font-family:var(--font-display);font-size:1.9rem;font-weight:400;display:block;line-height:1.1}
+.academia-media .badge-year small{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;opacity:.7}
+.academia-body .quote{
+  font-family:var(--font-display);font-style:italic;font-weight:340;
+  font-size:clamp(1.15rem,1.8vw,1.45rem);line-height:1.5;
+  border-left:2px solid var(--purple);padding-left:26px;margin:30px 0;
+}
+.academia-body p + p{margin-top:16px}
+
+/* ============ EQUIPO ============ */
+.equipo{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.equipo-head{display:flex;justify-content:space-between;align-items:flex-end;gap:34px;flex-wrap:wrap;margin-bottom:60px}
+.equipo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,2.6vw,34px)}
+.persona{position:relative}
+.persona .ph{overflow:hidden;position:relative;aspect-ratio:11/12;background:#EDEBE7;transition:transform .45s var(--ease);will-change:transform}
+.persona img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease),filter .7s var(--ease);filter:grayscale(1)}
+.persona:hover img{transform:scale(1.05);filter:grayscale(0)}
+.persona .ph::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:3px;transform:scaleX(0);
+  transform-origin:left;transition:transform .5s var(--ease);
+}
+.persona:nth-child(3n+1) .ph::after{background:var(--purple)}
+.persona:nth-child(3n+2) .ph::after{background:var(--teal)}
+.persona:nth-child(3n) .ph::after{background:var(--green)}
+.persona:hover .ph::after{transform:scaleX(1)}
+.persona figcaption{padding:18px 2px 0}
+.persona b{font-family:var(--font-display);font-weight:500;font-size:1.12rem;letter-spacing:-.01em;display:block}
+.persona small{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-45);font-weight:600}
+.equipo-grid.staff{grid-template-columns:repeat(6,1fr);margin-top:clamp(40px,5vw,64px)}
+.equipo-grid.staff .persona b{font-size:.95rem}
+.equipo-grid.staff .persona small{font-size:.68rem}
+.equipo-note{
+  margin-top:60px;padding-top:34px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center;
+}
+.equipo-note p{font-size:.95rem;color:var(--ink-70);max-width:60ch}
+
+/* ============ DISCIPLINAS ============ */
+.disciplinas .disc-head{display:flex;justify-content:space-between;align-items:flex-end;gap:34px;flex-wrap:wrap;margin-bottom:60px}
+.disc-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:clamp(16px,2vw,26px)}
+.disc{
+  position:relative;overflow:hidden;grid-column:span 2;aspect-ratio:10/13;
+  background:var(--ink);cursor:pointer;
+}
+.disc img{
+  width:100%;height:100%;object-fit:cover;opacity:.92;
+  transition:transform 1.1s var(--ease),opacity .6s;
+}
+.disc:hover img{transform:scale(1.06);opacity:.5}
+.disc-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:24px;color:#fff;
+  background:linear-gradient(to top,rgba(10,8,12,.72),transparent 55%);
+}
+.disc h3{font-family:var(--font-display);font-weight:400;font-size:clamp(1.3rem,1.9vw,1.7rem);letter-spacing:-.01em}
+.disc .n-prog{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;opacity:.75;margin-top:2px}
+.disc ul{
+  list-style:none;max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .6s var(--ease),opacity .5s .05s,margin .5s;
+}
+.disc:hover ul{max-height:260px;opacity:1;margin-top:14px}
+.disc li{
+  font-size:.86rem;padding:4px 0;border-top:1px solid rgba(255,255,255,.16);
+  display:flex;align-items:center;gap:8px;
+}
+.disc li::before{content:"";width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.disc[data-c="purple"] li::before{background:#CE79E3}
+.disc[data-c="teal"] li::before{background:var(--teal)}
+.disc[data-c="green"] li::before{background:var(--green)}
+.disc .bar{position:absolute;top:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
+.disc:hover .bar{transform:scaleX(1)}
+.disc[data-c="purple"] .bar{background:var(--purple)}
+.disc[data-c="teal"] .bar{background:var(--teal)}
+.disc[data-c="green"] .bar{background:var(--green)}
+.modalidades{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,26px);margin-top:clamp(40px,5vw,60px)}
+.modalidad{
+  border:1px solid var(--line);padding:clamp(26px,3vw,38px);display:flex;gap:22px;align-items:flex-start;
+  background:#fff;transition:border-color .4s,transform .4s var(--ease);
+}
+.modalidad:hover{border-color:var(--ink);transform:translateY(-4px)}
+.modalidad .icon{width:26px;height:26px;margin-top:4px}
+.modalidad h4{font-family:var(--font-display);font-weight:500;font-size:1.2rem;margin-bottom:6px}
+.modalidad p{font-size:.94rem;color:var(--ink-70)}
+
+/* ============ ABT ============ */
+.abt{background:var(--ink);color:#fff}
+.abt .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(44px,7vw,110px);align-items:center}
+.abt .label{color:#CE79E3}
+.abt .lead{color:rgba(255,255,255,.72)}
+.abt-media{position:relative}
+.abt-media img{width:100%;aspect-ratio:6/7;object-fit:cover;filter:saturate(.9)}
+.abt-media::after{
+  content:"";position:absolute;top:-26px;right:-26px;bottom:26px;left:26px;
+  border:1px solid rgba(255,255,255,.2);z-index:0;pointer-events:none;
+}
+.abt-seal{
+  position:absolute;top:-56px;right:-20px;width:132px;height:132px;z-index:2;
+  animation:spin 26s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.abt-seal svg{width:100%;height:100%}
+.abt-seal text{font-size:9.5px;font-weight:600;letter-spacing:.34em;text-transform:uppercase;fill:#fff}
+.abt-seal .center-star{fill:var(--teal)}
+.abt-list{margin-top:38px;display:grid}
+.abt-item{
+  display:flex;gap:24px;align-items:baseline;padding:22px 0;
+  border-top:1px solid rgba(255,255,255,.14);
+}
+.abt-item:last-child{border-bottom:1px solid rgba(255,255,255,.14)}
+.abt-item .n{
+  font-family:var(--font-display);font-style:italic;font-size:1rem;color:rgba(255,255,255,.5);
+  min-width:36px;
+}
+.abt-item b{display:block;font-size:1.02rem;margin-bottom:3px}
+.abt-item p{font-size:.92rem;color:rgba(255,255,255,.65)}
+
+/* ============ SEDES ============ */
+.sedes-tabs{display:flex;gap:0;margin:52px 0 44px;border-bottom:1px solid var(--line)}
+.sede-tab{
+  padding:16px 30px;font-size:.84rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-45);position:relative;transition:color .3s;
+}
+.sede-tab::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink);
+  transform:scaleX(0);transition:transform .4s var(--ease);
+}
+.sede-tab:hover{color:var(--ink)}
+.sede-tab.active{color:var(--ink)}
+.sede-tab.active::after{transform:scaleX(1)}
+.sede-panel{display:none;animation:fadeUp .55s var(--ease)}
+.sede-panel.active{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(24px,3vw,40px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.sede-info{display:flex;flex-direction:column;gap:26px;padding:clamp(4px,1vw,10px) 0}
+.sede-info h3{
+  font-family:var(--font-display);font-weight:400;font-size:2rem;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:16px;
+}
+.sede-city{font-size:.7rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--line);color:var(--ink-45)}
+.sede-row{display:flex;gap:18px;align-items:flex-start;font-size:.98rem}
+.sede-row .icon{margin-top:4px;color:var(--ink-45)}
+.sede-row b{display:block;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-45);margin-bottom:2px}
+.sede-actions{display:flex;gap:14px;margin-top:auto;flex-wrap:wrap}
+.sede-actions .btn{padding:14px 26px;font-size:.78rem}
+.sede-map{min-height:420px;position:relative;border:1px solid var(--line)}
+.sede-map iframe{width:100%;height:100%;border:0;position:absolute;inset:0;filter:grayscale(.35)}
+
+/* ============ TESTIMONIOS ============ */
+.testimonios{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.testi-slider{position:relative;margin-top:56px;min-height:260px}
+.testi{
+  position:absolute;inset:0;opacity:0;transform:translateY(20px);pointer-events:none;
+  transition:opacity .7s var(--ease),transform .7s var(--ease);
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(26px,4vw,54px);align-items:start;
+}
+.testi.active{opacity:1;transform:none;pointer-events:auto;position:relative}
+.testi-photo{
+  width:clamp(88px,10vw,132px);height:clamp(88px,10vw,132px);border-radius:50%;
+  object-fit:cover;filter:saturate(.9);
+}
+.testi-photo-wrap{position:relative;flex-shrink:0}
+.testi-photo-wrap::after{
+  content:"";position:absolute;inset:-8px;border-radius:50%;border:1px solid var(--line);
+}
+.testi blockquote{
+  font-family:var(--font-display);font-style:italic;font-weight:340;
+  font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.5;letter-spacing:-.01em;
+}
+.testi cite{display:block;font-family:var(--font-body);font-style:normal;margin-top:22px}
+.testi cite b{font-weight:600;font-size:.98rem}
+.testi cite span{display:block;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-45);margin-top:2px}
+.testi-nav{display:flex;gap:8px;margin-top:44px;align-items:center}
+.testi-dot{width:30px;height:3px;background:var(--line);transition:all .4s var(--ease)}
+.testi-dot.active{background:var(--ink);width:48px}
+.testi-arrows{margin-left:auto;display:flex;gap:10px}
+.testi-arrow{
+  width:50px;height:50px;border:1px solid var(--line);display:grid;place-items:center;
+  transition:all .35s var(--ease);
+}
+.testi-arrow:hover{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ============ CORTESÍA ============ */
+.cortesia{background:var(--ink);color:#fff;text-align:center;position:relative;overflow:hidden}
+.cortesia::before{
+  content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(760px,90%);height:1px;
+  background:linear-gradient(90deg,transparent,var(--purple) 30%,var(--teal) 70%,transparent);
+}
+.cortesia .label{justify-content:center;color:var(--green)}
+.cortesia .label::before{background:var(--green)}
+.cortesia h2{max-width:20ch;margin:0 auto}
+.cortesia p{max-width:56ch;margin:24px auto 44px;color:rgba(255,255,255,.7)}
+.cortesia-sedes{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cortesia-sedes .btn{min-width:180px}
+.cortesia-sedes .btn.nearest{background:#fff;color:var(--ink);border-color:#fff;position:relative}
+.cortesia-sedes .btn.nearest::after{content:"Más cercana";position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--ink);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.cortesia-locate{display:inline-flex;align-items:center;gap:8px;margin:26px auto 0;background:none;border:none;color:rgba(255,255,255,.72);font-family:var(--font-body);font-size:.86rem;font-weight:500;letter-spacing:.02em;cursor:pointer;padding:6px 4px;border-bottom:1px solid transparent;transition:color .3s,border-color .3s}
+.cortesia-locate:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
+.cortesia-locate svg{color:var(--green)}
+.cortesia-locate.loading{opacity:.6;cursor:progress}
+.cortesia-status{max-width:46ch;margin:16px auto 0;font-size:.86rem;color:rgba(255,255,255,.6);min-height:1.2em}
+.cortesia-status.ok{color:#9FE470}
+.cortesia-status.err{color:#F0A6C0}
+
+/* ============ FAQ ============ */
+.faq .wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(44px,6vw,100px);align-items:start}
+.faq-sticky{position:sticky;top:120px}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item:first-child{border-top:1px solid var(--line)}
+.faq-q{
+  width:100%;display:flex;justify-content:space-between;align-items:center;gap:20px;
+  padding:26px 4px;text-align:left;font-size:1.05rem;font-weight:500;
+  font-family:var(--font-display);letter-spacing:-.01em;transition:color .3s;
+}
+.faq-q:hover{color:var(--purple)}
+.faq-x{
+  width:30px;height:30px;position:relative;flex-shrink:0;
+}
+.faq-x::before,.faq-x::after{
+  content:"";position:absolute;top:50%;left:50%;background:currentColor;
+  transition:transform .45s var(--ease);
+}
+.faq-x::before{width:15px;height:1.5px;transform:translate(-50%,-50%)}
+.faq-x::after{width:1.5px;height:15px;transform:translate(-50%,-50%)}
+.faq-item.open .faq-x::after{transform:translate(-50%,-50%) rotate(90deg)}
+.faq-item.open .faq-q{color:var(--purple)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .55s var(--ease)}
+.faq-a p{padding:0 44px 28px 4px;color:var(--ink-70);font-size:.96rem}
+
+/* ============ CONTACTO ============ */
+.contacto{background:#fff;border-top:1px solid var(--line)}
+.contacto .wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(44px,6vw,100px);align-items:start}
+.contact-side{position:sticky;top:120px}
+.contact-list{display:grid;margin-top:38px}
+.contact-item{
+  display:flex;gap:18px;align-items:flex-start;padding:20px 0;border-top:1px solid var(--line);
+}
+.contact-item:last-child{border-bottom:1px solid var(--line)}
+.contact-item .icon{margin-top:3px;color:var(--ink-45)}
+.contact-item b{display:block;font-size:.96rem}
+.contact-item small{color:var(--ink-45);font-size:.84rem}
+.contact-cta{
+  display:flex;align-items:center;gap:16px;margin-top:26px;padding:20px 22px;
+  border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+  transition:background .35s var(--ease),color .35s var(--ease),transform .35s var(--ease),box-shadow .35s var(--ease);
+}
+.contact-cta:hover{background:var(--ink);color:#fff;transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.contact-cta .icon{color:var(--teal-deep);flex-shrink:0}
+.contact-cta:hover .icon{color:#fff}
+.contact-cta .cta-tx{flex:1}
+.contact-cta .cta-tx b{display:block;font-size:1rem;font-weight:600}
+.contact-cta .cta-tx small{color:var(--ink-45);font-size:.84rem}
+.contact-cta:hover .cta-tx small{color:rgba(255,255,255,.72)}
+.contact-cta .cta-arrow{transition:transform .35s var(--ease)}
+.contact-cta:hover .cta-arrow{transform:translateX(5px)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.72rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-45)}
+.field input,.field select,.field textarea{
+  font-family:inherit;font-size:.98rem;color:var(--ink);background:transparent;
+  padding:13px 2px;border:none;border-bottom:1px solid var(--line);border-radius:0;
+  transition:border-color .3s;appearance:none;-webkit-appearance:none;width:100%;
+}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg width='11' height='7' viewBox='0 0 11 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23121014' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 4px center;cursor:pointer;
+}
+.field textarea{resize:vertical;min-height:96px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-bottom-color:var(--purple)}
+.form-card .btn{margin-top:34px}
+.form-note{font-size:.78rem;color:var(--ink-45);margin-top:16px}
+
+/* ============ FOOTER ============ */
+footer{background:var(--ink);color:#fff;padding:clamp(64px,8vw,100px) clamp(20px,4.5vw,64px) 36px}
+.footer-grid{
+  max-width:1280px;margin:0 auto;display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;gap:clamp(34px,4vw,64px);
+  padding-bottom:56px;border-bottom:1px solid rgba(255,255,255,.14);
+}
+.footer-logo{height:64px;width:auto;filter:brightness(0) invert(1);margin-bottom:22px}
+.footer-brand p{color:rgba(255,255,255,.58);font-size:.93rem;max-width:34ch}
+.socials{display:flex;gap:10px;margin-top:26px}
+.social{
+  width:42px;height:42px;border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;
+  transition:all .35s var(--ease);
+}
+.social:hover{background:#fff;color:var(--ink);border-color:#fff}
+footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:22px;font-weight:600}
+.footer-links{list-style:none;display:grid;gap:13px}
+.footer-links a{color:rgba(255,255,255,.75);font-size:.92rem;transition:color .3s}
+.footer-links a:hover{color:var(--teal)}
+.footer-links small{display:block;color:rgba(255,255,255,.4);font-size:.78rem}
+.footer-bottom{
+  max-width:1280px;margin:0 auto;padding-top:30px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;font-size:.8rem;color:rgba(255,255,255,.4);
+}
+.footer-bottom a:hover{color:#fff}
+
+/* ============ WHATSAPP ============ */
+.wa-float{position:fixed;bottom:26px;right:26px;z-index:1001}
+.wa-btn{
+  width:58px;height:58px;border-radius:50%;background:var(--wa);
+  display:grid;place-items:center;box-shadow:0 12px 30px -8px rgba(37,211,102,.55);
+  transition:transform .35s var(--ease);
+}
+.wa-btn:hover{transform:scale(1.08)}
+.wa-btn svg{width:30px;height:30px;fill:#fff}
+.wa-menu{
+  position:absolute;bottom:72px;right:0;width:300px;background:#fff;color:var(--ink);
+  box-shadow:0 24px 60px -12px rgba(18,16,20,.3);overflow:hidden;border:1px solid var(--line);
+  opacity:0;transform:translateY(12px);pointer-events:none;transition:all .4s var(--ease);
+}
+.wa-menu.open{opacity:1;transform:none;pointer-events:auto}
+.wa-menu-head{background:var(--ink);color:#fff;padding:18px 22px}
+.wa-menu-head b{font-size:.98rem;font-family:var(--font-display);font-weight:500}
+.wa-menu-head p{font-size:.8rem;opacity:.7}
+.wa-sede{display:flex;align-items:center;gap:14px;padding:15px 22px;transition:background .25s;border-bottom:1px solid var(--line)}
+.wa-sede:last-child{border-bottom:none}
+.wa-sede:hover{background:var(--paper)}
+.wa-sede .pin{
+  width:36px;height:36px;display:grid;place-items:center;color:#fff;font-size:.85rem;
+  font-weight:600;flex-shrink:0;
+}
+.wa-sede:nth-of-type(1) .pin{background:var(--purple)}
+.wa-sede:nth-of-type(2) .pin{background:var(--teal)}
+.wa-sede:nth-of-type(3) .pin{background:var(--green)}
+.wa-sede b{display:block;font-size:.9rem}
+.wa-sede small{color:var(--ink-45);font-size:.76rem}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1080px){
+  .disc-grid{grid-template-columns:repeat(6,1fr)}
+  .disc{grid-column:span 2}
+  .disc:nth-child(4),.disc:nth-child(5){grid-column:span 3}
+  .equipo-grid.staff{grid-template-columns:repeat(3,1fr)}
+  .academia .wrap,.abt .wrap{grid-template-columns:1fr;gap:64px}
+  .faq .wrap,.contacto .wrap{grid-template-columns:1fr;gap:50px}
+  .faq-sticky,.contact-side{position:static}
+  .sede-panel.active{grid-template-columns:1fr}
+  .stats .wrap{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(3)::before{display:none}
+}
+@media (max-width:720px){
+  .nav-links{
+    position:fixed;inset:0;background:var(--paper);
+    flex-direction:column;justify-content:center;gap:32px;
+    opacity:0;pointer-events:none;transition:opacity .4s;
+  }
+  .nav-links.open{opacity:1;pointer-events:auto}
+  .nav-links a{font-size:1.25rem;color:var(--ink)!important;font-family:var(--font-display)}
+  .nav-links .nav-cta{border-color:var(--ink)}
+  .burger{display:flex}
+  nav:not(.scrolled) .burger.open span{background:var(--ink)}
+  .disc-grid{grid-template-columns:1fr 1fr}
+  .disc,.disc:nth-child(4),.disc:nth-child(5){grid-column:span 1}
+  .disc:nth-child(5){grid-column:span 2;aspect-ratio:16/10}
+  .disc ul{max-height:260px;opacity:1;margin-top:14px}
+  .disc img{opacity:.45}
+  .modalidades{grid-template-columns:1fr}
+  .equipo-grid{grid-template-columns:1fr 1fr}
+  .equipo-grid.staff{grid-template-columns:1fr 1fr}
+  .testi{grid-template-columns:1fr;gap:22px}
+  .form-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .hero-ctas .btn{width:100%}
+  .sedes-tabs{overflow-x:auto}
+  .sede-tab{padding:14px 18px;white-space:nowrap}
+  .hero-dots{display:none}
+  .abt-seal{top:-40px;right:6px;width:104px;height:104px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div class="cursor-ring" id="cursorRing"><span id="cursorLabel"></span></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ================= NAV ================= -->
+<nav id="nav">
+  <a href="#inicio" aria-label="En Avant — Inicio">
+    <img class="logo-img" src="img/logo-en-avant.png" alt="En Avant — Escuela de Danza, Música y Arte" width="108" height="67">
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#academia">Academia</a></li>
+    <li><a href="#equipo">Equipo</a></li>
+    <li><a href="#disciplinas">Disciplinas</a></li>
+    <li><a href="#abt">ABT</a></li>
+    <li><a href="#sedes">Sedes</a></li>
+    <li><a href="#contacto">Contacto</a></li>
+    <li><a href="#cortesia" class="nav-cta">Clase de cortesía</a></li>
+  </ul>
+  <button class="burger" id="burger" aria-label="Menú"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="inicio">
+  <div class="hero-slides" id="heroSlides">
+    <div class="hero-slide active" style="background-image:url('img/hero-1.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('img/hero-2.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('img/hero-3.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('img/hero-4.jpg')"></div>
+  </div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">Escuela de Danza, Música y Arte · Bogotá y Chía</span>
+    <h1>
+      <span class="line"><span>Transformando vidas</span></span>
+      <span class="line"><span>a través del <em>Arte</em></span></span>
+    </h1>
+    <p class="hero-sub">Desde el 2009 acompañamos a niños, jóvenes y adultos a encontrar su vocación artística. Formación de alta calidad, certificada por el American Ballet Theatre.</p>
+    <div class="hero-ctas">
+      <a href="#contacto" class="btn btn-solid">Inscripciones abiertas</a>
+      <a href="#cortesia" class="btn btn-outline">Clase de cortesía
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
+</header>
+
+<!-- ================= TICKER ================= -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>Ballet</span><span>Contemporáneo</span><span>Jazz</span><span>Hip Hop</span><span>Latino</span><span>Árabe</span><span>Piano</span><span>Guitarra</span><span>Pintura</span><span>Dibujo</span><span>Yoga</span><span>Zumba</span><span>Baby Ballet</span><span>Estimulación Musical</span>
+    <span>Ballet</span><span>Contemporáneo</span><span>Jazz</span><span>Hip Hop</span><span>Latino</span><span>Árabe</span><span>Piano</span><span>Guitarra</span><span>Pintura</span><span>Dibujo</span><span>Yoga</span><span>Zumba</span><span>Baby Ballet</span><span>Estimulación Musical</span>
+  </div>
+</div>
+
+<!-- ================= STATS ================= -->
+<section class="stats" aria-label="Cifras de En Avant" style="padding-top:clamp(70px,8vw,110px)">
+  <div class="wrap reveal">
+    <div class="stat"><b><span data-count="15">0</span><i>+</i></b><small>Años de trayectoria</small></div>
+    <div class="stat"><b><span data-count="3">0</span></b><small>Sedes en Bogotá y Chía</small></div>
+    <div class="stat"><b><span data-count="50">0</span><i>+</i></b><small>Maestros especializados</small></div>
+    <div class="stat"><b><span data-count="20">0</span><i>+</i></b><small>Programas artísticos</small></div>
+  </div>
+</section>
+
+<!-- ================= ACADEMIA ================= -->
+<section class="academia" id="academia">
+  <div class="wrap">
+    <div class="academia-media reveal-img">
+      <img data-plx="0.08" src="img/academia-en-avant.jpg" alt="Estudiantes de En Avant en clase" loading="lazy">
+      <div class="badge-year"><b>2009</b><small>Fundación</small></div>
+    </div>
+    <div class="academia-body reveal">
+      <span class="label c-purple">Nuestra academia</span>
+      <h2>Un espacio donde cada estudiante encuentra su <em>vocación</em></h2>
+      <p class="quote">"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
+      <p class="lead">Desde el año 2009, En Avant busca ser un espacio de formación artística en donde cada estudiante encuentre su verdadera vocación en el arte. Manejamos diferentes programas en danza, música, artes, estimulación y fitness para que niños, jóvenes y adultos puedan ser partícipes de nuestras clases.</p>
+      <p class="lead">Encontrarás un staff de maestros y administrativos que día a día ponen no solo su conocimiento sino su alma en cada proceso. Te damos la bienvenida a nuestra familia En Avant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EQUIPO ================= -->
+<section class="equipo" id="equipo">
+  <div class="wrap">
+    <div class="equipo-head">
+      <div class="reveal">
+        <span class="label c-teal">Nuestro equipo</span>
+        <h2>Las personas detrás <em>del proceso</em></h2>
+      </div>
+      <p class="lead reveal">Nueve profesionales administrativos y más de cincuenta maestros especializados acompañan la formación de cada estudiante.</p>
+    </div>
+    <div class="equipo-grid reveal" data-stagger>
+      <figure class="persona">
+        <div class="ph"><img src="img/diana-salamanca.jpg" alt="Diana Salamanca, Directora Artística" loading="lazy"></div>
+        <figcaption><b>Diana Salamanca</b><small>Directora Artística</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/maritza-salamanca.jpg" alt="Maritza Salamanca, Directora Administrativa" loading="lazy"></div>
+        <figcaption><b>Maritza Salamanca</b><small>Directora Administrativa</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/fabio-mahecha.jpg" alt="Fabio Alejandro Mahecha, Coordinador de Música" loading="lazy"></div>
+        <figcaption><b>Fabio Alejandro Mahecha</b><small>Coordinador de Música</small></figcaption>
+      </figure>
+    </div>
+    <div class="equipo-grid staff reveal" data-stagger>
+      <figure class="persona">
+        <div class="ph"><img src="img/paola-bustos.jpg" alt="Paola Andrea Bustos, Administradora General" loading="lazy"></div>
+        <figcaption><b>Paola Andrea Bustos</b><small>Administradora General</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/sandra-salamanca.jpg" alt="Sandra Salamanca, Marketing y Social Media" loading="lazy"></div>
+        <figcaption><b>Sandra Salamanca</b><small>Marketing y Social Media</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/lina-jimenez.jpg" alt="Lina María Jiménez, Innovación y Servicio al Cliente" loading="lazy"></div>
+        <figcaption><b>Lina María Jiménez</b><small>Innovación y Servicio</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/luz-mendoza.jpg" alt="Luz Marina Mendoza, Asistente Comercial Mazurén" loading="lazy"></div>
+        <figcaption><b>Luz Marina Mendoza</b><small>Comercial · Mazurén</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/maria-monterroza.jpeg" alt="María Fernanda Monterroza, Asistente Administrativa Salitre" loading="lazy"></div>
+        <figcaption><b>M. Fernanda Monterroza</b><small>Administrativa · Salitre</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/sandra-lopez.jpg" alt="Sandra Carolina López, Asistente Administrativa Chía" loading="lazy"></div>
+        <figcaption><b>Sandra Carolina López</b><small>Administrativa · Chía</small></figcaption>
+      </figure>
+    </div>
+    <div class="equipo-note reveal">
+      <p>A ellos se suman más de 50 maestros especializados en cada disciplina, con programas adaptados al desarrollo motriz según las edades y espacios adecuados para cada práctica.</p>
+      <a href="#contacto" class="btn btn-line">Conócenos</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PALABRAS GIGANTES 1 ================= -->
+<div class="scroll-words" aria-hidden="true">
+  <div class="sw-line">Danza · Música · Artes · Fitness · Babies · Danza · Música · Artes · Fitness · Babies</div>
+  <div class="sw-line">Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop · Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop</div>
+</div>
+
+<!-- ================= DISCIPLINAS ================= -->
+<section class="disciplinas" id="disciplinas">
+  <div class="wrap">
+    <div class="disc-head">
+      <div class="reveal">
+        <span class="label c-green">Disciplinas</span>
+        <h2>Encuentra tu <em>lenguaje</em> artístico</h2>
+      </div>
+      <p class="lead reveal">El arte potencia las habilidades de cada estudiante: concentración, atención y habilidades interpersonales. Programas para niños, jóvenes y adultos.</p>
+    </div>
+    <div class="disc-grid reveal" data-stagger>
+      <a class="disc" href="danza.html" data-cursor="Explorar" data-c="purple">
+        <span class="bar"></span>
+        <img src="img/danza.jpg" alt="Clase de danza en En Avant" loading="lazy">
+        <div class="disc-overlay">
+          <h3>Danza</h3>
+          <span class="n-prog">7 programas</span>
+          <ul>
+            <li>Ballet</li><li>Contemporáneo</li><li>Jazz</li><li>Latino</li><li>Árabe</li><li>Hip Hop</li><li>Preparación física</li>
+          </ul>
+        </div>
+      </a>
+      <a class="disc" href="musica.html" data-cursor="Explorar" data-c="teal">
+        <span class="bar"></span>
+        <img src="img/musica.jpg" alt="Clase de música en En Avant" loading="lazy">
+        <div class="disc-overlay">
+          <h3>Música</h3>
+          <span class="n-prog">3 programas</span>
+          <ul>
+            <li>Iniciación musical</li><li>Instrumento principal</li><li>Preparación preuniversitaria</li>
+          </ul>
+        </div>
+      </a>
+      <a class="disc" href="artes.html" data-cursor="Explorar" data-c="green">
+        <span class="bar"></span>
+        <img src="img/artes.jpg" alt="Clase de artes plásticas en En Avant" loading="lazy">
+        <div class="disc-overlay">
+          <h3>Artes</h3>
+          <span class="n-prog">3 programas</span>
+          <ul>
+            <li>Pintura</li><li>Dibujo</li><li>Plastilina</li>
+          </ul>
+        </div>
+      </a>
+      <a class="disc" href="fitness.html" data-cursor="Explorar" data-c="teal">
+        <span class="bar"></span>
+        <img src="img/fitness.jpg" alt="Clase de fitness en En Avant" loading="lazy">
+        <div class="disc-overlay">
+          <h3>Fitness</h3>
+          <span class="n-prog">3 programas</span>
+          <ul>
+            <li>Yoga</li><li>Zumba</li><li>Stretching</li>
+          </ul>
+        </div>
+      </a>
+      <a class="disc" href="babies.html" data-cursor="Explorar" data-c="purple">
+        <span class="bar"></span>
+        <img src="img/babies.jpg" alt="Clase de estimulación para bebés en En Avant" loading="lazy">
+        <div class="disc-overlay">
+          <h3>Babies</h3>
+          <span class="n-prog">2 programas · Primera infancia</span>
+          <ul>
+            <li>Baby Ballet</li><li>Estimulación musical</li>
+          </ul>
+        </div>
+      </a>
+    </div>
+    <div class="modalidades reveal" data-stagger>
+      <div class="modalidad">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div>
+          <h4>Clases grupales</h4>
+          <p>Basadas en la socialización y el aprendizaje colaborativo. Crece junto a otros artistas de tu nivel y edad.</p>
+        </div>
+      </div>
+      <div class="modalidad">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div>
+          <h4>Clases personalizadas</h4>
+          <p>Un enfoque individualizado donde cada estudiante aprende a su propio ritmo, con la guía dedicada de su maestro.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABT ================= -->
+<section class="abt" id="abt">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="label">Certificación internacional</span>
+      <h2>Estándar <em>American Ballet Theatre</em>, en Colombia</h2>
+      <p class="lead" style="margin-top:20px">Desde 2018 implementamos el currículum del American Ballet Theatre — una de las compañías de ballet más prestigiosas del mundo — para que nuestros bailarines se enamoren de la danza clásica bajo un estándar internacional.</p>
+      <div class="abt-list">
+        <div class="abt-item">
+          <span class="n">01</span>
+          <div><b>Currículum oficial ABT</b><p>Implementado y refinado continuamente desde el nivel Pre-Primary hasta el Nivel 3.</p></div>
+        </div>
+        <div class="abt-item">
+          <span class="n">02</span>
+          <div><b>Maestras certificadas</b><p>Jenny Pescador y Diana Salamanca, habilitadas directamente por el ABT.</p></div>
+        </div>
+        <div class="abt-item">
+          <span class="n">03</span>
+          <div><b>Examinaciones anuales desde Nueva York</b><p>Cada año un examinador del ABT visita la escuela, imparte una clase especial y evalúa a los estudiantes.</p></div>
+        </div>
+        <div class="abt-item">
+          <span class="n">04</span>
+          <div><b>Honores y Altos Honores</b><p>Nuestros bailarines han logrado las máximas distinciones en los diferentes niveles presentados desde 2019.</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="abt-media reveal-img">
+      <img data-plx="0.08" src="img/abt-ballet.jpg" alt="Bailarinas de ballet de En Avant" loading="lazy">
+      <div class="abt-seal" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <defs><path id="sealPath" d="M 60,60 m -46,0 a 46,46 0 1,1 92,0 a 46,46 0 1,1 -92,0"/></defs>
+          <circle cx="60" cy="60" r="59" fill="rgba(18,16,20,.85)"/>
+          <text><textPath href="#sealPath">ABT CERTIFIED SCHOOL · DESDE 2018 ·</textPath></text>
+          <path class="center-star" d="M60 48l3.5 7.5 8 1-6 5.5 1.5 8-7-4-7 4 1.5-8-6-5.5 8-1z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SEDES ================= -->
+<section id="sedes">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="label c-teal">Nuestras sedes</span>
+      <h2>Tres espacios diseñados <em>para el arte</em></h2>
+      <p class="lead" style="margin-top:18px">Horario de atención en todas las sedes: lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m. · Sábados de 8:00 a. m. a 2:00 p. m.</p>
+    </div>
+    <div class="sedes-tabs reveal" role="tablist">
+      <button class="sede-tab active" data-sede="mazuren" role="tab">Mazurén</button>
+      <button class="sede-tab" data-sede="salitre" role="tab">Salitre</button>
+      <button class="sede-tab" data-sede="chia" role="tab">Chía</button>
+    </div>
+
+    <div class="sede-panel active" id="panel-mazuren">
+      <div class="sede-info">
+        <h3>Mazurén <span class="sede-city">Bogotá</span></h3>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><b>Dirección</b>Carrera 54 # 150 – 26, Bogotá</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.22a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg>
+          <div><b>Teléfono</b>(601) 258 1845</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          <div><b>Celular</b>(57) 313 430 8891</div>
+        </div>
+        <div class="sede-actions">
+          <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quisiera%20informaci%C3%B3n%20sobre%20la%20sede%20Mazur%C3%A9n." target="_blank" rel="noopener">Escríbenos</a>
+          <a class="btn btn-line" href="https://www.google.com/maps/search/?api=1&query=Carrera+54+%23150-26+Bogot%C3%A1" target="_blank" rel="noopener">Cómo llegar</a>
+        </div>
+      </div>
+      <div class="sede-map">
+        <iframe title="Mapa sede Mazurén" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=Carrera+54+%23150-26,+Bogot%C3%A1&output=embed"></iframe>
+      </div>
+    </div>
+
+    <div class="sede-panel" id="panel-salitre">
+      <div class="sede-info">
+        <h3>Salitre <span class="sede-city">Bogotá</span></h3>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><b>Dirección</b>Av. Calle 26 # 69 C – 03, Local 204, Edificio Capital Center</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          <div><b>Celular</b>(57) 311 492 9959</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><b>Horario</b>L–V 10 a. m.–1 p. m. / 3–7 p. m. · Sáb 8 a. m.–2 p. m.</div>
+        </div>
+        <div class="sede-actions">
+          <a class="btn btn-ink" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quisiera%20informaci%C3%B3n%20sobre%20la%20sede%20Salitre." target="_blank" rel="noopener">Escríbenos</a>
+          <a class="btn btn-line" href="https://www.google.com/maps/search/?api=1&query=Avenida+Calle+26+%2369C-03+Bogot%C3%A1" target="_blank" rel="noopener">Cómo llegar</a>
+        </div>
+      </div>
+      <div class="sede-map">
+        <iframe title="Mapa sede Salitre" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=Avenida+Calle+26+%2369C-03,+Bogot%C3%A1&output=embed"></iframe>
+      </div>
+    </div>
+
+    <div class="sede-panel" id="panel-chia">
+      <div class="sede-info">
+        <h3>Chía <span class="sede-city">Cundinamarca</span></h3>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div><b>Dirección</b>Carrera 2 Este # 22 – 47, Chía</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.79.65 2.65a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.43-1.22a2 2 0 0 1 2.11-.45c.86.31 1.75.53 2.65.65A2 2 0 0 1 22 16.92z"/></svg>
+          <div><b>Teléfono</b>(601) 862 1563</div>
+        </div>
+        <div class="sede-row">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+          <div><b>Celular</b>(57) 321 921 6471</div>
+        </div>
+        <div class="sede-actions">
+          <a class="btn btn-ink" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quisiera%20informaci%C3%B3n%20sobre%20la%20sede%20Ch%C3%ADa." target="_blank" rel="noopener">Escríbenos</a>
+          <a class="btn btn-line" href="https://www.google.com/maps/search/?api=1&query=Carrera+2+Este+%2322-47+Ch%C3%ADa" target="_blank" rel="noopener">Cómo llegar</a>
+        </div>
+      </div>
+      <div class="sede-map">
+        <iframe title="Mapa sede Chía" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps?q=Carrera+2+Este+%2322-47,+Ch%C3%ADa&output=embed"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIOS ================= -->
+<section class="testimonios" id="testimonios">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="label c-purple">Testimonios</span>
+      <h2>Lo que dice <em>nuestra familia</em></h2>
+    </div>
+    <div class="testi-slider reveal" id="testiSlider">
+      <div class="testi active">
+        <div class="testi-photo-wrap">
+          <img class="testi-photo" src="img/gonzalo-walteros.jpg" alt="Gonzalo Walteros" loading="lazy">
+        </div>
+        <div>
+          <blockquote>Mi experiencia es muy grata, agradecido con todas las personas por su gran profesionalismo y calidad humana. Con un gran esfuerzo de mi hija y mi esposa, están súper contentas con la experiencia.</blockquote>
+          <cite><b>Gonzalo Walteros</b><span>Padre de familia</span></cite>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-photo-wrap">
+          <img class="testi-photo" src="img/sofia-bonilla.jpg" alt="Sofía Bonilla" loading="lazy">
+        </div>
+        <div>
+          <blockquote>A mí me gusta esta academia porque cada vez que tomo una clase siento que aprendo… aprendo la lógica de las cosas y mejoro mi técnica aprendiendo de mis errores. ¡Gracias En Avant!</blockquote>
+          <cite><b>Sofía Bonilla</b><span>Estudiante</span></cite>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-photo-wrap">
+          <img class="testi-photo" src="img/ana-maria-suarez.jpg" alt="Ana María Suárez" loading="lazy">
+        </div>
+        <div>
+          <blockquote>Entrar a En Avant ha sido una experiencia enriquecedora en mi vida profesional. Lo que más me ha llamado la atención es que buscan que cada alumno se apasione con lo que hace, que por medio del arte encuentre un estilo de vida.</blockquote>
+          <cite><b>Ana María Suárez</b><span>Profesora</span></cite>
+        </div>
+      </div>
+    </div>
+    <div class="testi-nav">
+      <button class="testi-dot active" data-i="0" aria-label="Testimonio 1"></button>
+      <button class="testi-dot" data-i="1" aria-label="Testimonio 2"></button>
+      <button class="testi-dot" data-i="2" aria-label="Testimonio 3"></button>
+      <div class="testi-arrows">
+        <button class="testi-arrow" id="testiPrev" aria-label="Anterior">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="testi-arrow" id="testiNext" aria-label="Siguiente">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CORTESÍA ================= -->
+<section class="cortesia" id="cortesia">
+  <div class="wrap reveal">
+    <span class="label">Sin costo · Sin compromiso</span>
+    <h2>Tu primera clase es <em>de cortesía</em></h2>
+    <p>Conoce nuestras instalaciones, vive una clase real con nuestros maestros y descubre tu disciplina ideal. Escríbenos a la sede más cercana y agenda tu clase.</p>
+    <div class="cortesia-sedes">
+      <a class="btn btn-outline sede-btn" data-name="Mazurén" data-lat="4.7279" data-lng="-74.0564" href="https://wa.me/573134308891?text=%C2%A1Hola!%20Quiero%20agendar%20mi%20clase%20de%20cortes%C3%ADa%20en%20la%20sede%20Mazur%C3%A9n." target="_blank" rel="noopener">Mazurén</a>
+      <a class="btn btn-outline sede-btn" data-name="Salitre" data-lat="4.6332" data-lng="-74.1009" href="https://wa.me/573114929959?text=%C2%A1Hola!%20Quiero%20agendar%20mi%20clase%20de%20cortes%C3%ADa%20en%20la%20sede%20Salitre." target="_blank" rel="noopener">Salitre</a>
+      <a class="btn btn-outline sede-btn" data-name="Chía" data-lat="4.8637" data-lng="-74.0352" href="https://wa.me/573219216471?text=%C2%A1Hola!%20Quiero%20agendar%20mi%20clase%20de%20cortes%C3%ADa%20en%20la%20sede%20Ch%C3%ADa." target="_blank" rel="noopener">Chía</a>
+    </div>
+    <button class="cortesia-locate" id="locateBtn" type="button">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Ver la sede más cercana a mí
+    </button>
+    <p class="cortesia-status" id="locateStatus" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="faq" id="faq">
+  <div class="wrap">
+    <div class="faq-sticky reveal">
+      <span class="label c-purple">Preguntas frecuentes</span>
+      <h2>Resolvemos <em>tus dudas</em></h2>
+      <p class="lead" style="margin-top:20px">Si no encuentras tu respuesta, escríbenos por WhatsApp o usa el formulario de contacto — respondemos en horario de atención.</p>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <button class="faq-q">¿Desde qué edad pueden ingresar los estudiantes?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Recibimos estudiantes desde la primera infancia con nuestros programas Babies (Baby Ballet y Estimulación Musical), y tenemos programas para niños, jóvenes y adultos en todas las disciplinas, adaptados al desarrollo motriz de cada edad.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Cómo funciona la clase de cortesía?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Es una clase real, gratuita y sin compromiso. Escríbenos por WhatsApp a la sede de tu preferencia, cuéntanos la edad del estudiante y la disciplina que le interesa, y agendamos el mejor horario para que la viva.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Qué significa que la escuela esté certificada por el ABT?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Implementamos el currículum oficial del American Ballet Theatre desde 2018, con maestras certificadas (Jenny Pescador y Diana Salamanca). Cada año un examinador del ABT viene desde Nueva York a evaluar a nuestros estudiantes, quienes han obtenido Honores y Altos Honores.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Ofrecen clases grupales y personalizadas?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Sí. Las clases grupales se basan en la socialización y el aprendizaje colaborativo, mientras que las personalizadas ofrecen un enfoque individualizado donde cada estudiante aprende a su propio ritmo. Ambas modalidades están disponibles en la mayoría de disciplinas.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿En qué horarios atienden?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Nuestras tres sedes atienden de lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m., y los sábados de 8:00 a. m. a 2:00 p. m.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">¿Trabajan con colegios y jardines infantiles?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Sí, tenemos alianzas con jardines infantiles y colegios: enviamos maestros a sus instalaciones o dictamos clases en nuestros salones, con programas artísticos personalizados para cada institución.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PALABRAS GIGANTES 2 ================= -->
+<div class="scroll-words alt" aria-hidden="true">
+  <div class="sw-line">En Avant · Transformando vidas a través del arte · En Avant · Transformando vidas a través del arte</div>
+</div>
+
+<!-- ================= CONTACTO ================= -->
+<section class="contacto" id="contacto">
+  <div class="wrap">
+    <div class="contact-side reveal">
+      <span class="label c-teal">Contacto</span>
+      <h2>Empieza tu camino <em>en el arte</em></h2>
+      <p class="lead" style="margin-top:20px">Cuéntanos quién quiere formarse y en qué disciplina. Te responderemos con toda la información de programas, horarios y tarifas.</p>
+      <div class="contact-list">
+        <div class="contact-item">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <div><b>WhatsApp por sede</b><small>Respuesta rápida en horario de atención</small></div>
+        </div>
+        <a class="contact-item" href="mailto:enavantescuela@gmail.com">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+          <div><b>enavantescuela@gmail.com</b><small>Escríbenos un correo</small></div>
+        </a>
+        <div class="contact-item">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><b>L–V 10 a. m.–1 p. m. / 3–7 p. m.</b><small>Sábados 8 a. m. – 2 p. m.</small></div>
+        </div>
+      </div>
+      <a class="contact-cta" href="solicitudes.html">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        <span class="cta-tx"><b>Radicar una PQRS</b><small>Petición, queja, reclamo o sugerencia — con archivo adjunto</small></span>
+        <svg class="icon cta-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <form class="form-card reveal" id="contactForm">
+      <div class="form-grid">
+        <div class="field"><label for="f-nombre">Nombre *</label><input id="f-nombre" name="nombre" type="text" placeholder="Tu nombre" required></div>
+        <div class="field"><label for="f-apellido">Apellido *</label><input id="f-apellido" name="apellido" type="text" placeholder="Tu apellido" required></div>
+        <div class="field"><label for="f-email">Email *</label><input id="f-email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required></div>
+        <div class="field"><label for="f-tel">Teléfono / WhatsApp *</label><input id="f-tel" name="telefono" type="tel" placeholder="(57) 300 000 0000" required></div>
+        <div class="field"><label for="f-sede">Sede de interés *</label>
+          <select id="f-sede" name="sede" required>
+            <option value="" disabled selected>Selecciona una sede</option>
+            <option>Mazurén (Bogotá)</option>
+            <option>Salitre (Bogotá)</option>
+            <option>Chía</option>
+          </select>
+        </div>
+        <div class="field"><label for="f-disciplina">Disciplina de interés *</label>
+          <select id="f-disciplina" name="disciplina" required>
+            <option value="" disabled selected>Selecciona una disciplina</option>
+            <optgroup label="Danza"><option>Ballet</option><option>Contemporáneo</option><option>Jazz</option><option>Latino</option><option>Árabe</option><option>Hip Hop</option><option>Preparación física</option></optgroup>
+            <optgroup label="Música"><option>Iniciación musical</option><option>Instrumento principal</option><option>Preparación preuniversitaria</option></optgroup>
+            <optgroup label="Artes"><option>Pintura</option><option>Dibujo</option><option>Plastilina</option></optgroup>
+            <optgroup label="Fitness"><option>Yoga</option><option>Zumba</option><option>Stretching</option></optgroup>
+            <optgroup label="Babies"><option>Baby Ballet</option><option>Estimulación musical</option></optgroup>
+          </select>
+        </div>
+        <div class="field"><label for="f-edad">Edad del estudiante *</label><input id="f-edad" name="edad" type="number" min="1" max="99" placeholder="Ej: 7" required></div>
+        <div class="field"><label for="f-modalidad">Modalidad</label>
+          <select id="f-modalidad" name="modalidad">
+            <option value="" disabled selected>Grupal o personalizada</option>
+            <option>Grupal</option>
+            <option>Personalizada</option>
+          </select>
+        </div>
+        <div class="field full"><label for="f-msg">Mensaje</label><textarea id="f-msg" name="mensaje" placeholder="Cuéntanos qué te gustaría aprender o pregúntanos lo que necesites…"></textarea></div>
+      </div>
+      <button type="submit" class="btn btn-ink">Enviar solicitud
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <p class="form-note">Al enviar aceptas nuestra Política de Tratamiento de Datos Personales.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img class="footer-logo" src="img/logo-en-avant.png" alt="En Avant" width="108" height="67" loading="lazy">
+      <p>Escuela de Danza, Música y Arte. Transformando vidas a través del arte desde el 2009. Escuela certificada por el American Ballet Theatre.</p>
+      <div class="socials">
+        <a class="social" href="https://www.instagram.com/escuelaenavant" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a class="social" href="https://www.facebook.com/escuelaenavant" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 9H16V6h-2.5C11.57 6 10 7.57 10 9.5V11H8v3h2v6h3v-6h2.5l.5-3h-3V9.5c0-.28.22-.5.5-.5z"/></svg>
+        </a>
+        <a class="social" href="https://www.tiktok.com/@escuelaenavant" target="_blank" rel="noopener" aria-label="TikTok">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+        </a>
+        <a class="social" href="https://www.youtube.com/@enavantescuela9119" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.85-.5-5.7c-.27-1-1.08-1.8-2.1-2.07C18.55 4 12 4 12 4s-6.55 0-8.4.73c-1.02.27-1.83 1.07-2.1 2.07C1 8.15 1 12 1 12s0 3.85.5 5.7c.27 1 1.08 1.8 2.1 2.07C5.45 20 12 20 12 20s6.55 0 8.4-.73c1.02-.27 1.83-1.07 2.1-2.07.5-1.85.5-5.7.5-5.7zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div>
+      <h5>Navegación</h5>
+      <ul class="footer-links">
+        <li><a href="#academia">Academia</a></li>
+        <li><a href="#equipo">Equipo</a></li>
+        <li><a href="#disciplinas">Disciplinas</a></li>
+        <li><a href="#abt">Certificación ABT</a></li>
+        <li><a href="temporadas.html">Temporadas</a></li>
+        <li><a href="#cortesia">Clase de cortesía</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+        <li><a href="solicitudes.html">Solicitudes (PQRS)</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Sedes</h5>
+      <ul class="footer-links">
+        <li><a href="#sedes">Mazurén<small>Cra 54 # 150-26, Bogotá</small></a></li>
+        <li><a href="#sedes">Salitre<small>Av. Cl 26 # 69C-03, L204, Bogotá</small></a></li>
+        <li><a href="#sedes">Chía<small>Cra 2 Este # 22-47</small></a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Recursos</h5>
+      <ul class="footer-links">
+        <li><a href="https://www.enavantescuela.com" target="_blank" rel="noopener">Portal Maestros</a></li>
+        <li><a href="https://www.enavantescuela.com" target="_blank" rel="noopener">Política de datos</a></li>
+        <li><a href="https://www.enavantescuela.com" target="_blank" rel="noopener">Términos y condiciones</a></li>
+        <li><a href="mailto:enavantescuela@gmail.com">enavantescuela@gmail.com</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> En Avant — Escuela de Danza, Música y Arte. Todos los derechos reservados.</span>
+    <a href="#inicio">Volver arriba ↑</a>
+  </div>
+</footer>
+
+
+<script>
+/* Scroll progress + nav state */
+const progress=document.getElementById('progress'),nav=document.getElementById('nav');
+addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  progress.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+  nav.classList.toggle('scrolled',scrollY>40);
+},{passive:true});
+
+/* Mobile menu */
+const burger=document.getElementById('burger'),navLinks=document.getElementById('navLinks');
+burger.addEventListener('click',()=>{
+  burger.classList.toggle('open');navLinks.classList.toggle('open');
+});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+  burger.classList.remove('open');navLinks.classList.remove('open');
+}));
+
+/* Hero slideshow */
+const slides=[...document.querySelectorAll('.hero-slide')];
+const dotsWrap=document.getElementById('heroDots');
+slides.forEach((_,i)=>{
+  const d=document.createElement('button');
+  d.className='hero-dot'+(i===0?' active':'');
+  d.setAttribute('aria-label','Imagen '+(i+1));
+  d.addEventListener('click',()=>{clearInterval(heroTimer);showSlide(i);autoHero()});
+  dotsWrap.appendChild(d);
+});
+const heroDots=[...dotsWrap.children];
+let hi=0,heroTimer;
+function showSlide(i){
+  hi=(i+slides.length)%slides.length;
+  slides.forEach((s,j)=>s.classList.toggle('active',j===hi));
+  heroDots.forEach((d,j)=>d.classList.toggle('active',j===hi));
+}
+function autoHero(){heroTimer=setInterval(()=>showSlide(hi+1),7000)}
+autoHero();
+
+/* Reveals */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}
+}),{threshold:.12});
+document.querySelectorAll('.reveal,.reveal-img').forEach(el=>io.observe(el));
+document.querySelectorAll('[data-stagger]').forEach(p=>{
+  [...p.children].forEach((c,i)=>c.style.animationDelay=(i*.09)+'s');
+});
+
+/* Counters */
+const counterIO=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  const el=e.target,target=+el.dataset.count;
+  const t0=performance.now(),dur=1500;
+  (function tick(t){
+    const p=Math.min((t-t0)/dur,1),eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*eased);
+    if(p<1)requestAnimationFrame(tick);
+  })(t0);
+  counterIO.unobserve(el);
+}),{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>counterIO.observe(el));
+
+/* Sedes tabs */
+document.querySelectorAll('.sede-tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.sede-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sede-panel').forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('panel-'+tab.dataset.sede).classList.add('active');
+}));
+
+/* Testimonios */
+const testis=document.querySelectorAll('.testi'),dots=document.querySelectorAll('.testi-dot');
+let ti=0,tTimer;
+function showTesti(i){
+  ti=(i+testis.length)%testis.length;
+  testis.forEach((t,j)=>t.classList.toggle('active',j===ti));
+  dots.forEach((d,j)=>d.classList.toggle('active',j===ti));
+}
+function autoTesti(){tTimer=setInterval(()=>showTesti(ti+1),7000)}
+dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(+d.dataset.i);autoTesti()}));
+document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
+document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
+autoTesti();
+
+/* FAQ */
+document.querySelectorAll('.faq-q').forEach(q=>q.addEventListener('click',()=>{
+  const item=q.parentElement,a=item.querySelector('.faq-a'),open=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(o=>{
+    o.classList.remove('open');o.querySelector('.faq-a').style.maxHeight=null;
+  });
+  if(!open){item.classList.add('open');a.style.maxHeight=a.scrollHeight+'px'}
+}));
+
+/* Contact form → WhatsApp */
+const waNumbers={'Mazurén (Bogotá)':'573134308891','Salitre (Bogotá)':'573114929959','Chía':'573219216471'};
+document.getElementById('contactForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const f=new FormData(e.target);
+  const sede=f.get('sede');
+  const msg=`¡Hola En Avant!%0A%0A*Solicitud de información*%0A`+
+    `Nombre: ${f.get('nombre')} ${f.get('apellido')}%0A`+
+    `Email: ${f.get('email')}%0A`+
+    `Teléfono: ${f.get('telefono')}%0A`+
+    `Sede: ${sede}%0A`+
+    `Disciplina: ${f.get('disciplina')}%0A`+
+    `Edad del estudiante: ${f.get('edad')}%0A`+
+    (f.get('modalidad')?`Modalidad: ${f.get('modalidad')}%0A`:'')+
+    (f.get('mensaje')?`%0AMensaje: ${encodeURIComponent(f.get('mensaje'))}`:'');
+  open(`https://wa.me/${waNumbers[sede]||'573134308891'}?text=${msg}`,'_blank');
+});
+
+document.getElementById('year').textContent=new Date().getFullYear();
+
+/* ===== Interacciones dinámicas (solo escritorio, respeta reduced-motion) ===== */
+const finePointer=matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(finePointer){
+  /* Cursor personalizado */
+  const dot=document.getElementById('cursorDot'),ring=document.getElementById('cursorRing'),ringLabel=document.getElementById('cursorLabel');
+  let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+  addEventListener('mousemove',e=>{
+    mx=e.clientX;my=e.clientY;
+    dot.style.transform=`translate(${mx}px,${my}px)`;
+    document.body.classList.add('cursor-on');
+  });
+  document.addEventListener('mouseover',e=>{
+    const labelEl=e.target.closest('[data-cursor]');
+    const interactive=e.target.closest('a,button');
+    if(labelEl){ring.classList.add('is-label');ringLabel.textContent=labelEl.dataset.cursor}
+    else ring.classList.remove('is-label');
+    ring.classList.toggle('is-hover',!!interactive&&!labelEl);
+  });
+  document.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-on'));
+
+  /* Botones magnéticos */
+  document.querySelectorAll('.btn,.testi-arrow,.social,.wa-btn').forEach(el=>{
+    el.addEventListener('mousemove',e=>{
+      const r=el.getBoundingClientRect();
+      el.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.2}px,${(e.clientY-r.top-r.height/2)*.28}px)`;
+    });
+    el.addEventListener('mouseleave',()=>el.style.transform='');
+  });
+
+  /* Retratos que reaccionan al cursor */
+  document.querySelectorAll('.persona .ph').forEach(ph=>{
+    ph.addEventListener('mousemove',e=>{
+      const r=ph.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      ph.style.transform=`perspective(700px) rotateX(${(0.5-py)*8}deg) rotateY(${(px-0.5)*10}deg)`;
+    });
+    ph.addEventListener('mouseleave',()=>ph.style.transform='');
+  });
+
+  /* Hero: profundidad con el mouse */
+  const heroEl=document.querySelector('.hero'),heroContent=document.querySelector('.hero-content'),heroSlidesEl=document.getElementById('heroSlides');
+  let hx=0,hy=0,thx=0,thy=0;
+  heroEl.addEventListener('mousemove',e=>{thx=e.clientX/innerWidth-.5;thy=e.clientY/innerHeight-.5});
+  heroEl.addEventListener('mouseleave',()=>{thx=0;thy=0});
+
+  /* Ticker reactivo a la velocidad del scroll */
+  const tickerTrack=document.querySelector('.ticker-track');
+  tickerTrack.style.animation='none';
+  let tickX=0,lastY=scrollY,vel=0;
+
+  const plxEls=[...document.querySelectorAll('[data-plx]')];
+  const swBands=[...document.querySelectorAll('.scroll-words')];
+  const vhOf=()=>innerHeight;
+
+  (function loop(){
+    /* anillo con retardo elástico */
+    rx+=(mx-rx)*.16;ry+=(my-ry)*.16;
+    ring.style.transform=`translate(${rx}px,${ry}px)`;
+    /* hero con profundidad */
+    hx+=(thx-hx)*.06;hy+=(thy-hy)*.06;
+    heroContent.style.transform=`translate(${hx*-16}px,${hy*-10}px)`;
+    heroSlidesEl.style.transform=`translate(${hx*10}px,${hy*8}px) scale(1.03)`;
+    /* velocidad de scroll suavizada */
+    vel+=((scrollY-lastY)-vel)*.1;lastY=scrollY;
+    /* ticker: acelera al bajar, retrocede al subir */
+    const half=tickerTrack.scrollWidth/2;
+    tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
+    if(tickX<=-half)tickX+=half;
+    if(tickX>0)tickX-=half;
+    tickerTrack.style.transform=`translateX(${tickX}px)`;
+    const vh=vhOf();
+    /* parallax en imágenes grandes */
+    plxEls.forEach(el=>{
+      const r=el.parentElement.getBoundingClientRect();
+      if(r.bottom<0||r.top>vh)return;
+      const y=((r.top+r.height/2)-vh/2)*-el.dataset.plx;
+      el.style.transform=`translateY(${y}px) scale(1.12)`;
+    });
+    /* palabras gigantes ligadas al scroll */
+    swBands.forEach(b=>{
+      const r=b.getBoundingClientRect();
+      if(r.bottom<0||r.top>vh)return;
+      const p=(vh-r.top)/(vh+r.height);
+      const x=(p-.5)*22;
+      const lines=b.children;
+      lines[0].style.transform=`translateX(${x}%)`;
+      if(lines[1])lines[1].style.transform=`translateX(${-x}%)`;
+    });
+    requestAnimationFrame(loop);
+  })();
+}
+</script>
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"EducationalOrganization",
+  "name":"En Avant - Escuela de Danza, Música y Arte",
+  "url":"https://www.enavantescuela.com",
+  "logo":"https://static.wixstatic.com/media/549fe8_efc4eb8e474d4d7ab4412b4c21a778fe~mv2.png",
+  "foundingDate":"2009",
+  "email":"enavantescuela@gmail.com",
+  "description":"Escuela de formación artística en Bogotá y Chía. Danza, música, artes plásticas, fitness y estimulación temprana. Certificada por el American Ballet Theatre.",
+  "sameAs":[
+    "https://www.instagram.com/escuelaenavant",
+    "https://www.facebook.com/escuelaenavant",
+    "https://www.tiktok.com/@escuelaenavant",
+    "https://www.youtube.com/@enavantescuela9119"
+  ]
+}
+</script>
+<script>
+/* Clase de cortesía — resaltar la sede más cercana (con permiso de ubicación) */
+(function () {
+  var btn = document.getElementById('locateBtn');
+  var status = document.getElementById('locateStatus');
+  if (!btn) return;
+
+  function distKm(la1, lo1, la2, lo2) {
+    var R = 6371, toRad = Math.PI / 180;
+    var dLa = (la2 - la1) * toRad, dLo = (lo2 - lo1) * toRad;
+    var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+      Math.cos(la1 * toRad) * Math.cos(la2 * toRad) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  btn.addEventListener('click', function () {
+    var sedes = [].slice.call(document.querySelectorAll('.cortesia-sedes .sede-btn'));
+    if (!navigator.geolocation) {
+      status.className = 'cortesia-status err';
+      status.textContent = 'Tu navegador no permite detectar la ubicación. Elige tu sede manualmente arriba.';
+      return;
+    }
+    btn.classList.add('loading');
+    status.className = 'cortesia-status';
+    status.textContent = 'Buscando tu ubicación…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var la = pos.coords.latitude, lo = pos.coords.longitude;
+      var best = null, bestD = Infinity;
+      sedes.forEach(function (s) {
+        var d = distKm(la, lo, parseFloat(s.dataset.lat), parseFloat(s.dataset.lng));
+        if (d < bestD) { bestD = d; best = s; }
+      });
+      sedes.forEach(function (s) { s.classList.remove('nearest'); });
+      if (best) {
+        best.classList.add('nearest');
+        best.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        status.className = 'cortesia-status ok';
+        status.textContent = 'Tu sede más cercana es ' + best.dataset.name + ' (a unos ' + bestD.toFixed(1) + ' km). Toca el botón para escribirnos.';
+      }
+      btn.classList.remove('loading');
+    }, function (err) {
+      btn.classList.remove('loading');
+      status.className = 'cortesia-status err';
+      status.textContent = err.code === 1
+        ? 'No diste permiso de ubicación. Puedes elegir tu sede manualmente arriba.'
+        : 'No pudimos obtener tu ubicación. Elige tu sede manualmente arriba.';
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  });
+})();
+</script>
+<script src="wa-widget.js"></script>
+</body>
+</html>

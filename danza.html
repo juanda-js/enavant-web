@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danza | En Avant — Escuela de Danza, Música y Arte</title>
+<meta name="robots" content="noindex"><!-- QUITAR noindex AL CONECTAR EL DOMINIO -->
+<meta name="description" content="Programas de Danza en En Avant: Ballet, Danza Contemporánea, Jazz, Latino, Danza Árabe, Hip Hop, Preparación Física. Sedes en Mazurén, Salitre y Chía.">
+<link rel="icon" href="img/logo-en-avant.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.45);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--wa:#25D366;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4.5vw,64px);background:rgba(250,249,247,.92);backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--line)}
+nav .logo-img{height:42px;width:auto}
+.nav-back{font-size:.84rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-70);display:inline-flex;align-items:center;gap:8px;transition:color .3s}
+.nav-back:hover{color:var(--accent)}
+.hero{margin-top:68px;position:relative;min-height:52vh;display:flex;align-items:flex-end;background:var(--ink);overflow:hidden}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,12,.8),rgba(10,8,12,.15) 60%)}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1140px;margin:0 auto;padding:80px clamp(20px,4.5vw,64px) 54px;color:#fff}
+.eyebrow{display:flex;align-items:center;gap:14px;font-size:.76rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+.eyebrow::before{content:"";width:44px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--font-display);font-weight:400;font-style:italic;letter-spacing:-.02em;font-size:clamp(3rem,8vw,5.4rem);line-height:1.05;margin-top:14px}
+main{max-width:1140px;margin:0 auto;padding:clamp(56px,7vw,90px) clamp(20px,4.5vw,64px)}
+.intro{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,4vw,60px);align-items:start;padding-bottom:clamp(40px,5vw,64px)}
+.intro .count{font-family:var(--font-display);font-size:clamp(3rem,6vw,4.6rem);font-weight:400;line-height:1;color:var(--accent)}
+.intro .count small{display:block;font-family:var(--font-body);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-45);margin-top:8px}
+.intro p{font-size:clamp(1.02rem,1.5vw,1.2rem);color:var(--ink-70);max-width:58ch}
+.prog-list{display:grid;border-top:1px solid var(--line)}
+.prog{display:flex;align-items:center;gap:clamp(16px,3vw,34px);text-align:left;padding:clamp(20px,2.6vw,30px) 4px;border-bottom:1px solid var(--line);transition:background .3s,padding-left .35s var(--ease)}
+.prog:hover{background:var(--accent-soft);padding-left:18px}
+.prog-n{font-family:var(--font-display);font-style:italic;color:var(--ink-45);font-size:1rem;min-width:34px}
+.prog-body{flex:1}
+.prog-body b{display:block;font-family:var(--font-display);font-weight:500;font-size:clamp(1.2rem,2vw,1.55rem);letter-spacing:-.01em}
+.prog-body small{display:block;color:var(--ink-45);font-size:.9rem;margin-top:3px;max-width:64ch}
+.prog-plus{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;position:relative;flex-shrink:0;transition:all .35s var(--ease)}
+.prog-plus::before,.prog-plus::after{content:"";position:absolute;top:50%;left:50%;background:currentColor;transition:transform .35s}
+.prog-plus::before{width:14px;height:1.5px;transform:translate(-50%,-50%)}
+.prog-plus::after{width:1.5px;height:14px;transform:translate(-50%,-50%)}
+.prog:hover .prog-plus{background:var(--accent);border-color:var(--accent);color:#fff;transform:rotate(90deg)}
+.otras{margin-top:clamp(48px,6vw,72px);padding-top:34px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.otras-links{display:flex;gap:10px;flex-wrap:wrap}
+.otras-links a{font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:11px 20px;border:1px solid var(--line);transition:all .3s}
+.otras-links a:hover{border-color:var(--ink);background:var(--ink);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 26px;font-weight:600;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;transition:all .35s var(--ease);border:1px solid transparent}
+.btn-ink{background:var(--ink);color:#fff}
+.btn-ink:hover{background:var(--accent)}
+.btn-line{border-color:var(--ink);color:var(--ink)}
+.btn-line:hover{background:var(--ink);color:#fff}
+.modal{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:clamp(12px,3vw,40px);background:rgba(10,8,12,.55);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .4s}
+.modal.open{opacity:1;pointer-events:auto}
+.modal-panel{background:var(--paper);width:min(980px,100%);max-height:90vh;overflow:auto;display:grid;grid-template-columns:1.05fr .95fr;position:relative;transform:translateY(26px);transition:transform .5s var(--ease);box-shadow:0 40px 90px -20px rgba(10,8,12,.5)}
+.modal.open .modal-panel{transform:none}
+.modal-close{position:absolute;top:14px;right:14px;z-index:3;width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;font-size:1.5rem;line-height:1;display:grid;place-items:center;transition:background .3s,transform .3s}
+.modal-close:hover{background:var(--accent);transform:rotate(90deg)}
+.modal-content{padding:clamp(28px,4vw,54px);display:flex;flex-direction:column;gap:16px;justify-content:center}
+.label{display:flex;align-items:center;gap:12px;font-size:.74rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--accent)}
+.label::before{content:"";width:38px;height:1px;background:currentColor}
+.modal-content h3{font-family:var(--font-display);font-weight:400;font-size:clamp(1.9rem,3.4vw,2.8rem);letter-spacing:-.02em;line-height:1.1}
+.modal-content p{color:var(--ink-70);font-size:.99rem}
+.modal-ctas{margin-top:10px;padding-top:20px;border-top:1px solid var(--line)}
+.modal-cta-label{display:block;font-size:.74rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-45);margin-bottom:12px}
+.modal-cta-row{display:flex;gap:10px;flex-wrap:wrap}
+.modal-cta-row .btn{padding:12px 20px;font-size:.74rem}
+.modal-img{min-height:340px;position:relative}
+.modal-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.modal-img-fallback{background-size:cover;background-position:center;filter:saturate(.85)}
+footer{background:var(--ink);color:rgba(255,255,255,.65);padding:34px clamp(20px,4.5vw,64px);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.85rem}
+footer a{color:#fff;transition:color .3s}
+footer a:hover{color:var(--accent)}
+.wa-float{position:fixed;bottom:26px;right:26px;z-index:150}
+.wa-btn{width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 12px 30px -8px rgba(37,211,102,.55);transition:transform .35s var(--ease)}
+.wa-btn:hover{transform:scale(1.08)}
+.wa-btn svg{width:30px;height:30px;fill:#fff}
+.wa-menu{position:absolute;bottom:72px;right:0;width:290px;background:#fff;box-shadow:0 24px 60px -12px rgba(18,16,20,.3);border:1px solid var(--line);opacity:0;transform:translateY(12px);pointer-events:none;transition:all .4s var(--ease)}
+.wa-menu.open{opacity:1;transform:none;pointer-events:auto}
+.wa-sede{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);transition:background .25s}
+.wa-sede:last-child{border-bottom:none}
+.wa-sede:hover{background:var(--paper)}
+.wa-sede .pin{width:34px;height:34px;display:grid;place-items:center;color:#fff;font-size:.8rem;font-weight:600;flex-shrink:0;background:var(--accent)}
+.wa-sede b{display:block;font-size:.88rem}
+.wa-sede small{color:var(--ink-45);font-size:.74rem}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media (max-width:760px){
+  .modal-panel{grid-template-columns:1fr;max-height:92vh}
+  .modal-img{min-height:230px;order:-1}
+  .intro{grid-template-columns:1fr;gap:18px}
+  .hero{min-height:44vh}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" aria-label="En Avant — Inicio"><img class="logo-img" src="img/logo-en-avant.png" alt="En Avant"></a>
+  <a class="nav-back" href="index.html#disciplinas">&larr; Todas las disciplinas</a>
+</nav>
+
+<header class="hero">
+  <img src="img/danza.jpg" alt="Clases de Danza en En Avant">
+  <div class="hero-inner">
+    <span class="eyebrow">Disciplinas · En Avant</span>
+    <h1>Danza</h1>
+  </div>
+</header>
+
+<main>
+  <div class="intro reveal in">
+    <div class="count">07<small>Programas</small></div>
+    <p>Desde la técnica clásica certificada por el American Ballet Theatre hasta los ritmos urbanos y latinos: siete caminos para que el movimiento se convierta en tu lenguaje.</p>
+  </div>
+  <div class="prog-list">
+      <button class="prog" data-modal="m-ballet">
+        <span class="prog-n">01</span>
+        <span class="prog-body"><b>Ballet</b><small>Técnica de danza clásica que aporta concentración, atención y seguimiento de instrucciones. Además de aportar…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-danza-contemporanea">
+        <span class="prog-n">02</span>
+        <span class="prog-body"><b>Danza Contemporánea</b><small>Técnica que se basa en realizar un re-conocimiento del cuerpo desde las diferentes calidades de movimiento,…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-jazz">
+        <span class="prog-n">03</span>
+        <span class="prog-body"><b>Jazz</b><small>Estilo de danza que puede manejar como referente el show de Broadway. De líneas contundentes que se funden…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-latino">
+        <span class="prog-n">04</span>
+        <span class="prog-body"><b>Latino</b><small>Una clase en donde te divertirás y aprenderás de diferentes ritmos latinos como salsa, bachata, afro, dance…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-danza-arabe">
+        <span class="prog-n">05</span>
+        <span class="prog-body"><b>Danza Árabe</b><small>Una clase diseñada para coordinar, disociar y sobre todo aprender de nuevos movimientos. Se utilizan…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-hip-hop">
+        <span class="prog-n">06</span>
+        <span class="prog-body"><b>Hip Hop</b><small>Con música muy actual pero también que viaja en el tiempo, la danza urbana es una clase que te lleva a partir…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+      <button class="prog" data-modal="m-preparacion-fisica">
+        <span class="prog-n">07</span>
+        <span class="prog-body"><b>Preparación Física</b><small>Como complemento a las clases técnicas, ofrecemos el espacio de preparación física para potenciar la…</small></span>
+        <span class="prog-plus" aria-hidden="true"></span>
+      </button>
+  </div>
+  <div class="otras">
+    <a class="btn btn-ink" href="index.html#contacto">Inscríbete ahora</a>
+    <div class="otras-links">
+      <a href="musica.html">Música</a> <a href="artes.html">Artes</a> <a href="fitness.html">Fitness</a> <a href="babies.html">Babies</a>
+    </div>
+  </div>
+</main>
+
+  <div class="modal" id="m-ballet" role="dialog" aria-modal="true" aria-label="Ballet">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Ballet</h3>
+        <p>Técnica de danza clásica que aporta concentración, atención y seguimiento de instrucciones. Además de aportar al desarrollo personal desde el conocimiento de sí mismo, la disciplina y el retarse cada día a ser mejor. En esta área certificamos a nuestros estudiantes con el American Ballet Theatre ya que manejamos el mismo currículo que implementan en Nueva York.  Año a año, traemos un maestro examinador para que evalúe a nuestros bailarines y les otorgue un certificado que avala los procesos de cada nivel.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Ballet." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Ballet." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Ballet." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-ballet.jpg" alt="Clase de Ballet en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-danza-contemporanea" role="dialog" aria-modal="true" aria-label="Danza Contemporánea">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Danza Contemporánea</h3>
+        <p>Técnica que se basa en realizar un re-conocimiento del cuerpo desde las diferentes calidades de movimiento, buscando dominar alzadas, caídas al piso, trabajo de duetos entre otros. Domina la interpretación, la composición y la improvisación.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Contemporánea." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Contemporánea." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Contemporánea." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-danza-contemporanea.jpg" alt="Clase de Danza Contemporánea en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-jazz" role="dialog" aria-modal="true" aria-label="Jazz">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Jazz</h3>
+        <p>Estilo de danza que puede manejar como referente el show de Broadway. De líneas contundentes que se funden con la música para crear una técnica exigente, dinámica y con muchas calidades de movimiento.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Jazz." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Jazz." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Jazz." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-jazz.jpg" alt="Clase de Jazz en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-latino" role="dialog" aria-modal="true" aria-label="Latino">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Latino</h3>
+        <p>Una clase en donde te divertirás y aprenderás de diferentes ritmos latinos como salsa, bachata, afro, dance hall, champeta, entre otros. El objetivo es que realmente se aprendan varios estilos con un fin coreográfico.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Latino." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Latino." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Latino." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-latino.jpg" alt="Clase de Latino en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-danza-arabe" role="dialog" aria-modal="true" aria-label="Danza Árabe">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Danza Árabe</h3>
+        <p>Una clase diseñada para coordinar, disociar y sobre todo aprender de nuevos movimientos. Se utilizan elementos como abanicos, velos, entre otros, para ir guiando el movimiento y la música propia de este estilo.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Árabe." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Árabe." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Danza%20Árabe." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-danza-arabe.jpg" alt="Clase de Danza Árabe en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-hip-hop" role="dialog" aria-modal="true" aria-label="Hip Hop">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Hip Hop</h3>
+        <p>Con música muy actual pero también que viaja en el tiempo, la danza urbana es una clase que te lleva a partir de fraseos coreográficos a conocer sus diferentes estilos. Mucho ritmo, disociación y coordinación hacen parte de ésta clase.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Hip%20Hop." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Hip%20Hop." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Hip%20Hop." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img"><img src="img/prog-hip-hop.jpg" alt="Clase de Hip Hop en En Avant" loading="lazy"></div>
+    </div>
+  </div>
+  <div class="modal" id="m-preparacion-fisica" role="dialog" aria-modal="true" aria-label="Preparación Física">
+    <div class="modal-panel">
+      <button class="modal-close" aria-label="Cerrar">&times;</button>
+      <div class="modal-content">
+        <span class="label">Danza</span>
+        <h3>Preparación Física</h3>
+        <p>Como complemento a las clases técnicas, ofrecemos el espacio de preparación física para potenciar la flexibilidad, resistencia, elasticidad, fuerza, entre otros conceptos necesarios para el desarrollo de un bailarín. Una clase exigente que llevará al máximo el potencial físico.</p>
+        <div class="modal-ctas">
+          <span class="modal-cta-label">Agenda tu clase de cortesía:</span>
+          <div class="modal-cta-row">
+            <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Preparación%20Física." target="_blank" rel="noopener">Mazurén</a>
+            <a class="btn btn-line" href="https://wa.me/573114929959?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Preparación%20Física." target="_blank" rel="noopener">Salitre</a>
+            <a class="btn btn-line" href="https://wa.me/573219216471?text=%C2%A1Hola%20En%20Avant!%20Quiero%20agendar%20una%20clase%20de%20cortes%C3%ADa%20de%20Preparación%20Física." target="_blank" rel="noopener">Chía</a>
+          </div>
+        </div>
+      </div>
+      <div class="modal-img modal-img-fallback" style="background-image:url('img/danza.jpg')"></div>
+    </div>
+  </div>
+
+<footer>
+  <span>&copy; <span id="year"></span> En Avant — Escuela de Danza, Música y Arte</span>
+  <a href="index.html">Volver al inicio &uarr;</a>
+</footer>
+
+
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+document.querySelectorAll('.prog').forEach(btn => btn.addEventListener('click', () => {
+  document.getElementById(btn.dataset.modal).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}));
+function closeModal(m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+document.querySelectorAll('.modal').forEach(m => {
+  m.querySelector('.modal-close').addEventListener('click', () => closeModal(m));
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal.open').forEach(closeModal);
+});
+</script>
+<script src="wa-widget.js"></script>
+</body>
+</html>

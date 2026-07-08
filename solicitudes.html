@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitudes (PQRS) | En Avant — Escuela de Danza, Música y Arte</title>
+<meta name="robots" content="noindex"><!-- QUITAR noindex AL CONECTAR EL DOMINIO -->
+<meta name="description" content="Envía tus Peticiones, Quejas, Reclamos, Sugerencias o Felicitaciones a En Avant. Cada mensaje es atendido con respeto y confidencialidad, con respuesta en máximo 3 días hábiles.">
+<link rel="icon" href="img/logo-en-avant.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.45);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--wa:#25D366;--ok:#4E9A23;--err:#C0322B;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.icon{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4.5vw,64px);background:rgba(250,249,247,.92);backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--line)}
+nav .logo-img{height:42px;width:auto}
+.nav-back{font-size:.84rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-70);display:inline-flex;align-items:center;gap:8px;transition:color .3s}
+.nav-back:hover{color:var(--accent)}
+.hero{margin-top:68px;position:relative;min-height:40vh;display:flex;align-items:flex-end;background:var(--ink);overflow:hidden}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,8,12,.85),rgba(10,8,12,.3) 60%)}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1140px;margin:0 auto;padding:70px clamp(20px,4.5vw,64px) 46px;color:#fff}
+.eyebrow{display:flex;align-items:center;gap:14px;font-size:.76rem;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+.eyebrow::before{content:"";width:44px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;font-size:clamp(2.4rem,6vw,4.2rem);line-height:1.06;margin-top:14px}
+.hero h1 em{font-style:italic}
+main{max-width:1140px;margin:0 auto;padding:clamp(48px,6vw,84px) clamp(20px,4.5vw,64px)}
+.grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(40px,6vw,84px);align-items:start}
+.intro{position:sticky;top:100px}
+.intro .lead{font-family:var(--font-display);font-style:italic;font-weight:340;font-size:clamp(1.15rem,1.8vw,1.4rem);line-height:1.5;border-left:2px solid var(--accent);padding-left:22px;margin-bottom:26px}
+.intro p{color:var(--ink-70);margin-bottom:14px}
+.promesas{margin-top:30px;display:grid;gap:2px}
+.promesa{display:flex;gap:16px;align-items:flex-start;padding:18px 0;border-top:1px solid var(--line)}
+.promesa:last-child{border-bottom:1px solid var(--line)}
+.promesa .icon{margin-top:2px;color:var(--accent)}
+.promesa b{display:block;font-size:.96rem}
+.promesa small{color:var(--ink-45);font-size:.86rem}
+.form-card{background:#fff;border:1px solid var(--line);padding:clamp(26px,3.4vw,48px);box-shadow:0 24px 60px -30px rgba(18,16,20,.25)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-45)}
+.field label .req{color:var(--accent)}
+.field input,.field select,.field textarea{font-family:inherit;font-size:.98rem;color:var(--ink);background:transparent;padding:13px 2px;border:none;border-bottom:1px solid var(--line);border-radius:0;transition:border-color .3s;appearance:none;-webkit-appearance:none;width:100%}
+.field select{background-image:url("data:image/svg+xml,%3Csvg width='11' height='7' viewBox='0 0 11 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23121014' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;cursor:pointer}
+.field textarea{resize:vertical;min-height:110px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-bottom-color:var(--accent)}
+.filewrap{grid-column:1/-1;margin-top:4px}
+.filewrap label{font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-45);display:block;margin-bottom:10px}
+.filebox{display:flex;align-items:center;gap:14px;border:1px dashed var(--line);padding:16px 18px;transition:border-color .3s,background .3s;cursor:pointer}
+.filebox:hover{border-color:var(--accent);background:var(--accent-soft)}
+.filebox .icon{color:var(--accent)}
+.filebox span{font-size:.9rem;color:var(--ink-70)}
+.filebox small{display:block;color:var(--ink-45);font-size:.78rem}
+.filebox input[type=file]{display:none}
+.filename{font-size:.86rem;color:var(--accent);margin-top:8px;font-weight:600}
+.consent{grid-column:1/-1;display:flex;gap:12px;align-items:flex-start;margin-top:8px;cursor:pointer}
+.consent input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex-shrink:0}
+.consent span{font-size:.86rem;color:var(--ink-70)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 30px;font-weight:600;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;transition:all .35s var(--ease);border:1px solid transparent}
+.btn-ink{background:var(--ink);color:#fff;width:100%;margin-top:26px}
+.btn-ink:hover{background:var(--accent)}
+.btn-ink:disabled{opacity:.55;cursor:not-allowed}
+.form-msg{margin-top:18px;padding:16px 18px;font-size:.92rem;display:none}
+.form-msg.show{display:block}
+.form-msg.ok{background:rgba(78,154,35,.1);color:var(--ok);border-left:3px solid var(--ok)}
+.form-msg.err{background:rgba(192,50,43,.08);color:var(--err);border-left:3px solid var(--err)}
+.thanks{display:none;text-align:center;padding:clamp(30px,5vw,60px) 20px}
+.thanks.show{display:block}
+.thanks .mark{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 22px}
+.thanks h3{font-family:var(--font-display);font-weight:400;font-size:clamp(1.7rem,3vw,2.3rem);margin-bottom:12px}
+.thanks p{color:var(--ink-70);max-width:44ch;margin:0 auto 24px}
+footer{background:var(--ink);color:rgba(255,255,255,.65);padding:34px clamp(20px,4.5vw,64px);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.85rem}
+footer a{color:#fff;transition:color .3s}
+footer a:hover{color:var(--accent)}
+.wa-float{position:fixed;bottom:26px;right:26px;z-index:150}
+.wa-btn{width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 12px 30px -8px rgba(37,211,102,.55);transition:transform .35s var(--ease)}
+.wa-btn:hover{transform:scale(1.08)}
+.wa-btn svg{width:30px;height:30px;fill:#fff}
+.wa-menu{position:absolute;bottom:72px;right:0;width:290px;background:#fff;box-shadow:0 24px 60px -12px rgba(18,16,20,.3);border:1px solid var(--line);opacity:0;transform:translateY(12px);pointer-events:none;transition:all .4s var(--ease)}
+.wa-menu.open{opacity:1;transform:none;pointer-events:auto}
+.wa-sede{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);transition:background .25s}
+.wa-sede:last-child{border-bottom:none}
+.wa-sede:hover{background:var(--paper)}
+.wa-sede .pin{width:34px;height:34px;display:grid;place-items:center;color:#fff;font-size:.8rem;font-weight:600;flex-shrink:0;background:var(--accent)}
+.wa-sede b{display:block;font-size:.88rem}
+.wa-sede small{color:var(--ink-45);font-size:.74rem}
+@media (max-width:820px){
+  .grid{grid-template-columns:1fr;gap:44px}
+  .intro{position:static}
+  .form-grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" aria-label="En Avant — Inicio"><img class="logo-img" src="img/logo-en-avant.png" alt="En Avant"></a>
+  <a class="nav-back" href="index.html">&larr; Volver al inicio</a>
+</nav>
+
+<header class="hero">
+  <img src="img/academia-en-avant.jpg" alt="En Avant — Escuela de Danza, Música y Arte">
+  <div class="hero-inner">
+    <span class="eyebrow">Solicitudes · PQRS</span>
+    <h1>Valoramos tu <em>opinión</em></h1>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="intro">
+      <p class="lead">Este espacio ha sido creado para escucharte.</p>
+      <p>A través de este formulario puedes enviar tus <strong>Peticiones, Quejas, Reclamos, Sugerencias o Felicitaciones</strong>.</p>
+      <p>Cada mensaje es importante para nosotros y será atendido con respeto, confidencialidad y compromiso.</p>
+      <div class="promesas">
+        <div class="promesa">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div><b>Respuesta en máximo 3 días hábiles</b><small>Nuestro equipo revisará tu solicitud a la mayor brevedad.</small></div>
+        </div>
+        <div class="promesa">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div><b>Respeto y confidencialidad</b><small>Tratamos tu información con cuidado y reserva.</small></div>
+        </div>
+        <div class="promesa">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div><b>Cada mensaje cuenta</b><small>Tu voz nos ayuda a mejorar día a día.</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <form class="form-card" id="pqrsForm" action="https://formsubmit.co/pqrs@enavantescuela.com" method="POST" enctype="multipart/form-data">
+        <!-- ============================================================
+             Envío vía FormSubmit.co (gratis, permite adjuntar archivos).
+             El correo destino está en el "action" de arriba.
+             Para enviar a un Grupo de Google, cambia ese correo por la
+             dirección del grupo (…@googlegroups.com) y actívalo una vez.
+             ============================================================ -->
+        <input type="hidden" name="_subject" value="Nueva PQRS desde el sitio web — En Avant">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="https://juanda-js.github.io/enavant-web/solicitudes.html?enviado=1">
+        <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="form-grid">
+          <div class="field"><label for="f-nombre">Nombre <span class="req">*</span></label><input id="f-nombre" name="Nombre" type="text" placeholder="Tu nombre" required></div>
+          <div class="field"><label for="f-apellido">Apellido <span class="req">*</span></label><input id="f-apellido" name="Apellido" type="text" placeholder="Tu apellido" required></div>
+          <div class="field"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required></div>
+          <div class="field"><label for="f-tel">Teléfono <span class="req">*</span></label><input id="f-tel" name="Teléfono" type="tel" placeholder="(57) 300 000 0000" required></div>
+          <div class="field"><label for="f-sede">Sede <span class="req">*</span></label>
+            <select id="f-sede" name="Sede" required>
+              <option value="" disabled selected>Elige la sede</option>
+              <option>Mazurén (Bogotá)</option>
+              <option>Salitre (Bogotá)</option>
+              <option>Chía</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-tipo">Tipo de solicitud <span class="req">*</span></label>
+            <select id="f-tipo" name="Tipo de solicitud" required>
+              <option value="" disabled selected>Elige una opción</option>
+              <option>Petición</option>
+              <option>Queja</option>
+              <option>Reclamo</option>
+              <option>Sugerencia</option>
+              <option>Felicitación</option>
+            </select>
+          </div>
+          <div class="field full"><label for="f-msg">Mensaje <span class="req">*</span></label><textarea id="f-msg" name="Mensaje" placeholder="Cuéntanos con detalle tu petición, queja, reclamo, sugerencia o felicitación…" required></textarea></div>
+
+          <div class="filewrap">
+            <label>Adjuntar archivo (opcional)</label>
+            <label class="filebox" for="f-file">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+              <div><span id="fileText">Selecciona un archivo compatible</span><small>Máximo 10 MB · PDF, imagen o documento</small></div>
+              <input id="f-file" name="attachment" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.txt">
+            </label>
+            <div class="filename" id="fileName"></div>
+          </div>
+
+          <label class="consent">
+            <input type="checkbox" name="Autorización de datos" value="Sí, autorizo" required>
+            <span>Autorizo el tratamiento de mis datos personales según la política de protección de datos de En Avant. <span class="req" style="color:var(--accent)">*</span></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-ink" id="submitBtn">Enviar solicitud
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+
+      <div class="form-card thanks" id="thanks">
+        <div class="mark">
+          <svg class="icon" width="30" height="30" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3>¡Gracias por tu mensaje!</h3>
+        <p>Hemos recibido tu solicitud. Nuestro equipo la revisará y te dará respuesta en un máximo de 3 días hábiles.</p>
+        <button class="btn btn-ink" style="width:auto;margin:0" onclick="location.reload()">Enviar otra solicitud</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>&copy; <span id="year"></span> En Avant — Escuela de Danza, Música y Arte</span>
+  <a href="index.html">Volver al inicio &uarr;</a>
+</footer>
+
+
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* Nombre del archivo + validación de tamaño (15 MB) */
+const fileInput = document.getElementById('f-file');
+const fileName = document.getElementById('fileName');
+const fileText = document.getElementById('fileText');
+const MAX = 10 * 1024 * 1024;
+fileInput.addEventListener('change', () => {
+  const f = fileInput.files[0];
+  if (!f) { fileName.textContent = ''; fileText.textContent = 'Selecciona un archivo compatible'; return; }
+  if (f.size > MAX) {
+    fileInput.value = '';
+    fileName.textContent = '';
+    fileText.textContent = 'El archivo supera los 10 MB. Elige uno más liviano.';
+    return;
+  }
+  fileText.textContent = 'Archivo adjunto:';
+  fileName.textContent = f.name;
+});
+
+/* Envío del formulario vía FormSubmit.co (POST directo para permitir archivos) */
+const form = document.getElementById('pqrsForm');
+const btn = document.getElementById('submitBtn');
+const thanks = document.getElementById('thanks');
+
+/* Al volver de FormSubmit con ?enviado=1, mostramos el agradecimiento */
+if (new URLSearchParams(location.search).get('enviado') === '1') {
+  form.style.display = 'none';
+  thanks.classList.add('show');
+  history.replaceState(null, '', location.pathname);
+}
+
+/* Estado de "Enviando…" mientras se procesa (el navegador redirige a FormSubmit) */
+form.addEventListener('submit', () => {
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+});
+</script>
+<script src="wa-widget.js"></script>
+</body>
+</html>
