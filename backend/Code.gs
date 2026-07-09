@@ -150,7 +150,10 @@ function confirmar(b) {
     }
   }
   if (!boletas.length) return { ok: false, error: 'Orden no encontrada' };
-  return { ok: true, boletas: boletas };
+  // Enviar las boletas por correo automáticamente (si falla, la compra igual queda registrada)
+  var aviso = '';
+  try { enviarBoletas(b.orden); } catch (err) { aviso = 'La compra quedó registrada, pero no pudimos enviar el correo: ' + err.message; }
+  return { ok: true, boletas: boletas, aviso: aviso };
 }
 
 // Valida y marca el ingreso de una boleta (para la app de escaneo, Fase 4).
@@ -166,6 +169,65 @@ function validar(b) {
     }
   }
   return { ok: false, mensaje: 'Boleta no encontrada' };
+}
+
+/* ---------- 4. Reenviar boletas (uso interno desde la hoja) ---------- */
+// Menú propio en la hoja: "En Avant" → "Reenviar boletas de la fila seleccionada"
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('En Avant')
+    .addItem('Reenviar boletas (selecciona una fila en Ordenes)', 'reenviarSeleccion')
+    .addItem('Reenviar boletas por número de orden…', 'reenviarPorOrden')
+    .addToUi();
+}
+function reenviarSeleccion() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getActiveSheet();
+  if (sh.getName() !== 'Ordenes') { SpreadsheetApp.getUi().alert('Abre la pestaña "Ordenes" y selecciona la fila de la compra.'); return; }
+  var fila = sh.getActiveRange().getRow();
+  if (fila < 2) { SpreadsheetApp.getUi().alert('Selecciona la fila de una compra.'); return; }
+  var orden = sh.getRange(fila, 1).getValue();
+  SpreadsheetApp.getUi().alert(enviarBoletas(orden));
+}
+function reenviarPorOrden() {
+  var ui = SpreadsheetApp.getUi();
+  var r = ui.prompt('Reenviar boletas', 'Escribe el número de orden (ej. EAV-251206-A1B2):', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  ui.alert(enviarBoletas(r.getResponseText().trim()));
+}
+
+// Envía (o reenvía) por correo las boletas de una orden pagada. Devuelve un mensaje.
+function enviarBoletas(orden) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ord = null;
+  tabla(ss, 'Ordenes').forEach(function (o) { if (String(o.orden_id) === String(orden)) ord = o; });
+  if (!ord) return 'No encontré la orden ' + orden;
+  if (String(ord.estado) !== 'pagada') return 'La orden ' + orden + ' aún no está pagada.';
+
+  var ev = null;
+  tabla(ss, 'Eventos').forEach(function (e) { if (String(e.id) === String(ord.evento_id)) ev = e; });
+  var tz = ss.getSpreadsheetTimeZone();
+  var boletas = tabla(ss, 'Boletas').filter(function (b) { return String(b.orden_id) === String(orden); });
+  if (!boletas.length) return 'La orden ' + orden + ' no tiene boletas.';
+
+  var html = '<div style="font-family:Arial,sans-serif;max-width:600px">' +
+    '<h2 style="color:#A40FC4;margin:0 0 4px">En Avant</h2>' +
+    '<p>Hola <b>' + ord.cliente + '</b>, estas son tus boletas para <b>' + (ev ? ev.nombre : ord.evento_id) + '</b>' +
+    (ev ? ' · ' + textoFecha(ev.fecha, tz) + ' · ' + textoHora(ev.hora, tz) + ' · ' + ev.lugar : '') + '.</p>' +
+    '<p>Presenta el código QR en la entrada (impreso o desde el celular).</p>';
+  boletas.forEach(function (b) {
+    var qr = 'https://api.qrserver.com/v1/create-qr-code/?size=190x190&margin=0&data=' + encodeURIComponent(b.token);
+    html += '<table style="border:1px solid #ddd;border-collapse:collapse;margin:14px 0;width:100%"><tr>' +
+      '<td style="background:#121014;padding:14px;text-align:center;width:150px">' +
+      '<img src="' + qr + '" width="120" height="120" style="background:#fff;padding:6px;border-radius:6px"><br>' +
+      '<span style="color:#fff;font-size:10px;letter-spacing:1px">' + b.boleta_id + '</span></td>' +
+      '<td style="padding:14px">' +
+      '<b>Silla ' + b.silla + '</b> · ' + b.zona + '<br>' +
+      'Estudiante: ' + b.estudiante + '<br>' +
+      'Estado: ' + b.estado + '</td></tr></table>';
+  });
+  html += '<p style="color:#888;font-size:12px">Orden ' + orden + ' · En Avant — Escuela de Danza, Música y Arte</p></div>';
+
+  MailApp.sendEmail({ to: ord.correo, subject: 'Tus boletas — ' + (ev ? ev.nombre : 'En Avant'), htmlBody: html });
+  return 'Boletas de ' + orden + ' enviadas a ' + ord.correo;
 }
 
 /* ---------- Utilidades ---------- */
