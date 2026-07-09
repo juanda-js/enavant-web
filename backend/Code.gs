@@ -57,17 +57,37 @@ function doGet(e) {
 
 function getEventos() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tz = ss.getSpreadsheetTimeZone();
   var ev = tabla(ss, 'Eventos');
   var zn = tabla(ss, 'Zonas');
-  return ev.filter(function (r) { return r.activo === true || String(r.activo).toLowerCase() === 'true'; })
+  return ev.filter(esActivo)
     .map(function (r) {
       return {
-        id: r.id, nombre: r.nombre, fecha: r.fecha, hora: r.hora, lugar: r.lugar, imagen: r.imagen,
+        id: r.id, nombre: r.nombre,
+        fecha: textoFecha(r.fecha, tz),
+        hora: textoHora(r.hora, tz),
+        lugar: r.lugar, imagen: r.imagen,
         zonas: zn.filter(function (z) { return String(z.evento_id) === String(r.id); })
           .map(function (z) { return { zona: z.zona, filas: z.filas, columnas: Number(z.columnas), precio: Number(z.precio) }; })
       };
     });
 }
+
+// "activo" puede llegar como true, "TRUE", "VERDADERO", "sí", 1...
+function esActivo(r) {
+  var v = String(r.activo).trim().toLowerCase();
+  return r.activo === true || v === 'true' || v === 'verdadero' || v === 'si' || v === 'sí' || v === '1';
+}
+// Sheets convierte "4:00 p.m." en fecha interna; lo devolvemos como texto legible.
+function textoHora(v, tz) {
+  if (esFecha(v)) return Utilities.formatDate(v, tz, 'h:mm a').replace('AM', 'a. m.').replace('PM', 'p. m.');
+  return v;
+}
+function textoFecha(v, tz) {
+  if (esFecha(v)) return Utilities.formatDate(v, tz, 'd/MM/yyyy');
+  return v;
+}
+function esFecha(v) { return Object.prototype.toString.call(v) === '[object Date]'; }
 
 function getOcupadas(evento) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -117,13 +137,20 @@ function reservar(b) {
   } finally { lock.releaseLock(); }
 }
 
-// Marca la orden como pagada (en la Fase 2 lo dispara el webhook de Wompi).
+// Marca la orden como pagada y devuelve las boletas emitidas (con su token para el QR).
+// En la Fase 2 esto lo disparará el webhook de Wompi al aprobarse el pago.
 function confirmar(b) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   marcar(ss, 'Ordenes', 'orden_id', b.orden, function (sh, row) { sh.getRange(row, 10).setValue('pagada'); if (b.ref) sh.getRange(row, 11).setValue(b.ref); });
-  var bsh = ss.getSheetByName('Boletas'), vals = bsh.getDataRange().getValues();
-  for (var i = 1; i < vals.length; i++) { if (vals[i][1] === b.orden && vals[i][7] === 'reservada') bsh.getRange(i + 1, 8).setValue('pagada'); }
-  return { ok: true };
+  var bsh = ss.getSheetByName('Boletas'), vals = bsh.getDataRange().getValues(), boletas = [];
+  for (var i = 1; i < vals.length; i++) {
+    if (vals[i][1] === b.orden) {
+      if (vals[i][7] === 'reservada') bsh.getRange(i + 1, 8).setValue('pagada');
+      boletas.push({ id: vals[i][0], silla: vals[i][3], zona: vals[i][4], precio: Number(vals[i][5]), estudiante: vals[i][6], token: vals[i][8] });
+    }
+  }
+  if (!boletas.length) return { ok: false, error: 'Orden no encontrada' };
+  return { ok: true, boletas: boletas };
 }
 
 // Valida y marca el ingreso de una boleta (para la app de escaneo, Fase 4).

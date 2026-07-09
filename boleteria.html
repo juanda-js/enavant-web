@@ -131,7 +131,7 @@ footer a{color:#fff}
   <a href="index.html" aria-label="En Avant — Inicio"><img class="logo-img" src="img/logo-en-avant.png" alt="En Avant"></a>
   <a class="nav-back" href="index.html">← Inicio</a>
 </nav>
-<div class="demo-banner">🎭 <b>PROTOTIPO</b> — así se verá la compra de boletas. El pago y el envío de la boleta aún son de demostración.</div>
+<div class="demo-banner"><b>FASE 1 ACTIVA</b> — eventos, sillas y órdenes se guardan de verdad en la hoja de En Avant. Falta conectar el pago real (Wompi) y el envío por correo.</div>
 
 <main>
   <!-- STEPPER -->
@@ -205,7 +205,7 @@ footer a{color:#fff}
     <h2 class="sec">Pago</h2>
     <p class="sub">Revisa tu compra y realiza el pago de forma segura.</p>
     <div class="form-wrap">
-      <div class="pay-note"><b>Demostración:</b> en la versión final, este botón abrirá el pago real de <b>Wompi</b> (tarjeta, PSE, Nequi) y el dinero llegará directo a la cuenta de En Avant. Aquí simulamos un pago aprobado.</div>
+      <div class="pay-note"><b>Tus sillas ya están apartadas</b> (20 minutos). En la Fase 2 este botón abrirá el pago real de <b>Wompi</b> (tarjeta, PSE, Nequi) y el dinero llegará directo a la cuenta de En Avant. Por ahora, al pulsarlo confirmamos la orden y se emiten las boletas.</div>
       <div class="resumen" id="resumenPago"></div>
       <button class="btn btn-ink" style="width:auto;padding:16px 40px" id="payBtn" onclick="pagar()">
         <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
@@ -234,81 +234,90 @@ footer a{color:#fff}
 <script>
 document.getElementById('year').textContent=new Date().getFullYear();
 
-/* ===== Datos DEMO de eventos (en la versión real vienen de la base de datos) ===== */
-var EVENTS = [
-  {id:'reyleon', nombre:'El Rey León — Gala de fin de año', fecha:'Sábado 6 de diciembre, 2025', hora:'4:00 p.m.', lugar:'Teatro Montessori, Bogotá', img:'img/temporadas/el-rey-leon-2025-00.jpg'},
-  {id:'concierto', nombre:'Concierto de Música — Fin de año', fecha:'Domingo 7 de diciembre, 2025', hora:'11:00 a.m.', lugar:'Auditorio En Avant, Mazurén', img:'img/temporadas/rockola-2025-00.jpg'},
-  {id:'babies', nombre:'Muestra Babies & Estimulación', fecha:'Sábado 13 de diciembre, 2025', hora:'10:00 a.m.', lugar:'Sede Chía', img:'img/temporadas/a-la-plancha-2024-00.jpg'}
-];
-var PRECIO={platea:40000, balcon:30000};
-var pesos=function(n){return '$'+n.toLocaleString('es-CO');};
+/* ===== Conexión con la base de datos (Google Sheet vía Apps Script) ===== */
+var API='https://script.google.com/macros/s/AKfycbzxQtuagUbRwzr5EmxJrW20mzwnduak6FZXxmrrcutPFXj6PfU1lMS8HOI43lgIkcs/exec';
+function apiGet(params){ return fetch(API+'?'+params).then(function(r){return r.json();}); }
+function apiPost(body){
+  // text/plain evita el "preflight" CORS que Apps Script no maneja
+  return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json();});
+}
+// imágenes de portada por evento (opcional; si la hoja trae "imagen" se usa esa)
+var IMG_FALLBACK={reyleon:'img/temporadas/el-rey-leon-2025-00.jpg',concierto:'img/temporadas/rockola-2025-00.jpg',babies:'img/temporadas/a-la-plancha-2024-00.jpg'};
+var pesos=function(n){return '$'+Number(n).toLocaleString('es-CO');};
+var state={event:null, seats:[], datos:null, orden:null};
 
-var state={event:null, seats:[], datos:null};
-
-/* ----- Paso 1: pintar eventos ----- */
+/* ----- Paso 1: cargar eventos desde la hoja ----- */
 var elist=document.getElementById('eventList');
-EVENTS.forEach(function(ev){
-  var el=document.createElement('button');
-  el.className='event';
-  el.innerHTML='<div class="ph"><span class="tag">Fin de año</span><img src="'+ev.img+'" alt="'+ev.nombre+'" loading="lazy"></div>'+
-    '<div class="body"><h3>'+ev.nombre+'</h3><div class="meta">'+
-    '<span>📅 '+ev.fecha+'</span><span>🕐 '+ev.hora+'</span><span>📍 '+ev.lugar+'</span></div>'+
-    '<span class="go">Elegir sillas →</span></div>';
-  el.onclick=function(){ elegirEvento(ev); };
-  elist.appendChild(el);
-});
+function cargarEventos(){
+  elist.innerHTML='<p style="color:var(--ink-45)">Cargando eventos…</p>';
+  apiGet('action=eventos').then(function(res){
+    if(!res.ok||!res.eventos.length){ elist.innerHTML='<p style="color:var(--ink-45)">No hay eventos disponibles por ahora.</p>'; return; }
+    elist.innerHTML='';
+    res.eventos.forEach(function(ev){
+      ev.img=ev.imagen||IMG_FALLBACK[ev.id]||'img/temporadas/el-rey-leon-2025-00.jpg';
+      var el=document.createElement('button');
+      el.className='event';
+      el.innerHTML='<div class="ph"><span class="tag">Fin de año</span><img src="'+ev.img+'" alt="'+ev.nombre+'" loading="lazy"></div>'+
+        '<div class="body"><h3>'+ev.nombre+'</h3><div class="meta">'+
+        '<span>📅 '+ev.fecha+'</span><span>🕐 '+ev.hora+'</span><span>📍 '+ev.lugar+'</span></div>'+
+        '<span class="go">Elegir sillas →</span></div>';
+      el.onclick=function(){ elegirEvento(ev); };
+      elist.appendChild(el);
+    });
+  }).catch(function(){ elist.innerHTML='<p style="color:#C0322B">No pudimos cargar los eventos. Revisa tu conexión e intenta de nuevo.</p>'; });
+}
+cargarEventos();
 
 function elegirEvento(ev){
   state.event=ev; state.seats=[];
   document.getElementById('seatEvName').textContent=ev.nombre;
   document.getElementById('seatEvMeta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
   document.getElementById('cartEvName').textContent=ev.nombre;
-  buildSeatMap(ev);
-  renderCart();
-  goStep(2);
+  document.getElementById('seatMap').innerHTML='<p style="text-align:center;color:var(--ink-45);padding:40px">Cargando mapa de sillas…</p>';
+  renderCart(); goStep(2);
+  // consultar sillas ocupadas reales
+  apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id)).then(function(res){
+    buildSeatMap(ev, res.ok?res.ocupadas:[]);
+  }).catch(function(){ buildSeatMap(ev, []); });
 }
 
-/* ----- Paso 2: mapa de sillas ----- */
-// ocupadas simuladas y persistentes por evento (demo con localStorage)
-function occKey(evid){return 'eav_occ_'+evid;}
-function getOcc(evid){ try{return JSON.parse(localStorage.getItem(occKey(evid))||'null')||seedOcc(evid);}catch(e){return seedOcc(evid);} }
-function seedOcc(evid){
-  var o={}, rows='ABCDEFGHIJ'.split(''); // platea
-  // sembrar ~18% ocupadas de forma pseudo-aleatoria estable
-  var seedn=0; for(var i=0;i<evid.length;i++) seedn+=evid.charCodeAt(i);
-  rows.concat('KLMN'.split('')).forEach(function(r,ri){
-    var cols=(ri<10?14:16);
-    for(var c=1;c<=cols;c++){ seedn=(seedn*9301+49297)%233280; if(seedn/233280<0.18) o[r+c]=1; }
-  });
-  localStorage.setItem(occKey(evid),JSON.stringify(o));
-  return o;
+/* ----- Paso 2: mapa de sillas (zonas desde la hoja, ocupadas desde el backend) ----- */
+// "A-J" -> ['A','B',...,'J']  |  "A,B,C" -> ['A','B','C']
+function expandirFilas(txt){
+  txt=String(txt||'').trim();
+  if(txt.indexOf(',')>=0) return txt.split(',').map(function(s){return s.trim();}).filter(Boolean);
+  var m=txt.match(/^([A-Z])\s*-\s*([A-Z])$/i);
+  if(m){ var out=[],a=m[1].toUpperCase().charCodeAt(0),b=m[2].toUpperCase().charCodeAt(0); for(var i=a;i<=b;i++) out.push(String.fromCharCode(i)); return out; }
+  return txt?[txt]:[];
 }
-function buildSeatMap(ev){
-  var occ=getOcc(ev.id), map=document.getElementById('seatMap'); map.innerHTML='';
-  function zone(title, rows, cols, zclass){
-    var lbl=document.createElement('div'); lbl.className='zone-label'; lbl.textContent=title; map.appendChild(lbl);
+function buildSeatMap(ev, ocupadas){
+  var occ={}; (ocupadas||[]).forEach(function(s){ occ[s]=1; });
+  var map=document.getElementById('seatMap'); map.innerHTML='';
+  (ev.zonas||[]).forEach(function(z, zi){
+    var filas=expandirFilas(z.filas), zclass=(zi===0?'zoneA':'zoneB');
+    var lbl=document.createElement('div'); lbl.className='zone-label';
+    lbl.textContent=z.zona+' · '+pesos(z.precio); map.appendChild(lbl);
     var grid=document.createElement('div'); grid.className='seatgrid';
-    rows.forEach(function(r){
+    filas.forEach(function(r){
       var row=document.createElement('div'); row.className='seatrow';
       row.innerHTML='<span class="rowlabel">'+r+'</span>';
-      for(var c=1;c<=cols;c++){
+      for(var c=1;c<=z.columnas;c++){
         var id=r+c, b=document.createElement('button');
-        b.className='seat '+zclass+(occ[id]?' occ':''); b.textContent=c; b.dataset.id=id; b.dataset.zone=(zclass==='zoneA'?'platea':'balcon');
+        b.className='seat '+zclass+(occ[id]?' occ':'');
+        b.textContent=c; b.dataset.id=id; b.dataset.zone=z.zona; b.dataset.precio=z.precio;
         if(!occ[id]) b.onclick=function(){ toggleSeat(this); };
         row.appendChild(b);
       }
       grid.appendChild(row);
     });
     map.appendChild(grid);
-  }
-  zone('Platea · $40.000','ABCDEFGHIJ'.split(''),14,'zoneA');
-  zone('Balcón · $30.000','KLMN'.split(''),16,'zoneB');
+  });
 }
 function toggleSeat(btn){
-  var id=btn.dataset.id, zone=btn.dataset.zone;
+  var id=btn.dataset.id, zone=btn.dataset.zone, precio=Number(btn.dataset.precio);
   var i=state.seats.findIndex(function(s){return s.id===id;});
   if(i>=0){ state.seats.splice(i,1); btn.classList.remove('sel'); }
-  else { if(state.seats.length>=10){ alert('Máximo 10 sillas por compra.'); return; } state.seats.push({id:id,zone:zone,precio:PRECIO[zone]}); btn.classList.add('sel'); }
+  else { if(state.seats.length>=10){ alert('Máximo 10 sillas por compra.'); return; } state.seats.push({id:id,zona:zone,precio:precio}); btn.classList.add('sel'); }
   renderCart();
 }
 function renderCart(){
@@ -318,7 +327,7 @@ function renderCart(){
   state.seats.forEach(function(s){
     total+=s.precio;
     var it=document.createElement('div'); it.className='cart-item';
-    it.innerHTML='<span><b>Silla '+s.id+'</b> · '+(s.zone==='platea'?'Platea':'Balcón')+'<br><small style="color:var(--ink-45)">'+pesos(s.precio)+'</small></span>';
+    it.innerHTML='<span><b>Silla '+s.id+'</b> · '+s.zona+'<br><small style="color:var(--ink-45)">'+pesos(s.precio)+'</small></span>';
     var rm=document.createElement('button'); rm.className='rm'; rm.innerHTML='×';
     rm.onclick=function(){ var b=document.querySelector('.seat[data-id="'+s.id+'"]'); if(b)b.classList.remove('sel'); state.seats=state.seats.filter(function(x){return x.id!==s.id;}); renderCart(); };
     it.appendChild(rm); box.appendChild(it);
@@ -331,47 +340,62 @@ function totalCompra(){ return state.seats.reduce(function(a,s){return a+s.preci
 /* ----- Paso 3: datos + resumen ----- */
 function pintarResumen(el){
   var t=totalCompra();
-  var rows=state.seats.map(function(s){return '<div class="resumen-row"><span>Silla '+s.id+' · '+(s.zone==='platea'?'Platea':'Balcón')+'</span><span>'+pesos(s.precio)+'</span></div>';}).join('');
+  var rows=state.seats.map(function(s){return '<div class="resumen-row"><span>Silla '+s.id+' · '+s.zona+'</span><span>'+pesos(s.precio)+'</span></div>';}).join('');
   el.innerHTML='<div class="resumen-row" style="color:var(--ink);font-weight:600"><span>'+state.event.nombre+'</span><span></span></div>'+rows+
     '<div class="resumen-row tot"><span>Total ('+state.seats.length+' boleta'+(state.seats.length>1?'s':'')+')</span><span>'+pesos(t)+'</span></div>';
 }
+// Al enviar los datos, APARTAMOS las sillas en la hoja (crea la orden pendiente de pago)
 document.getElementById('dataForm').addEventListener('submit',function(e){
   e.preventDefault();
-  var f=new FormData(e.target);
+  var f=new FormData(e.target), btn=e.target.querySelector('button[type=submit]');
   state.datos={cliente:f.get('cliente'),estudiante:f.get('estudiante'),telefono:f.get('telefono'),correo:f.get('correo')};
-  pintarResumen(document.getElementById('resumenPago'));
-  document.getElementById('payAmount').textContent=pesos(totalCompra());
-  goStep(4);
+  btn.disabled=true; btn.textContent='Apartando tus sillas…';
+  apiPost({action:'reservar', evento:state.event.id, sillas:state.seats,
+    cliente:state.datos.cliente, estudiante:state.datos.estudiante, telefono:state.datos.telefono, correo:state.datos.correo})
+  .then(function(res){
+    btn.disabled=false; btn.textContent='Ir al pago';
+    if(!res.ok){
+      alert(res.error||'No pudimos apartar las sillas. Intenta de nuevo.');
+      if(res.sillas){ // alguien las tomó primero: marcarlas ocupadas y limpiar carrito
+        res.sillas.forEach(function(id){ var b=document.querySelector('.seat[data-id="'+id+'"]'); if(b){b.classList.add('occ');b.classList.remove('sel');b.onclick=null;} });
+        state.seats=state.seats.filter(function(s){return res.sillas.indexOf(s.id)<0;});
+        renderCart(); goStep(2);
+      }
+      return;
+    }
+    state.orden=res.orden;
+    pintarResumen(document.getElementById('resumenPago'));
+    document.getElementById('payAmount').textContent=pesos(totalCompra());
+    goStep(4);
+  }).catch(function(){ btn.disabled=false; btn.textContent='Ir al pago'; alert('Hubo un problema de conexión. Intenta de nuevo.'); });
 });
 
-/* ----- Paso 4: pago (demo) ----- */
+/* ----- Paso 4: pago (Fase 2 será Wompi; por ahora confirma la orden) ----- */
 function pagar(){
   var btn=document.getElementById('payBtn'); btn.disabled=true; btn.innerHTML='Procesando…';
-  setTimeout(function(){
-    // marcar sillas como ocupadas (demo) para que no se revendan
-    var occ=getOcc(state.event.id); state.seats.forEach(function(s){occ[s.id]=1;}); localStorage.setItem(occKey(state.event.id),JSON.stringify(occ));
-    emitirBoletas(); goStep(5);
-    btn.disabled=false; btn.innerHTML='<svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Pagar '+pesos(totalCompra());
-  },1400);
+  apiPost({action:'confirmar', orden:state.orden, ref:'DEMO'})
+    .then(function(res){
+      btn.disabled=false; btn.innerHTML='<svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Pagar '+pesos(totalCompra());
+      if(!res.ok){ alert(res.error||'No pudimos confirmar el pago.'); return; }
+      emitirBoletas(res.boletas); goStep(5);
+    })
+    .catch(function(){ btn.disabled=false; btn.innerHTML='Reintentar pago'; alert('Hubo un problema de conexión.'); });
 }
 
-/* ----- Paso 5: boletas con QR ----- */
-function emitirBoletas(){
-  var code='EAV-'+Date.now().toString(36).toUpperCase().slice(-6);
-  document.getElementById('orderCode').textContent=code;
+/* ----- Paso 5: boletas con QR (token real desde la hoja) ----- */
+function emitirBoletas(boletas){
+  document.getElementById('orderCode').textContent=state.orden;
   var box=document.getElementById('tickets'); box.innerHTML='';
-  state.seats.forEach(function(s,i){
-    var tid=code+'-'+(i+1);
-    var payload=encodeURIComponent(JSON.stringify({t:tid,ev:state.event.id,silla:s.id,est:state.datos.estudiante}));
-    var qr='https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+payload;
+  boletas.forEach(function(b){
+    var qr='https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+encodeURIComponent(b.token);
     var el=document.createElement('div'); el.className='ticket';
-    el.innerHTML='<div class="stub"><img src="'+qr+'" alt="QR '+tid+'"><small>'+tid+'</small></div>'+
+    el.innerHTML='<div class="stub"><img src="'+qr+'" alt="QR '+b.id+'"><small>'+b.id+'</small></div>'+
       '<div class="info"><div class="ev">'+state.event.nombre+'</div>'+
       '<div class="row"><span>Fecha</span><b>'+state.event.fecha+'</b></div>'+
       '<div class="row"><span>Hora</span><b>'+state.event.hora+'</b></div>'+
       '<div class="row"><span>Lugar</span><b>'+state.event.lugar+'</b></div>'+
-      '<div class="row"><span>Silla</span><b>'+s.id+' · '+(s.zone==='platea'?'Platea':'Balcón')+'</b></div>'+
-      '<div class="row"><span>Estudiante</span><b>'+state.datos.estudiante+'</b></div></div>';
+      '<div class="row"><span>Silla</span><b>'+b.silla+' · '+b.zona+'</b></div>'+
+      '<div class="row"><span>Estudiante</span><b>'+b.estudiante+'</b></div></div>';
     box.appendChild(el);
   });
 }
