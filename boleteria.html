@@ -56,21 +56,29 @@ h2.sec{font-family:var(--font-display);font-weight:500;font-size:clamp(1.4rem,2.
 .event:hover .go{background:var(--accent)}
 /* Mapa de sillas */
 .seatwrap{display:grid;grid-template-columns:1fr 320px;gap:30px;align-items:start}
-.stage-area{background:#fff;border:1px solid var(--line);padding:24px clamp(12px,2.5vw,30px);overflow-x:auto}
-.stage{background:linear-gradient(180deg,#2a2130,#121014);color:#fff;text-align:center;padding:12px;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;border-radius:6px 6px 30px 30px/6px 6px 40px 40px;margin-bottom:8px;max-width:75%;margin-left:auto;margin-right:auto}
-.zone-label{text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-45);margin:22px 0 12px}
-.seatgrid{display:flex;flex-direction:column;gap:7px;align-items:center;min-width:max-content;margin:0 auto}
-.seatrow{display:flex;gap:7px;align-items:center}
-.rowlabel{width:20px;font-size:.72rem;color:var(--ink-45);font-weight:600;text-align:center}
-.seat{width:26px;height:26px;border-radius:6px 6px 4px 4px;border:none;background:#D7D2DE;font-size:.6rem;color:transparent;transition:transform .15s,background .2s;position:relative}
-.seat:hover:not(.occ){transform:scale(1.15);background:var(--accent)}
-.seat.occ{background:#EDEBEF;cursor:not-allowed}
-.seat.occ::after{content:"";position:absolute;inset:8px;border-radius:2px;background:repeating-linear-gradient(45deg,#C9C6CF,#C9C6CF 2px,transparent 2px,transparent 4px)}
-.seat.sel{background:var(--green);color:#fff;transform:scale(1.05)}
-.seat.zoneB{border-radius:4px 4px 6px 6px}
-.legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:22px;font-size:.8rem;color:var(--ink-70)}
+.stage-area{background:#fff;border:1px solid var(--line);padding:14px}
+.mapa-tools{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-bottom:8px}
+.mapa-tools button{width:34px;height:34px;border:1px solid var(--line);background:#fff;font-size:1.1rem;line-height:1;border-radius:6px;transition:background .2s}
+.mapa-tools button:hover{background:var(--paper)}
+.mapa-tools .zoomlbl{font-size:.78rem;color:var(--ink-45);min-width:44px;text-align:center}
+.mapa-box{position:relative;overflow:hidden;background:#FBFAFC;border-radius:6px;height:min(64vh,620px);cursor:grab}
+.mapa-box.dragging{cursor:grabbing}
+#mapaSvg{width:100%;height:100%;touch-action:none;user-select:none}
+#mapaSvg .s{cursor:pointer;transition:r .12s}
+#mapaSvg .s:hover{stroke:#121014;stroke-width:1.4}
+#mapaSvg .s.occ{fill:#D9D6DE!important;cursor:not-allowed;opacity:.75}
+#mapaSvg .s.blq{fill:#E0362B!important;cursor:not-allowed}
+#mapaSvg .s.sel{fill:#4E9A23!important;stroke:#121014;stroke-width:1.4}
+#mapaSvg .escenario{fill:#E0362B}
+#mapaSvg .escenario-txt{fill:#fff;font:600 20px 'Instrument Sans',sans-serif;letter-spacing:6px;text-anchor:middle}
+#mapaSvg .area{fill:none;stroke:#9a95a3;stroke-width:1.2}
+#mapaSvg .area-txt{fill:#7a7580;font:500 11px 'Instrument Sans',sans-serif;text-anchor:middle}
+#mapaSvg .palco-n{fill:#5c5666;font:700 9px 'Instrument Sans',sans-serif;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
+#mapaSvg .fila-l{fill:#9a95a3;font:600 8px 'Instrument Sans',sans-serif;text-anchor:end;dominant-baseline:middle}
+.mapa-hint{font-size:.78rem;color:var(--ink-45);text-align:center;margin-top:8px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:14px;font-size:.78rem;color:var(--ink-70)}
 .legend span{display:flex;align-items:center;gap:7px}
-.legend i{width:16px;height:16px;border-radius:4px;display:inline-block}
+.legend i{width:14px;height:14px;border-radius:50%;display:inline-block}
 /* Carrito lateral */
 .cart{background:#fff;border:1px solid var(--line);padding:22px;position:sticky;top:120px}
 .cart h3{font-family:var(--font-display);font-weight:500;font-size:1.25rem;margin-bottom:4px}
@@ -171,15 +179,15 @@ footer a{color:#fff}
     <p class="sub" id="seatEvMeta"></p>
     <div class="seatwrap">
       <div class="stage-area">
-        <div class="stage">Escenario</div>
-        <div id="seatMap"></div>
-        <div class="legend">
-          <span><i style="background:#D7D2DE"></i> Disponible</span>
-          <span><i style="background:var(--green)"></i> Seleccionada</span>
-          <span><i style="background:#EDEBEF;border:1px solid var(--line)"></i> Ocupada</span>
-          <span><i style="background:#D7D2DE;border-radius:6px 6px 2px 2px"></i> Platea $40.000</span>
-          <span><i style="background:#D7D2DE;border-radius:2px 2px 6px 6px"></i> Balcón $30.000</span>
+        <div class="mapa-tools">
+          <button type="button" onclick="zoomMapa(-1)" aria-label="Alejar">−</button>
+          <span class="zoomlbl" id="zoomLbl">100%</span>
+          <button type="button" onclick="zoomMapa(1)" aria-label="Acercar">+</button>
+          <button type="button" onclick="resetZoom()" aria-label="Centrar" style="width:auto;padding:0 10px;font-size:.72rem;letter-spacing:.06em">CENTRAR</button>
         </div>
+        <div class="mapa-box" id="mapaBox"><div id="seatMap" style="height:100%"></div></div>
+        <p class="mapa-hint">Arrastra para moverte · usa + / − para acercar · toca una silla para elegirla</p>
+        <div class="legend" id="legend"></div>
       </div>
       <aside class="cart">
         <h3>Tu selección</h3>
@@ -289,16 +297,23 @@ function elegirEvento(ev){
   document.getElementById('seatEvName').textContent=ev.nombre;
   document.getElementById('seatEvMeta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
   document.getElementById('cartEvName').textContent=ev.nombre;
-  document.getElementById('seatMap').innerHTML='<p style="text-align:center;color:var(--ink-45);padding:40px">Cargando mapa de sillas…</p>';
+  document.getElementById('seatMap').innerHTML='<p style="text-align:center;color:var(--ink-45);padding:40px">Cargando mapa del teatro…</p>';
   renderCart(); goStep(2);
-  // consultar sillas ocupadas reales
-  apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id)).then(function(res){
-    buildSeatMap(ev, res.ok?res.ocupadas:[]);
-  }).catch(function(){ buildSeatMap(ev, []); });
+  Promise.all([
+    apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')),
+    apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))
+  ]).then(function(r){
+    if(!r[0].ok){ document.getElementById('seatMap').innerHTML='<p style="text-align:center;color:#C0322B;padding:40px">No pudimos cargar el mapa del teatro.</p>'; return; }
+    state.mapa=r[0].mapa;
+    renderMapa(state.mapa, r[1].ok?r[1].ocupadas:[]);
+  }).catch(function(){ document.getElementById('seatMap').innerHTML='<p style="text-align:center;color:#C0322B;padding:40px">Error de conexión al cargar el mapa.</p>'; });
 }
 
-/* ----- Paso 2: mapa de sillas (zonas desde la hoja, ocupadas desde el backend) ----- */
-// "A-J" -> ['A','B',...,'J']  |  "A,B,C" -> ['A','B','C']
+/* ----- Paso 2: mapa SVG del teatro (palcos, bloques en diagonal, sillas bloqueadas) ----- */
+var VB={w:1400,h:920};              // lienzo del mapa
+var SEP=13, R_SILLA=5.2;            // separación entre sillas y radio
+
+// "A-L" -> ['A',...,'L']   |   "A,B,C" -> ['A','B','C']
 function expandirFilas(txt){
   txt=String(txt||'').trim();
   if(txt.indexOf(',')>=0) return txt.split(',').map(function(s){return s.trim();}).filter(Boolean);
@@ -306,28 +321,103 @@ function expandirFilas(txt){
   if(m){ var out=[],a=m[1].toUpperCase().charCodeAt(0),b=m[2].toUpperCase().charCodeAt(0); for(var i=a;i<=b;i++) out.push(String.fromCharCode(i)); return out; }
   return txt?[txt]:[];
 }
-function buildSeatMap(ev, ocupadas){
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function renderMapa(mapa, ocupadas){
   var occ={}; (ocupadas||[]).forEach(function(s){ occ[s]=1; });
-  var map=document.getElementById('seatMap'); map.innerHTML='';
-  (ev.zonas||[]).forEach(function(z, zi){
-    var filas=expandirFilas(z.filas), zclass=(zi===0?'zoneA':'zoneB');
-    var lbl=document.createElement('div'); lbl.className='zone-label';
-    lbl.textContent=z.zona+' · '+pesos(z.precio); map.appendChild(lbl);
-    var grid=document.createElement('div'); grid.className='seatgrid';
-    filas.forEach(function(r){
-      var row=document.createElement('div'); row.className='seatrow';
-      row.innerHTML='<span class="rowlabel">'+r+'</span>';
-      for(var c=1;c<=z.columnas;c++){
-        var id=r+c, b=document.createElement('button');
-        b.className='seat '+zclass+(occ[id]?' occ':'');
-        b.textContent=c; b.dataset.id=id; b.dataset.zone=z.zona; b.dataset.precio=z.precio;
-        if(!occ[id]) b.onclick=function(){ toggleSeat(this); };
-        row.appendChild(b);
-      }
-      grid.appendChild(row);
-    });
-    map.appendChild(grid);
+  var blq={}; (mapa.bloqueadas||[]).forEach(function(b){ blq[b.id]=b.motivo||'Reservada'; });
+  var colorZona={}, nombreZona={}, precioZona={};
+  (mapa.zonas||[]).forEach(function(z){ colorZona[z.id]=z.color; nombreZona[z.id]=z.nombre; precioZona[z.id]=z.precio; });
+  state.zonas=mapa.zonas;
+
+  var s='<svg id="mapaSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
+
+  // Áreas de referencia (escenario, consolas, ascensor)
+  (mapa.areas||[]).forEach(function(a){
+    if(a.etiqueta.toUpperCase()==='ESCENARIO'){
+      s+='<rect class="escenario" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/>'+
+         '<text class="escenario-txt" x="'+a.x+'" y="'+(a.y+a.h/2+7)+'">ESCENARIO</text>';
+    } else {
+      s+='<rect class="area" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+
+         '<text class="area-txt" x="'+a.x+'" y="'+(a.y+a.h+12)+'">'+esc(a.etiqueta)+'</text>';
+    }
   });
+
+  // Palcos: sillas en círculo alrededor del número
+  (mapa.palcos||[]).forEach(function(p){
+    var r=(p.sillas>=10?24:16), col=colorZona[p.zona]||'#ccc';
+    s+='<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(r-7)+'" fill="#fff" stroke="#ddd"/>';
+    s+='<text class="palco-n" x="'+p.x+'" y="'+p.y+'">'+p.palco+'</text>';
+    for(var i=0;i<p.sillas;i++){
+      var ang=(i/p.sillas)*2*Math.PI - Math.PI/2;
+      var cx=p.x+r*Math.cos(ang), cy=p.y+r*Math.sin(ang);
+      var id='P'+p.palco+'-'+(i+1), lbl='Palco '+p.palco+' · Silla '+(i+1);
+      s+=silla(id,p.zona,lbl,cx,cy,col,occ,blq);
+    }
+  });
+
+  // Bloques: rejilla de filas × sillas, con rotación
+  (mapa.bloques||[]).forEach(function(b){
+    var filas=expandirFilas(b.filas), col=colorZona[b.zona]||'#ccc';
+    s+='<g transform="translate('+b.x+','+b.y+') rotate('+(b.rot||0)+')">';
+    filas.forEach(function(f,fi){
+      var y=fi*SEP;
+      s+='<text class="fila-l" x="-8" y="'+y+'">'+f+'</text>';
+      for(var c=1;c<=b.sillas;c++){
+        var id=b.id+'-'+f+c, lbl=b.nombre+' · Fila '+f+' · Silla '+c;
+        s+=silla(id,b.zona,lbl,(c-1)*SEP,y,col,occ,blq);
+      }
+    });
+    s+='</g>';
+  });
+  s+='</svg>';
+  document.getElementById('seatMap').innerHTML=s;
+
+  // Leyenda dinámica desde las zonas de la hoja
+  var lg='';
+  (mapa.zonas||[]).forEach(function(z){ lg+='<span><i style="background:'+z.color+'"></i> '+esc(z.nombre)+' · '+pesos(z.precio)+'</span>'; });
+  lg+='<span><i style="background:#4E9A23"></i> Seleccionada</span>'+
+      '<span><i style="background:#D9D6DE"></i> Ocupada</span>'+
+      '<span><i style="background:#E0362B"></i> Reservada (foto/video)</span>';
+  document.getElementById('legend').innerHTML=lg;
+
+  // Un solo listener para todas las sillas
+  var svg=document.getElementById('mapaSvg');
+  svg.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.classList.contains('s') && !t.classList.contains('occ') && !t.classList.contains('blq')) toggleSeat(t);
+  });
+  activarZoomPan();
+  resetZoom();
+}
+
+function silla(id,zona,label,cx,cy,color,occ,blq){
+  var cls='s'+(blq[id]?' blq':(occ[id]?' occ':''));
+  var titulo=blq[id]?(label+' — '+blq[id]):label;
+  return '<circle class="'+cls+'" data-id="'+esc(id)+'" data-zona="'+esc(zona)+'" data-label="'+esc(label)+'" '+
+         'cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+R_SILLA+'" fill="'+color+'"><title>'+esc(titulo)+'</title></circle>';
+}
+
+/* ----- Zoom y arrastre ----- */
+var zoom=1, panX=0, panY=0;
+function aplicarTransform(){
+  var svg=document.getElementById('mapaSvg'); if(!svg) return;
+  svg.style.transform='translate('+panX+'px,'+panY+'px) scale('+zoom+')';
+  svg.style.transformOrigin='center center';
+  document.getElementById('zoomLbl').textContent=Math.round(zoom*100)+'%';
+}
+function zoomMapa(dir){ zoom=Math.min(4,Math.max(0.6, zoom + dir*0.25)); aplicarTransform(); }
+function resetZoom(){ zoom=1; panX=0; panY=0; aplicarTransform(); }
+function activarZoomPan(){
+  var box=document.getElementById('mapaBox'), drag=false, sx=0, sy=0;
+  box.onmousedown=function(e){ drag=true; sx=e.clientX-panX; sy=e.clientY-panY; box.classList.add('dragging'); };
+  window.addEventListener('mousemove',function(e){ if(!drag) return; panX=e.clientX-sx; panY=e.clientY-sy; aplicarTransform(); });
+  window.addEventListener('mouseup',function(){ drag=false; box.classList.remove('dragging'); });
+  box.onwheel=function(e){ e.preventDefault(); zoomMapa(e.deltaY<0?1:-1); };
+  // táctil
+  box.ontouchstart=function(e){ if(e.touches.length===1){ drag=true; sx=e.touches[0].clientX-panX; sy=e.touches[0].clientY-panY; } };
+  box.ontouchmove=function(e){ if(drag&&e.touches.length===1){ panX=e.touches[0].clientX-sx; panY=e.touches[0].clientY-sy; aplicarTransform(); } };
+  box.ontouchend=function(){ drag=false; };
 }
 /* Refresco en vivo: el mapa se actualiza para reflejar lo que otros van tomando */
 var pollTimer=null;
@@ -339,24 +429,30 @@ function refrescarOcupadas(){
     if(!res.ok) return;
     var occ={}; res.ocupadas.forEach(function(s){ occ[s]=1; });
     var perdidas=[];
-    Array.prototype.forEach.call(document.querySelectorAll('.seat'), function(b){
-      var id=b.dataset.id, estaOcupada=!!occ[id], marcada=b.classList.contains('occ');
-      if(estaOcupada && !marcada){
-        if(b.classList.contains('sel')){ perdidas.push(id); b.classList.remove('sel'); state.seats=state.seats.filter(function(s){return s.id!==id;}); }
-        b.classList.add('occ'); b.onclick=null;
-      } else if(!estaOcupada && marcada){
-        b.classList.remove('occ'); b.onclick=function(){ toggleSeat(this); };
-      }
+    Array.prototype.forEach.call(document.querySelectorAll('#mapaSvg .s'), function(b){
+      if(b.classList.contains('blq')) return;               // las bloqueadas no cambian
+      var id=b.dataset.id, ocupada=!!occ[id], marcada=b.classList.contains('occ');
+      if(ocupada && !marcada){
+        if(b.classList.contains('sel')){ perdidas.push(b.dataset.label); b.classList.remove('sel'); state.seats=state.seats.filter(function(s){return s.id!==id;}); }
+        b.classList.add('occ');
+      } else if(!ocupada && marcada){ b.classList.remove('occ'); }
     });
-    if(perdidas.length){ renderCart(); alert('Otra persona acaba de tomar la(s) silla(s) '+perdidas.join(', ')+'. Por favor elige otras.'); }
+    if(perdidas.length){ renderCart(); alert('Otra persona acaba de tomar: '+perdidas.join(' / ')+'. Por favor elige otras sillas.'); }
   }).catch(function(){});
 }
 
-function toggleSeat(btn){
-  var id=btn.dataset.id, zone=btn.dataset.zone, precio=Number(btn.dataset.precio);
+function zonaDe(id){ var z=null; (state.zonas||[]).forEach(function(x){ if(x.id===id) z=x; }); return z; }
+
+function toggleSeat(el){
+  var id=el.dataset.id, zid=el.dataset.zona, label=el.dataset.label, z=zonaDe(zid);
+  if(!z) return;
   var i=state.seats.findIndex(function(s){return s.id===id;});
-  if(i>=0){ state.seats.splice(i,1); btn.classList.remove('sel'); }
-  else { if(state.seats.length>=10){ alert('Máximo 10 sillas por compra.'); return; } state.seats.push({id:id,zona:zone,precio:precio}); btn.classList.add('sel'); }
+  if(i>=0){ state.seats.splice(i,1); el.classList.remove('sel'); }
+  else {
+    if(state.seats.length>=10){ alert('Máximo 10 sillas por compra.'); return; }
+    state.seats.push({id:id, zona:zid, zonaNombre:z.nombre, precio:z.precio, label:label});
+    el.classList.add('sel');
+  }
   renderCart();
 }
 function renderCart(){
@@ -366,9 +462,9 @@ function renderCart(){
   state.seats.forEach(function(s){
     total+=s.precio;
     var it=document.createElement('div'); it.className='cart-item';
-    it.innerHTML='<span><b>Silla '+s.id+'</b> · '+s.zona+'<br><small style="color:var(--ink-45)">'+pesos(s.precio)+'</small></span>';
+    it.innerHTML='<span><b>'+s.label+'</b><br><small style="color:var(--ink-45)">'+s.zonaNombre+' · '+pesos(s.precio)+'</small></span>';
     var rm=document.createElement('button'); rm.className='rm'; rm.innerHTML='×';
-    rm.onclick=function(){ var b=document.querySelector('.seat[data-id="'+s.id+'"]'); if(b)b.classList.remove('sel'); state.seats=state.seats.filter(function(x){return x.id!==s.id;}); renderCart(); };
+    rm.onclick=function(){ var b=document.querySelector('#mapaSvg .s[data-id="'+s.id+'"]'); if(b)b.classList.remove('sel'); state.seats=state.seats.filter(function(x){return x.id!==s.id;}); renderCart(); };
     it.appendChild(rm); box.appendChild(it);
   });
   document.getElementById('cartTotal').textContent=pesos(total);
@@ -379,7 +475,7 @@ function totalCompra(){ return state.seats.reduce(function(a,s){return a+s.preci
 /* ----- Paso 3: datos + resumen ----- */
 function pintarResumen(el){
   var t=totalCompra();
-  var rows=state.seats.map(function(s){return '<div class="resumen-row"><span>Silla '+s.id+' · '+s.zona+'</span><span>'+pesos(s.precio)+'</span></div>';}).join('');
+  var rows=state.seats.map(function(s){return '<div class="resumen-row"><span>'+s.label+'</span><span>'+pesos(s.precio)+'</span></div>';}).join('');
   el.innerHTML='<div class="resumen-row" style="color:var(--ink);font-weight:600"><span>'+state.event.nombre+'</span><span></span></div>'+rows+
     '<div class="resumen-row tot"><span>Total ('+state.seats.length+' boleta'+(state.seats.length>1?'s':'')+')</span><span>'+pesos(t)+'</span></div>';
 }
@@ -389,14 +485,15 @@ document.getElementById('dataForm').addEventListener('submit',function(e){
   var f=new FormData(e.target), btn=e.target.querySelector('button[type=submit]');
   state.datos={cliente:f.get('cliente'),estudiante:f.get('estudiante'),telefono:f.get('telefono'),correo:f.get('correo')};
   btn.disabled=true; btn.textContent='Apartando tus sillas…';
-  apiPost({action:'reservar', evento:state.event.id, sillas:state.seats,
+  var payload=state.seats.map(function(s){ return {id:s.id, zona:s.zona, etiqueta:s.label}; });
+  apiPost({action:'reservar', evento:state.event.id, sillas:payload,
     cliente:state.datos.cliente, estudiante:state.datos.estudiante, telefono:state.datos.telefono, correo:state.datos.correo})
   .then(function(res){
     btn.disabled=false; btn.textContent='Ir al pago';
     if(!res.ok){
       alert(res.error||'No pudimos apartar las sillas. Intenta de nuevo.');
       if(res.sillas){ // alguien las tomó primero: marcarlas ocupadas y limpiar carrito
-        res.sillas.forEach(function(id){ var b=document.querySelector('.seat[data-id="'+id+'"]'); if(b){b.classList.add('occ');b.classList.remove('sel');b.onclick=null;} });
+        res.sillas.forEach(function(id){ var b=document.querySelector('#mapaSvg .s[data-id="'+id+'"]'); if(b){b.classList.add('occ');b.classList.remove('sel');} });
         state.seats=state.seats.filter(function(s){return res.sillas.indexOf(s.id)<0;});
         renderCart(); goStep(2);
       }
@@ -433,7 +530,8 @@ function emitirBoletas(boletas){
       '<div class="row"><span>Fecha</span><b>'+state.event.fecha+'</b></div>'+
       '<div class="row"><span>Hora</span><b>'+state.event.hora+'</b></div>'+
       '<div class="row"><span>Lugar</span><b>'+state.event.lugar+'</b></div>'+
-      '<div class="row"><span>Silla</span><b>'+b.silla+' · '+b.zona+'</b></div>'+
+      '<div class="row"><span>Ubicación</span><b>'+b.etiqueta+'</b></div>'+
+      '<div class="row"><span>Zona</span><b>'+b.zona+'</b></div>'+
       '<div class="row"><span>Estudiante</span><b>'+b.estudiante+'</b></div></div>';
     box.appendChild(el);
   });
