@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Escáner de boletas | En Avant</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#121014">
+<link rel="icon" href="img/logo-en-avant.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#121014;--paper:#FAF9F7;--accent:#A40FC4;--ok:#2E8B2E;--err:#C0322B;--warn:#D98218;
+--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--ink);color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{font-family:inherit;cursor:pointer;border:none}
+input,select{font-family:inherit}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 16px}
+header img{height:34px;filter:brightness(0) invert(1)}
+header .tag{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-bottom:4px}
+.sub{color:rgba(255,255,255,.55);font-size:.9rem;margin-bottom:22px}
+/* Acceso */
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.field label{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:600}
+.field input,.field select{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);color:#fff;padding:13px 14px;border-radius:10px;font-size:1rem;width:100%}
+.field select option{background:#1c1a20}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.btn{width:100%;padding:15px;border-radius:10px;background:#fff;color:var(--ink);font-weight:700;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;transition:opacity .2s}
+.btn:active{opacity:.8}
+.btn:disabled{opacity:.45}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2)}
+.err{color:#FF9C93;font-size:.85rem;margin-top:10px;min-height:1em}
+/* Escáner */
+#scanView{display:none}
+.stats{display:flex;gap:8px;margin-bottom:14px}
+.stat{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font-family:var(--font-display);font-size:1.5rem;line-height:1.1}
+.stat small{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.camwrap{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:1;margin-bottom:14px}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+.reticle{position:absolute;inset:16%;border:2px solid rgba(255,255,255,.85);border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+.reticle::before{content:"";position:absolute;left:0;right:0;height:2px;background:#4ade80;animation:scan 2.2s ease-in-out infinite;box-shadow:0 0 12px #4ade80}
+@keyframes scan{0%,100%{top:4%}50%{top:94%}}
+.camoff{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.6);font-size:.9rem;text-align:center;padding:20px}
+/* Resultado */
+.result{border-radius:14px;padding:18px;margin-bottom:14px;display:none;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.result.show{display:block}
+.result.ok{background:rgba(46,139,46,.22);border:1px solid var(--ok)}
+.result.bad{background:rgba(192,50,43,.22);border:1px solid var(--err)}
+.result.warn{background:rgba(217,130,24,.22);border:1px solid var(--warn)}
+.result .estado{font-family:var(--font-display);font-size:1.5rem;margin-bottom:8px}
+.result .linea{display:flex;justify-content:space-between;gap:10px;font-size:.9rem;padding:3px 0;border-top:1px solid rgba(255,255,255,.14)}
+.result .linea span:first-child{color:rgba(255,255,255,.55)}
+.result .linea b{text-align:right}
+.manual{margin-top:12px;display:flex;gap:8px}
+.manual input{flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.18);color:#fff;padding:12px;border-radius:10px;font-size:.9rem}
+.manual button{padding:0 18px;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;font-weight:600;font-size:.8rem}
+.hist{margin-top:18px}
+.hist h3{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px}
+.hist ul{list-style:none;display:grid;gap:6px;max-height:200px;overflow-y:auto}
+.hist li{display:flex;justify-content:space-between;gap:10px;font-size:.82rem;background:rgba(255,255,255,.05);padding:9px 12px;border-radius:8px}
+.hist li.no{color:#FF9C93}
+.hist li .h{color:rgba(255,255,255,.4);font-size:.72rem}
+.foot{margin-top:20px;display:flex;gap:8px}
+.foot .btn{padding:12px;font-size:.72rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="img/logo-en-avant.png" alt="En Avant">
+    <span class="tag">Control de ingreso</span>
+  </header>
+
+  <!-- ACCESO -->
+  <section id="loginView">
+    <h1>Escáner de boletas</h1>
+    <p class="sub">Solo para el equipo de En Avant.</p>
+    <div class="card">
+      <div class="field">
+        <label for="evento">Evento</label>
+        <select id="evento"><option>Cargando…</option></select>
+      </div>
+      <div class="field">
+        <label for="clave">Clave del escáner</label>
+        <input id="clave" type="password" autocomplete="off" placeholder="••••••">
+      </div>
+      <button class="btn" id="entrarBtn">Entrar</button>
+      <p class="err" id="loginErr"></p>
+    </div>
+  </section>
+
+  <!-- ESCÁNER -->
+  <section id="scanView">
+    <div class="stats">
+      <div class="stat"><b id="stIngresadas">–</b><small>Ingresaron</small></div>
+      <div class="stat"><b id="stFaltan">–</b><small>Faltan</small></div>
+      <div class="stat"><b id="stVendidas">–</b><small>Vendidas</small></div>
+    </div>
+
+    <div class="result" id="result"></div>
+
+    <div class="camwrap">
+      <video id="video" playsinline muted></video>
+      <div class="reticle" id="reticle"></div>
+      <div class="camoff" id="camoff" style="display:none"></div>
+    </div>
+
+    <div class="manual">
+      <input id="manualToken" placeholder="O escribe el código de la boleta">
+      <button id="manualBtn">Validar</button>
+    </div>
+
+    <div class="hist">
+      <h3>Últimos escaneos</h3>
+      <ul id="hist"></ul>
+    </div>
+
+    <div class="foot">
+      <button class="btn btn-ghost" onclick="location.reload()">Cambiar evento</button>
+      <button class="btn btn-ghost" id="refrescarBtn">Actualizar cifras</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="canvas" hidden></canvas>
+<script src="vendor/jsQR.js"></script>
+<script>
+var API='https://script.google.com/macros/s/AKfycbzxQtuagUbRwzr5EmxJrW20mzwnduak6FZXxmrrcutPFXj6PfU1lMS8HOI43lgIkcs/exec';
+function apiGet(p){ return fetch(API+'?'+p).then(function(r){return r.json();}); }
+function apiPost(b){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();}); }
+
+var evento=null, clave='', ultimo='', ultimoTs=0, escaneando=false, detector=null;
+
+/* ---------- Acceso ---------- */
+apiGet('action=eventos').then(function(r){
+  var sel=document.getElementById('evento'); sel.innerHTML='';
+  if(!r.ok||!r.eventos.length){ sel.innerHTML='<option>No hay eventos</option>'; return; }
+  r.eventos.forEach(function(e){ var o=document.createElement('option'); o.value=e.id; o.textContent=e.nombre; sel.appendChild(o); });
+}).catch(function(){ document.getElementById('evento').innerHTML='<option>Error de conexión</option>'; });
+
+// recordar la clave en este dispositivo
+var guardada=localStorage.getItem('eav_clave_escaner'); if(guardada) document.getElementById('clave').value=guardada;
+
+document.getElementById('entrarBtn').addEventListener('click', function(){
+  var err=document.getElementById('loginErr'); err.textContent='';
+  evento=document.getElementById('evento').value;
+  clave=document.getElementById('clave').value.trim();
+  if(!evento||!clave){ err.textContent='Elige el evento y escribe la clave.'; return; }
+  this.disabled=true; this.textContent='Verificando…';
+  // probamos la clave con un token falso: si la clave está mal nos lo dirá
+  var self=this;
+  apiPost({action:'validar', token:'__prueba__', clave:clave}).then(function(res){
+    self.disabled=false; self.textContent='Entrar';
+    if(res.mensaje && res.mensaje.indexOf('incorrecta')>=0){ err.textContent='Clave incorrecta.'; return; }
+    if(res.mensaje && res.mensaje.indexOf('configurar')>=0){ err.textContent='Falta configurar la clave en la hoja (menú En Avant → Configurar clave del escáner).'; return; }
+    localStorage.setItem('eav_clave_escaner', clave);
+    document.getElementById('loginView').style.display='none';
+    document.getElementById('scanView').style.display='block';
+    cargarStats(); iniciarCamara();
+  }).catch(function(){ self.disabled=false; self.textContent='Entrar'; err.textContent='Error de conexión.'; });
+});
+
+/* ---------- Cifras ---------- */
+function cargarStats(){
+  apiGet('action=stats&evento='+encodeURIComponent(evento)).then(function(r){
+    if(!r.ok) return;
+    document.getElementById('stIngresadas').textContent=r.stats.ingresadas;
+    document.getElementById('stFaltan').textContent=r.stats.faltan;
+    document.getElementById('stVendidas').textContent=r.stats.vendidas;
+  }).catch(function(){});
+}
+document.getElementById('refrescarBtn').addEventListener('click', cargarStats);
+
+/* ---------- Cámara + lectura de QR ---------- */
+function iniciarCamara(){
+  var video=document.getElementById('video');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}})
+    .then(function(stream){
+      video.srcObject=stream; video.play();
+      if('BarcodeDetector' in window){
+        try{ detector=new BarcodeDetector({formats:['qr_code']}); }catch(e){ detector=null; }
+      }
+      requestAnimationFrame(loop);
+    })
+    .catch(function(){
+      document.getElementById('reticle').style.display='none';
+      document.getElementById('camoff').style.display='grid';
+      document.getElementById('camoff').textContent='No pudimos abrir la cámara. Usa el campo de abajo para escribir el código de la boleta.';
+    });
+}
+var canvas=document.getElementById('canvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
+function loop(){
+  var video=document.getElementById('video');
+  if(video.readyState===video.HAVE_ENOUGH_DATA && !escaneando){
+    if(detector){
+      detector.detect(video).then(function(codes){ if(codes.length) procesar(codes[0].rawValue); }).catch(function(){});
+    } else {
+      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      var img=ctx.getImageData(0,0,canvas.width,canvas.height);
+      var code=jsQR(img.data, img.width, img.height, {inversionAttempts:'dontInvert'});
+      if(code && code.data) procesar(code.data);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Validación ---------- */
+function procesar(token){
+  token=String(token).trim();
+  var ahora=Date.now();
+  if(token===ultimo && ahora-ultimoTs<3500) return;   // evita releer el mismo QR
+  ultimo=token; ultimoTs=ahora;
+  validar(token);
+}
+document.getElementById('manualBtn').addEventListener('click', function(){
+  var t=document.getElementById('manualToken').value.trim();
+  if(t){ validar(t); document.getElementById('manualToken').value=''; }
+});
+
+function validar(token){
+  if(escaneando) return;
+  escaneando=true;
+  apiPost({action:'validar', token:token, clave:clave}).then(function(res){
+    mostrar(res); agregarHist(res);
+    if(res.ok){ vibrar([60]); cargarStats(); } else { vibrar([80,60,80]); }
+    setTimeout(function(){ escaneando=false; }, 900);
+  }).catch(function(){
+    mostrar({ok:false, mensaje:'Error de conexión'}); escaneando=false;
+  });
+}
+
+function mostrar(res){
+  var el=document.getElementById('result');
+  var clase = res.ok ? 'ok' : (res.estado==='usada' ? 'warn' : 'bad');
+  var html='<div class="estado">'+(res.ok?'✔ ':'✖ ')+(res.mensaje||'Error')+'</div>';
+  if(res.etiqueta)   html+='<div class="linea"><span>Ubicación</span><b>'+res.etiqueta+'</b></div>';
+  if(res.zona)       html+='<div class="linea"><span>Zona</span><b>'+res.zona+'</b></div>';
+  if(res.estudiante) html+='<div class="linea"><span>Estudiante</span><b>'+res.estudiante+'</b></div>';
+  el.className='result show '+clase; el.innerHTML=html;
+}
+function agregarHist(res){
+  var ul=document.getElementById('hist'), li=document.createElement('li');
+  if(!res.ok) li.className='no';
+  var hora=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  li.innerHTML='<span>'+(res.etiqueta||res.mensaje||'—')+'</span><span class="h">'+hora+'</span>';
+  ul.insertBefore(li, ul.firstChild);
+  while(ul.children.length>25) ul.removeChild(ul.lastChild);
+}
+function vibrar(p){ if(navigator.vibrate) navigator.vibrate(p); }
+</script>
+</body>
+</html>

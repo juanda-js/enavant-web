@@ -119,6 +119,7 @@ function doGet(e) {
   if (a === 'eventos')        return json({ ok: true, eventos: getEventos() });
   if (a === 'mapa')           return json({ ok: true, mapa: getMapa(e.parameter.recinto) });
   if (a === 'disponibilidad') return json({ ok: true, ocupadas: getOcupadas(e.parameter.evento) });
+  if (a === 'stats')          return json({ ok: true, stats: getStats(e.parameter.evento) });
   return json({ ok: false, error: 'acción desconocida' });
 }
 
@@ -239,19 +240,52 @@ function probarCorreo() {
   return 'Correo de prueba enviado a ' + correo + '. Cuota restante hoy: ' + MailApp.getRemainingDailyQuota();
 }
 
-// Valida y marca el ingreso de una boleta (app de escaneo).
+// Valida y marca el ingreso de una boleta (app de escaneo). Protegida con clave.
 function validar(b) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet(), bsh = ss.getSheetByName('Boletas'), vals = bsh.getDataRange().getValues();
-  for (var i = 1; i < vals.length; i++) {
-    if (vals[i][9] === b.token) {
-      var estado = vals[i][8];
-      if (estado === 'usada')  return { ok: false, estado: 'usada', mensaje: 'Boleta YA usada', etiqueta: vals[i][4], estudiante: vals[i][7], ingreso: vals[i][10] };
-      if (estado !== 'pagada') return { ok: false, estado: estado, mensaje: 'Boleta no pagada', etiqueta: vals[i][4], estudiante: vals[i][7] };
-      bsh.getRange(i + 1, 9).setValue('usada'); bsh.getRange(i + 1, 11).setValue(new Date());
-      return { ok: true, estado: 'valida', etiqueta: vals[i][4], zona: vals[i][5], estudiante: vals[i][7] };
+  var clave = PropertiesService.getScriptProperties().getProperty('CLAVE_ESCANER');
+  if (!clave) return { ok: false, mensaje: 'Falta configurar la clave del escáner (ejecuta configurarEscaner).' };
+  if (String(b.clave || '') !== String(clave)) return { ok: false, mensaje: 'Clave del escáner incorrecta' };
+
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return { ok: false, mensaje: 'Sistema ocupado, reintenta.' }; }
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet(), bsh = ss.getSheetByName('Boletas'), vals = bsh.getDataRange().getValues();
+    for (var i = 1; i < vals.length; i++) {
+      if (vals[i][9] === b.token) {
+        var estado = vals[i][8], tz = ss.getSpreadsheetTimeZone();
+        if (estado === 'usada') {
+          var cuando = vals[i][10] ? Utilities.formatDate(new Date(vals[i][10]), tz, 'h:mm a') : '';
+          return { ok: false, estado: 'usada', mensaje: 'Boleta YA USADA' + (cuando ? ' (ingresó ' + cuando + ')' : ''), etiqueta: vals[i][4], zona: vals[i][5], estudiante: vals[i][7] };
+        }
+        if (estado !== 'pagada') return { ok: false, estado: estado, mensaje: 'Boleta NO PAGADA', etiqueta: vals[i][4], zona: vals[i][5], estudiante: vals[i][7] };
+        bsh.getRange(i + 1, 9).setValue('usada'); bsh.getRange(i + 1, 11).setValue(new Date());
+        return { ok: true, estado: 'valida', mensaje: 'INGRESO PERMITIDO', etiqueta: vals[i][4], zona: vals[i][5], estudiante: vals[i][7], evento: vals[i][2] };
+      }
     }
-  }
-  return { ok: false, mensaje: 'Boleta no encontrada' };
+    return { ok: false, estado: 'inexistente', mensaje: 'Boleta NO ENCONTRADA' };
+  } finally { lock.releaseLock(); }
+}
+
+// Cuántas boletas se vendieron y cuántas ya ingresaron.
+function getStats(evento) {
+  var vendidas = 0, ingresadas = 0;
+  tabla(SpreadsheetApp.getActiveSpreadsheet(), 'Boletas').forEach(function (b) {
+    if (String(b.evento_id) !== String(evento)) return;
+    if (b.estado === 'pagada' || b.estado === 'usada') vendidas++;
+    if (b.estado === 'usada') ingresadas++;
+  });
+  return { vendidas: vendidas, ingresadas: ingresadas, faltan: vendidas - ingresadas };
+}
+
+// Ejecuta esto UNA VEZ desde el editor para poner la clave que usará el equipo en la puerta.
+function configurarEscaner() {
+  var ui = SpreadsheetApp.getUi();
+  var r = ui.prompt('Clave del escáner', 'Escribe la clave que usará el equipo el día del evento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+  var clave = r.getResponseText().trim();
+  if (!clave) { ui.alert('Clave vacía.'); return; }
+  PropertiesService.getScriptProperties().setProperty('CLAVE_ESCANER', clave);
+  ui.alert('Listo. La clave del escáner quedó guardada.');
 }
 
 /* ============================================================
@@ -261,6 +295,8 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('En Avant')
     .addItem('Reenviar boletas (selecciona una fila en Ordenes)', 'reenviarSeleccion')
     .addItem('Reenviar boletas por número de orden…', 'reenviarPorOrden')
+    .addSeparator()
+    .addItem('Configurar clave del escáner…', 'configurarEscaner')
     .addToUi();
 }
 function reenviarSeleccion() {
