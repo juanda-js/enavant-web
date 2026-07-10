@@ -219,9 +219,24 @@ function confirmar(b) {
     }
   }
   if (!boletas.length) return { ok: false, error: 'Orden no encontrada' };
+  SpreadsheetApp.flush(); // asegura que el estado "pagada" ya quedó escrito antes de leerlo
   var aviso = '';
-  try { enviarBoletas(b.orden); } catch (err) { aviso = 'La compra quedó registrada, pero no pudimos enviar el correo: ' + err.message; }
+  try {
+    var msg = enviarBoletas(b.orden);
+    if (msg.indexOf('enviadas a') < 0) aviso = msg;   // enviarBoletas devuelve el motivo si no envió
+  } catch (err) {
+    aviso = 'La compra quedó registrada, pero no pudimos enviar el correo: ' + err.message;
+  }
   return { ok: true, boletas: boletas, aviso: aviso };
+}
+
+/* Ejecuta esta función UNA VEZ desde el editor para autorizar el envío de correos.
+   Google te pedirá el permiso de Gmail; acéptalo. */
+function probarCorreo() {
+  var correo = Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail({ to: correo, subject: 'Prueba — Boletería En Avant',
+    htmlBody: '<p>Si ves este mensaje, <b>el envío de correos ya está autorizado</b>.</p>' });
+  return 'Correo de prueba enviado a ' + correo + '. Cuota restante hoy: ' + MailApp.getRemainingDailyQuota();
 }
 
 // Valida y marca el ingreso de una boleta (app de escaneo).
