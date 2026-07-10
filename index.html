@@ -6,6 +6,19 @@
 <title>En Avant | Escuela de Danza, Música y Arte en Bogotá y Chía</title>
 <meta name="robots" content="noindex"><!-- QUITAR noindex AL CONECTAR EL DOMINIO -->
 <meta name="description" content="Transformando vidas a través del Arte desde el 2009. Escuela certificada por el American Ballet Theatre. Danza, música, artes, fitness y babies en Mazurén, Salitre y Chía.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="En Avant — Escuela de Danza, Música y Arte">
+<meta property="og:title" content="En Avant | Escuela de Danza, Música y Arte en Bogotá y Chía">
+<meta property="og:description" content="Transformando vidas a través del Arte desde el 2009. Escuela certificada por el American Ballet Theatre. Danza, música, artes, fitness y babies en Mazurén, Salitre y Chía.">
+<meta property="og:url" content="https://juanda-js.github.io/enavant-web/">
+<meta property="og:image" content="https://juanda-js.github.io/enavant-web/img/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_CO">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="En Avant | Escuela de Danza, Música y Arte en Bogotá y Chía">
+<meta name="twitter:description" content="Transformando vidas a través del Arte desde el 2009. Escuela certificada por el American Ballet Theatre. Danza, música, artes, fitness y babies en Mazurén, Salitre y Chía.">
+<meta name="twitter:image" content="https://juanda-js.github.io/enavant-web/img/og-image.jpg">
 <link rel="icon" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +45,7 @@
   --font-display:'Fraunces',Georgia,serif;
   --font-body:'Instrument Sans',Helvetica,sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
+  --shadow-md:0 18px 44px -22px rgba(18,16,20,.28);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -470,6 +484,22 @@ h2 em{font-style:italic;font-weight:340}
   transition:all .35s var(--ease);
 }
 .testi-arrow:hover{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ============ CÓMO EMPEZAR ============ */
+.empezar{background:var(--paper)}
+.empezar .head-c{text-align:center;max-width:60ch;margin:0 auto clamp(40px,5vw,60px)}
+.empezar .head-c .label{justify-content:center}
+.pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,36px);counter-reset:paso}
+.paso{position:relative;padding:34px 26px;background:#fff;border:1px solid var(--line);text-align:center;transition:transform .4s var(--ease),box-shadow .4s}
+.paso:hover{transform:translateY(-6px);box-shadow:var(--shadow-md)}
+.paso .np{width:52px;height:52px;margin:0 auto 18px;border-radius:50%;background:var(--purple);color:#fff;font-family:var(--font-display);font-size:1.4rem;display:grid;place-items:center}
+.paso:nth-child(2) .np{background:var(--teal-deep)}
+.paso:nth-child(3) .np{background:var(--green-deep)}
+.paso h3{font-family:var(--font-display);font-weight:500;font-size:1.3rem;margin-bottom:8px}
+.paso p{color:var(--ink-70);font-size:.95rem}
+.pasos-conn{display:none}
+.empezar-cta{text-align:center;margin-top:clamp(34px,4vw,48px)}
+@media(max-width:760px){.pasos{grid-template-columns:1fr;gap:16px}}
 
 /* ============ CORTESÍA ============ */
 .cortesia{background:var(--ink);color:#fff;text-align:center;position:relative;overflow:hidden}
@@ -1136,6 +1166,39 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
           <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CÓMO EMPEZAR ================= -->
+<section class="empezar" id="empezar">
+  <div class="wrap">
+    <div class="head-c reveal">
+      <span class="label c-purple">¿Cómo empiezo?</span>
+      <h2>Empezar es <em>muy fácil</em></h2>
+      <p class="lead" style="margin:14px auto 0">En tres pasos sencillos tu hijo o tú pueden vivir el arte en En Avant. Sin trámites complicados.</p>
+    </div>
+    <div class="pasos reveal" data-stagger>
+      <div class="paso">
+        <div class="np">1</div>
+        <h3>Agenda tu clase de cortesía</h3>
+        <p>Escríbenos por WhatsApp a la sede más cercana y reserva tu clase gratis, sin ningún compromiso.</p>
+      </div>
+      <div class="paso">
+        <div class="np">2</div>
+        <h3>Vive la experiencia</h3>
+        <p>Ven, conoce a nuestros maestros y las instalaciones, y descubre la disciplina ideal para ti.</p>
+      </div>
+      <div class="paso">
+        <div class="np">3</div>
+        <h3>Inscríbete y empieza</h3>
+        <p>Cuando te enamores del proceso, formalizas tu inscripción y comienzas tu formación artística.</p>
+      </div>
+    </div>
+    <div class="empezar-cta reveal">
+      <a href="#cortesia" class="btn btn-ink">Quiero mi clase de cortesía
+        <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
   </div>
 </section>
