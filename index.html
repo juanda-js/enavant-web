@@ -379,6 +379,34 @@ h2 em{font-style:italic;font-weight:340}
 .abt-item b{display:block;font-size:1.02rem;margin-bottom:3px}
 .abt-item p{font-size:.92rem;color:rgba(255,255,255,.65)}
 
+/* ============ CONÓCENOS (video) ============ */
+.conocenos{background:var(--ink);color:#fff;text-align:center}
+.conocenos .label{justify-content:center;color:#CE79E3}
+.conocenos .label::before,.conocenos .label::after{background:#CE79E3}
+.conocenos h2{max-width:22ch;margin:0 auto}
+.conocenos .lead{color:rgba(255,255,255,.65);margin:18px auto 40px;text-align:center}
+.video-frame{position:relative;max-width:960px;margin:0 auto;border-radius:6px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(0,0,0,.7);aspect-ratio:16/9;background:#000}
+.video-frame video{width:100%;height:100%;display:block;object-fit:cover}
+.video-frame .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .4s}
+.video-frame .play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,8,12,.25);border:none;cursor:pointer;transition:background .3s}
+.video-frame .play:hover{background:rgba(10,8,12,.1)}
+.video-frame .play span{width:84px;height:84px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;transition:transform .3s var(--ease)}
+.video-frame .play:hover span{transform:scale(1.08)}
+.video-frame .play svg{width:30px;height:30px;fill:var(--ink);margin-left:5px}
+.video-frame.playing .poster,.video-frame.playing .play{opacity:0;pointer-events:none}
+
+/* ============ LOGROS Y TRAYECTORIA ============ */
+.logros .wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,70px);align-items:start}
+.logros-cards{display:grid;gap:16px}
+.logro{display:flex;gap:18px;align-items:flex-start;padding:22px;border:1px solid var(--line);background:#fff;transition:transform .4s var(--ease),box-shadow .4s}
+.logro:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.logro .icon{color:var(--purple);margin-top:2px}
+.logro b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.12rem;margin-bottom:4px}
+.logro p{font-size:.93rem;color:var(--ink-70)}
+.logro .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.logro .chips span{font-size:.76rem;font-weight:600;letter-spacing:.02em;padding:5px 11px;border-radius:100px;background:var(--purple-soft,rgba(164,15,196,.1));color:var(--purple)}
+@media(max-width:860px){.logros .wrap{grid-template-columns:1fr;gap:30px}}
+
 /* ============ SEDES ============ */
 .sedes-tabs{display:flex;gap:0;margin:52px 0 44px;border-bottom:1px solid var(--line)}
 .sede-tab{
@@ -722,6 +750,25 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
+<!-- ================= CONÓCENOS (video) ================= -->
+<section class="conocenos" id="conocenos">
+  <div class="wrap reveal">
+    <span class="label">Conócenos</span>
+    <h2>El arte que <em>nos mueve</em></h2>
+    <p class="lead">Un vistazo a lo que vivimos cada día en En Avant.</p>
+    <figure class="video-frame" id="videoFrame">
+      <video id="brandVideo" preload="none" playsinline controls poster="video/conocenos-poster.jpg">
+        <source src="video/conocenos.mp4" type="video/mp4">
+        Tu navegador no puede reproducir este video.
+      </video>
+      <img class="poster" src="video/conocenos-poster.jpg" alt="Video de En Avant" aria-hidden="true">
+      <button class="play" id="playBtn" aria-label="Reproducir video">
+        <span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      </button>
+    </figure>
+  </div>
+</section>
+
 <!-- ================= EQUIPO ================= -->
 <section class="equipo" id="equipo">
   <div class="wrap">
@@ -906,6 +953,42 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
           <text><textPath href="#sealPath">ABT CERTIFIED SCHOOL · DESDE 2018 ·</textPath></text>
           <path class="center-star" d="M60 48l3.5 7.5 8 1-6 5.5 1.5 8-7-4-7 4 1.5-8-6-5.5 8-1z"/>
         </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOGROS Y TRAYECTORIA ================= -->
+<section class="logros" id="logros">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="label c-purple">Logros y trayectoria</span>
+      <h2>Más de 15 años <em>formando artistas</em></h2>
+      <p class="lead" style="margin-top:18px">Nuestro trabajo ha trascendido el escenario: competencias internacionales, formación inclusiva y estudiantes que hoy son artistas profesionales.</p>
+    </div>
+    <div class="logros-cards reveal" data-stagger>
+      <div class="logro">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>
+        <div>
+          <b>Festivales y competencias</b>
+          <p>Hemos participado en encuentros y competencias a nivel distrital, departamental, nacional e internacional.</p>
+          <div class="chips"><span>La Habana, Cuba</span><span>Miami International Ballet Competition</span><span>Golden Dance Cup</span></div>
+        </div>
+      </div>
+      <div class="logro">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div>
+          <b>Arte para todos</b>
+          <p>Formamos a niños, jóvenes y adultos de todas las edades, incluyendo a personas con capacidades diferentes. El arte es un espacio para todos.</p>
+        </div>
+      </div>
+      <div class="logro">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/></svg>
+        <div>
+          <b>Egresados que llegan lejos</b>
+          <p>Varios de nuestros estudiantes continúan su vida profesional en el arte en universidades de primer nivel.</p>
+          <div class="chips"><span>Javeriana</span><span>Distrital</span><span>Rosario</span><span>El Bosque</span><span>HfMDK Frankfurt (Alemania)</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1212,9 +1295,11 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
       <h5>Navegación</h5>
       <ul class="footer-links">
         <li><a href="#academia">Academia</a></li>
+        <li><a href="#conocenos">Conócenos</a></li>
         <li><a href="#equipo">Equipo</a></li>
         <li><a href="#disciplinas">Disciplinas</a></li>
         <li><a href="#abt">Certificación ABT</a></li>
+        <li><a href="#logros">Logros</a></li>
         <li><a href="temporadas.html">Temporadas</a></li>
         <li><a href="#cortesia">Clase de cortesía</a></li>
         <li><a href="#contacto">Contacto</a></li>
@@ -1357,6 +1442,14 @@ document.getElementById('contactForm').addEventListener('submit',e=>{
 });
 
 document.getElementById('year').textContent=new Date().getFullYear();
+
+/* Video "Conócenos": el botón de play arranca el video y oculta la portada */
+(function(){
+  var frame=document.getElementById('videoFrame'), v=document.getElementById('brandVideo'), btn=document.getElementById('playBtn');
+  if(!frame) return;
+  btn.addEventListener('click', function(){ frame.classList.add('playing'); v.play(); });
+  v.addEventListener('play', function(){ frame.classList.add('playing'); });
+})();
 
 /* ===== Interacciones dinámicas (solo escritorio, respeta reduced-motion) ===== */
 const finePointer=matchMedia('(pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
