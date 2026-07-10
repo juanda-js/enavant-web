@@ -1443,12 +1443,26 @@ document.getElementById('contactForm').addEventListener('submit',e=>{
 
 document.getElementById('year').textContent=new Date().getFullYear();
 
-/* Video "Conócenos": el botón de play arranca el video y oculta la portada */
+/* Video "Conócenos": play al pulsar (con sonido). Se pausa al salir de la
+   sección y continúa al volver; si el usuario lo pausa a mano, no se reanuda. */
 (function(){
   var frame=document.getElementById('videoFrame'), v=document.getElementById('brandVideo'), btn=document.getElementById('playBtn');
   if(!frame) return;
   btn.addEventListener('click', function(){ frame.classList.add('playing'); v.play(); });
   v.addEventListener('play', function(){ frame.classList.add('playing'); });
+
+  var reanudar=false, autoAccion=false;
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      var e=es[0];
+      if(e.isIntersecting){
+        if(reanudar){ reanudar=false; autoAccion=true; var p=v.play(); if(p&&p.finally)p.finally(function(){autoAccion=false;}); else autoAccion=false; }
+      } else if(!v.paused){
+        reanudar=true; autoAccion=true; v.pause(); setTimeout(function(){autoAccion=false;},0);
+      }
+    },{threshold:0.5}).observe(frame);
+    v.addEventListener('pause', function(){ if(!autoAccion) reanudar=false; }); // pausa manual = no reanudar
+  }
 })();
 
 /* ===== Interacciones dinámicas (solo escritorio, respeta reduced-motion) ===== */
