@@ -485,6 +485,27 @@ h2 em{font-style:italic;font-weight:340}
 }
 .testi-arrow:hover{background:var(--ink);border-color:var(--ink);color:#fff}
 
+/* ============ RESEÑAS GOOGLE ============ */
+.grev{background:#fff}
+.grev .head-c{text-align:center;max-width:60ch;margin:0 auto clamp(32px,4vw,48px)}
+.grev .head-c .label{justify-content:center}
+.grev-overall{display:inline-flex;align-items:center;gap:12px;margin-top:14px;font-size:1.05rem;color:var(--ink-70)}
+.grev-overall b{font-family:var(--font-display);font-size:1.6rem;color:var(--ink)}
+.stars{position:relative;display:inline-block;font-size:1.15rem;line-height:1;letter-spacing:2px;font-family:Arial,sans-serif}
+.stars .base{color:#e2ddd6}
+.stars .fill{position:absolute;left:0;top:0;overflow:hidden;color:#F5A623;white-space:nowrap}
+.grev-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.5vw,28px)}
+.grev-card{border:1px solid var(--line);padding:26px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform .4s var(--ease),box-shadow .4s}
+.grev-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
+.grev-card .gicon{font-family:Arial,sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-1px}
+.grev-card .gicon .b{color:#4285F4}.grev-card .gicon .r{color:#EA4335}.grev-card .gicon .y{color:#FBBC05}.grev-card .gicon .g{color:#34A853}
+.grev-card .sede{font-family:var(--font-display);font-weight:500;font-size:1.25rem;margin-top:2px}
+.grev-card .rating{font-family:var(--font-display);font-size:2.4rem;font-weight:400;line-height:1}
+.grev-card .count{font-size:.86rem;color:var(--ink-45)}
+.grev-card a{margin-top:10px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--line);padding-bottom:3px;transition:border-color .3s,color .3s}
+.grev-card a:hover{color:var(--accent);border-color:var(--accent)}
+@media(max-width:760px){.grev-cards{grid-template-columns:1fr}}
+
 /* ============ CÓMO EMPEZAR ============ */
 .empezar{background:var(--paper)}
 .empezar .head-c{text-align:center;max-width:60ch;margin:0 auto clamp(40px,5vw,60px)}
@@ -1197,6 +1218,46 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
         <button class="testi-arrow" id="testiNext" aria-label="Siguiente">
           <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESEÑAS GOOGLE ================= -->
+<section class="grev" id="resenas">
+  <div class="wrap">
+    <div class="head-c reveal">
+      <span class="label c-purple">Reseñas verificadas</span>
+      <h2>Nuestras familias <em>nos recomiendan</em></h2>
+      <div class="grev-overall">
+        <span class="stars" aria-hidden="true"><span class="base">★★★★★</span><span class="fill" style="width:93.6%">★★★★★</span></span>
+        <span><b>4.7</b> · 190 reseñas en Google</span>
+      </div>
+    </div>
+    <div class="grev-cards reveal" data-stagger>
+      <div class="grev-card">
+        <div class="gicon"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></div>
+        <div class="sede">Mazurén</div>
+        <div class="rating">4.8</div>
+        <span class="stars" aria-hidden="true"><span class="base">★★★★★</span><span class="fill" style="width:96%">★★★★★</span></span>
+        <div class="count">141 reseñas</div>
+        <a href="https://maps.app.goo.gl/zt1BfrQfi549d5Ln7" target="_blank" rel="noopener">Ver en Google</a>
+      </div>
+      <div class="grev-card">
+        <div class="gicon"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></div>
+        <div class="sede">Salitre</div>
+        <div class="rating">4.7</div>
+        <span class="stars" aria-hidden="true"><span class="base">★★★★★</span><span class="fill" style="width:94%">★★★★★</span></span>
+        <div class="count">12 reseñas</div>
+        <a href="https://maps.app.goo.gl/98cd37rYHQUaeiBc8" target="_blank" rel="noopener">Ver en Google</a>
+      </div>
+      <div class="grev-card">
+        <div class="gicon"><span class="b">G</span><span class="r">o</span><span class="y">o</span><span class="b">g</span><span class="g">l</span><span class="r">e</span></div>
+        <div class="sede">Chía</div>
+        <div class="rating">4.2</div>
+        <span class="stars" aria-hidden="true"><span class="base">★★★★★</span><span class="fill" style="width:84%">★★★★★</span></span>
+        <div class="count">37 reseñas</div>
+        <a href="https://maps.app.goo.gl/UsAEtWuNr1na9xc36" target="_blank" rel="noopener">Ver en Google</a>
       </div>
     </div>
   </div>
