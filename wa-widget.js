@@ -92,7 +92,15 @@
     '.eaw-start{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;border-radius:100px;background:linear-gradient(120deg,#A40FC4,#C879E6);color:#fff;font-size:1rem;font-weight:600;text-decoration:none;box-shadow:0 12px 26px -10px rgba(164,15,196,.6);transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s}',
     '.eaw-start:hover{transform:translateY(-2px);box-shadow:0 16px 32px -10px rgba(164,15,196,.7)}',
     '.eaw-start svg{width:20px;height:20px;fill:#fff}',
-    '@media (prefers-reduced-motion:reduce){.eaw *,.eaw *::before{animation:none!important;transition-duration:.01ms!important}}'
+    '@media (prefers-reduced-motion:reduce){.eaw *,.eaw *::before{animation:none!important;transition-duration:.01ms!important}}',
+    /* Móvil: panel como hoja inferior a lo ancho (evita cortes y márgenes desiguales) */
+    '@media (max-width:480px){',
+    '.eaw{bottom:18px;right:18px}',
+    '.eaw-win{position:fixed;left:14px;right:14px;bottom:90px;width:auto;max-width:none;transform-origin:bottom center;border-radius:22px}',
+    '.eaw-body{max-height:44vh}',
+    '.eaw-cbody{min-height:150px}',
+    '.eaw-fab{width:58px;height:58px}',
+    '}'
   ].join('');
 
   // -------- Construcción del DOM --------
