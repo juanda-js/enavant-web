@@ -1772,123 +1772,307 @@ if(finePointer){
 <!-- Schema.org — organización + 3 sedes (LocalBusiness) con reseñas + FAQ -->
 <script type="application/ld+json">
 {
-  "@context":"https://schema.org",
-  "@graph":[
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@type":"EducationalOrganization",
-      "@id":"https://www.enavantescuela.com/#organizacion",
-      "name":"En Avant — Escuela de Danza, Música y Arte",
-      "url":"https://www.enavantescuela.com",
-      "logo":"https://www.enavantescuela.com/img/logo-en-avant.png",
-      "image":"https://www.enavantescuela.com/img/og-image.jpg",
-      "foundingDate":"2009",
-      "email":"enavantescuela@gmail.com",
-      "description":"Escuela de formación artística en Bogotá y Chía. Danza, música, artes plásticas, fitness y estimulación temprana. Certificada por el American Ballet Theatre desde 2018.",
-      "slogan":"Transformando vidas a través del Arte",
-      "areaServed":["Bogotá","Chía","Cundinamarca"],
-      "sameAs":[
+      "@type": "EducationalOrganization",
+      "@id": "https://www.enavantescuela.com/#organizacion",
+      "name": "En Avant — Escuela de Danza, Música y Arte",
+      "url": "https://www.enavantescuela.com",
+      "logo": "https://www.enavantescuela.com/img/logo-en-avant.png",
+      "image": "https://www.enavantescuela.com/img/og-image.jpg",
+      "foundingDate": "2009",
+      "email": "enavantescuela@gmail.com",
+      "description": "Escuela de formación artística en Bogotá y Chía. Danza, música, artes plásticas, fitness y estimulación temprana. Certificada por el American Ballet Theatre desde 2018.",
+      "slogan": "Transformando vidas a través del Arte",
+      "areaServed": [
+        "Bogotá",
+        "Chía",
+        "Cundinamarca"
+      ],
+      "sameAs": [
         "https://www.instagram.com/escuelaenavant",
         "https://www.facebook.com/escuelaenavant",
         "https://www.tiktok.com/@escuelaenavant",
         "https://www.youtube.com/@enavantescuela9119"
       ],
-      "aggregateRating":{
-        "@type":"AggregateRating",
-        "ratingValue":"4.7",
-        "reviewCount":"190",
-        "bestRating":"5"
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.7",
+        "reviewCount": "190",
+        "bestRating": "5"
       },
-      "department":[
-        {"@id":"https://www.enavantescuela.com/#sede-mazuren"},
-        {"@id":"https://www.enavantescuela.com/#sede-salitre"},
-        {"@id":"https://www.enavantescuela.com/#sede-chia"}
+      "department": [
+        {
+          "@id": "https://www.enavantescuela.com/#sede-mazuren"
+        },
+        {
+          "@id": "https://www.enavantescuela.com/#sede-salitre"
+        },
+        {
+          "@id": "https://www.enavantescuela.com/#sede-chia"
+        }
       ]
     },
     {
-      "@type":["LocalBusiness","EducationalOrganization"],
-      "@id":"https://www.enavantescuela.com/#sede-mazuren",
-      "name":"En Avant Mazurén",
-      "parentOrganization":{"@id":"https://www.enavantescuela.com/#organizacion"},
-      "url":"https://www.enavantescuela.com/#sedes",
-      "image":"https://www.enavantescuela.com/img/og-image.jpg",
-      "telephone":"+576012581845",
-      "email":"enavantescuela@gmail.com",
-      "address":{
-        "@type":"PostalAddress",
-        "streetAddress":"Carrera 54 # 150-26",
-        "addressLocality":"Bogotá",
-        "addressRegion":"Bogotá D.C.",
-        "addressCountry":"CO"
-      },
-      "geo":{"@type":"GeoCoordinates","latitude":4.7279,"longitude":-74.0564},
-      "openingHoursSpecification":[
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"13:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"15:00","closes":"19:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"08:00","closes":"14:00"}
+      "@type": [
+        "LocalBusiness",
+        "EducationalOrganization"
       ],
-      "sameAs":["https://maps.app.goo.gl/zt1BfrQfi549d5Ln7"],
-      "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"141","bestRating":"5"}
+      "@id": "https://www.enavantescuela.com/#sede-mazuren",
+      "name": "En Avant Mazurén",
+      "parentOrganization": {
+        "@id": "https://www.enavantescuela.com/#organizacion"
+      },
+      "url": "https://www.enavantescuela.com/#sedes",
+      "image": "https://www.enavantescuela.com/img/og-image.jpg",
+      "telephone": "+576012581845",
+      "email": "enavantescuela@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Carrera 54 # 150-26",
+        "addressLocality": "Bogotá",
+        "addressRegion": "Bogotá D.C.",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 4.7279,
+        "longitude": -74.0564
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "10:00",
+          "closes": "13:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "15:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "14:00"
+        }
+      ],
+      "sameAs": [
+        "https://maps.app.goo.gl/zt1BfrQfi549d5Ln7"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "141",
+        "bestRating": "5"
+      },
+      "priceRange": "$$"
     },
     {
-      "@type":["LocalBusiness","EducationalOrganization"],
-      "@id":"https://www.enavantescuela.com/#sede-salitre",
-      "name":"En Avant Salitre",
-      "parentOrganization":{"@id":"https://www.enavantescuela.com/#organizacion"},
-      "url":"https://www.enavantescuela.com/#sedes",
-      "image":"https://www.enavantescuela.com/img/og-image.jpg",
-      "telephone":"+573114929959",
-      "email":"enavantescuela@gmail.com",
-      "address":{
-        "@type":"PostalAddress",
-        "streetAddress":"Av. Calle 26 # 69C-03, Local 204, Edificio Capital Center",
-        "addressLocality":"Bogotá",
-        "addressRegion":"Bogotá D.C.",
-        "addressCountry":"CO"
-      },
-      "geo":{"@type":"GeoCoordinates","latitude":4.6332,"longitude":-74.1009},
-      "openingHoursSpecification":[
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"13:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"15:00","closes":"19:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"08:00","closes":"14:00"}
+      "@type": [
+        "LocalBusiness",
+        "EducationalOrganization"
       ],
-      "sameAs":["https://maps.app.goo.gl/98cd37rYHQUaeiBc8"],
-      "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.7","reviewCount":"12","bestRating":"5"}
+      "@id": "https://www.enavantescuela.com/#sede-salitre",
+      "name": "En Avant Salitre",
+      "parentOrganization": {
+        "@id": "https://www.enavantescuela.com/#organizacion"
+      },
+      "url": "https://www.enavantescuela.com/#sedes",
+      "image": "https://www.enavantescuela.com/img/og-image.jpg",
+      "telephone": "+573114929959",
+      "email": "enavantescuela@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Av. Calle 26 # 69C-03, Local 204, Edificio Capital Center",
+        "addressLocality": "Bogotá",
+        "addressRegion": "Bogotá D.C.",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 4.6332,
+        "longitude": -74.1009
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "10:00",
+          "closes": "13:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "15:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "14:00"
+        }
+      ],
+      "sameAs": [
+        "https://maps.app.goo.gl/98cd37rYHQUaeiBc8"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.7",
+        "reviewCount": "12",
+        "bestRating": "5"
+      },
+      "priceRange": "$$"
     },
     {
-      "@type":["LocalBusiness","EducationalOrganization"],
-      "@id":"https://www.enavantescuela.com/#sede-chia",
-      "name":"En Avant Chía",
-      "parentOrganization":{"@id":"https://www.enavantescuela.com/#organizacion"},
-      "url":"https://www.enavantescuela.com/#sedes",
-      "image":"https://www.enavantescuela.com/img/og-image.jpg",
-      "telephone":"+576018621563",
-      "email":"enavantescuela@gmail.com",
-      "address":{
-        "@type":"PostalAddress",
-        "streetAddress":"Carrera 2 Este # 22-47",
-        "addressLocality":"Chía",
-        "addressRegion":"Cundinamarca",
-        "addressCountry":"CO"
-      },
-      "geo":{"@type":"GeoCoordinates","latitude":4.8637,"longitude":-74.0352},
-      "openingHoursSpecification":[
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"10:00","closes":"13:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"15:00","closes":"19:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"08:00","closes":"14:00"}
+      "@type": [
+        "LocalBusiness",
+        "EducationalOrganization"
       ],
-      "sameAs":["https://maps.app.goo.gl/UsAEtWuNr1na9xc36"],
-      "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.2","reviewCount":"37","bestRating":"5"}
+      "@id": "https://www.enavantescuela.com/#sede-chia",
+      "name": "En Avant Chía",
+      "parentOrganization": {
+        "@id": "https://www.enavantescuela.com/#organizacion"
+      },
+      "url": "https://www.enavantescuela.com/#sedes",
+      "image": "https://www.enavantescuela.com/img/og-image.jpg",
+      "telephone": "+576018621563",
+      "email": "enavantescuela@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Carrera 2 Este # 22-47",
+        "addressLocality": "Chía",
+        "addressRegion": "Cundinamarca",
+        "addressCountry": "CO"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 4.8637,
+        "longitude": -74.0352
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "10:00",
+          "closes": "13:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "15:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "14:00"
+        }
+      ],
+      "sameAs": [
+        "https://maps.app.goo.gl/UsAEtWuNr1na9xc36"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.2",
+        "reviewCount": "37",
+        "bestRating": "5"
+      },
+      "priceRange": "$$"
     },
     {
-      "@type":"FAQPage",
-      "@id":"https://www.enavantescuela.com/#faq",
-      "mainEntity":[
-        {"@type":"Question","name":"¿Desde qué edad pueden ingresar los estudiantes?","acceptedAnswer":{"@type":"Answer","text":"Recibimos estudiantes desde la primera infancia con nuestros programas Babies (Baby Ballet y Estimulación Musical), y tenemos programas para niños, jóvenes y adultos en todas las disciplinas, adaptados al desarrollo motriz de cada edad."}},
-        {"@type":"Question","name":"¿Cómo funciona la clase de cortesía?","acceptedAnswer":{"@type":"Answer","text":"Es una clase real, gratuita y sin compromiso. Escríbenos por WhatsApp a la sede de tu preferencia, cuéntanos la edad del estudiante y la disciplina que le interesa, y agendamos el mejor horario para que la viva."}},
-        {"@type":"Question","name":"¿Qué significa que la escuela esté certificada por el ABT?","acceptedAnswer":{"@type":"Answer","text":"Implementamos el currículum oficial del American Ballet Theatre desde 2018, con maestras certificadas (Jenny Pescador y Diana Salamanca). Cada año un examinador del ABT viene desde Nueva York a evaluar a nuestros estudiantes, quienes han obtenido Honores y Altos Honores."}},
-        {"@type":"Question","name":"¿Ofrecen clases grupales y personalizadas?","acceptedAnswer":{"@type":"Answer","text":"Sí. Las clases grupales se basan en la socialización y el aprendizaje colaborativo, mientras que las personalizadas ofrecen un enfoque individualizado donde cada estudiante aprende a su propio ritmo. Ambas modalidades están disponibles en la mayoría de disciplinas."}},
-        {"@type":"Question","name":"¿En qué horarios atienden?","acceptedAnswer":{"@type":"Answer","text":"Nuestras tres sedes atienden de lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m., y los sábados de 8:00 a. m. a 2:00 p. m."}},
-        {"@type":"Question","name":"¿Trabajan con colegios y jardines infantiles?","acceptedAnswer":{"@type":"Answer","text":"Sí, tenemos alianzas con jardines infantiles y colegios: enviamos maestros a sus instalaciones o dictamos clases en nuestros salones, con programas artísticos personalizados para cada institución."}}
+      "@type": "FAQPage",
+      "@id": "https://www.enavantescuela.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Desde qué edad pueden ingresar los estudiantes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Recibimos estudiantes desde la primera infancia con nuestros programas Babies (Baby Ballet y Estimulación Musical), y tenemos programas para niños, jóvenes y adultos en todas las disciplinas, adaptados al desarrollo motriz de cada edad."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo funciona la clase de cortesía?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Es una clase real, gratuita y sin compromiso. Escríbenos por WhatsApp a la sede de tu preferencia, cuéntanos la edad del estudiante y la disciplina que le interesa, y agendamos el mejor horario para que la viva."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué significa que la escuela esté certificada por el ABT?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Implementamos el currículum oficial del American Ballet Theatre desde 2018, con maestras certificadas (Jenny Pescador y Diana Salamanca). Cada año un examinador del ABT viene desde Nueva York a evaluar a nuestros estudiantes, quienes han obtenido Honores y Altos Honores."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Ofrecen clases grupales y personalizadas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Las clases grupales se basan en la socialización y el aprendizaje colaborativo, mientras que las personalizadas ofrecen un enfoque individualizado donde cada estudiante aprende a su propio ritmo. Ambas modalidades están disponibles en la mayoría de disciplinas."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿En qué horarios atienden?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nuestras tres sedes atienden de lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m., y los sábados de 8:00 a. m. a 2:00 p. m."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Trabajan con colegios y jardines infantiles?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí, tenemos alianzas con jardines infantiles y colegios: enviamos maestros a sus instalaciones o dictamos clases en nuestros salones, con programas artísticos personalizados para cada institución."
+          }
+        }
       ]
     }
   ]
