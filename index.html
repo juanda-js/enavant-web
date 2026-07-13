@@ -813,7 +813,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 <!-- ================= STATS ================= -->
 <section class="stats" aria-label="Cifras de En Avant" style="padding-top:clamp(70px,8vw,110px)">
   <div class="wrap reveal">
-    <div class="stat"><b><span data-count="15">0</span><i>+</i></b><small>Años de trayectoria</small></div>
+    <div class="stat"><b><span data-count="17" data-since="2009">0</span><i>+</i></b><small>Años de trayectoria</small></div>
     <div class="stat"><b><span data-count="3">0</span></b><small>Sedes en Bogotá y Chía</small></div>
     <div class="stat"><b><span data-count="50">0</span><i>+</i></b><small>Maestros especializados</small></div>
     <div class="stat"><b><span data-count="20">0</span><i>+</i></b><small>Programas artísticos</small></div>
@@ -1050,7 +1050,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   <div class="wrap">
     <div class="reveal">
       <span class="label c-purple">Logros y trayectoria</span>
-      <h2>Más de 15 años <em>formando artistas</em></h2>
+      <h2>Más de <span id="yearsCount">17</span> años <em>formando artistas</em></h2>
       <p class="lead" style="margin-top:18px">Nuestro trabajo ha trascendido el escenario: competencias internacionales, formación inclusiva y estudiantes que hoy son artistas profesionales.</p>
     </div>
     <div class="logros-cards reveal" data-stagger>
@@ -1604,6 +1604,12 @@ const counterIO=new IntersectionObserver(es=>es.forEach(e=>{
   })(t0);
   counterIO.unobserve(el);
 }),{threshold:.6});
+/* Años desde la fundación (2009): se actualiza solo cada año */
+(function(){
+  var y=new Date().getFullYear()-2009;
+  document.querySelectorAll('[data-since]').forEach(function(el){el.dataset.count=y;});
+  var h=document.getElementById('yearsCount');if(h)h.textContent=y;
+})();
 document.querySelectorAll('[data-count]').forEach(el=>counterIO.observe(el));
 
 /* Sedes tabs */
