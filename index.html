@@ -422,25 +422,36 @@ h2 em{font-style:italic;font-weight:340}
 .logro .chips span{font-size:.76rem;font-weight:600;letter-spacing:.02em;padding:5px 11px;border-radius:100px;background:var(--purple-soft,rgba(164,15,196,.1));color:var(--purple)}
 @media(max-width:860px){.logros .wrap{grid-template-columns:1fr;gap:30px}}
 
-/* Egresada destacada */
+/* Egresados destacados (carrusel) */
 .egresada{background:var(--ink);color:#fff;overflow:hidden}
-.egr-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(40px,6vw,90px);align-items:center}
-.egr-media{position:relative;padding-bottom:clamp(30px,4vw,54px);padding-right:clamp(30px,4vw,54px)}
+.egr-head .label{color:var(--teal)}
+.egr-head h2{color:#fff}
+.egr-slider{position:relative;margin-top:clamp(38px,5vw,60px)}
+.egr-slide{display:none}
+.egr-slide.active{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(40px,6vw,90px);align-items:center;animation:egrFade .6s var(--ease)}
+@keyframes egrFade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.egr-media{position:relative}
+.egr-media.collage{padding-bottom:clamp(30px,4vw,54px);padding-right:clamp(30px,4vw,54px)}
 .egr-main{width:100%;display:block;border-radius:2px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7)}
 .egr-accent{position:absolute;right:0;bottom:0;width:56%;border-radius:2px;border:5px solid var(--ink);box-shadow:0 30px 60px -24px rgba(0,0,0,.8)}
-.egr-body .label{color:var(--teal)}
-.egr-body h2{color:#fff}
-.egr-quote{font-family:var(--font-display);font-style:italic;font-weight:340;font-size:clamp(1.25rem,2.1vw,1.7rem);line-height:1.5;letter-spacing:-.01em;margin-top:24px;color:rgba(255,255,255,.92);border-left:2px solid var(--teal);padding-left:22px}
+.egr-quote{font-family:var(--font-display);font-style:italic;font-weight:340;font-size:clamp(1.25rem,2.1vw,1.7rem);line-height:1.5;letter-spacing:-.01em;color:rgba(255,255,255,.92);border-left:2px solid var(--teal);padding-left:22px}
 .egr-cite{margin-top:26px;display:flex;align-items:center;gap:14px}
 .egr-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.22)}
 .egr-cite b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.15rem}
 .egr-cite span{display:block;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px}
-.egr-body .btn-outline{margin-top:32px;border-color:rgba(255,255,255,.4);color:#fff}
-.egr-body .btn-outline:hover{background:#fff;color:var(--ink);border-color:#fff}
+.egr-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:clamp(34px,4vw,48px)}
+.egr-dot{width:30px;height:3px;background:rgba(255,255,255,.28);border:none;padding:0;cursor:pointer;transition:all .4s var(--ease)}
+.egr-dot.active{background:#fff;width:48px}
+.egr-arrows{display:flex;gap:10px;margin-left:14px}
+.egr-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer;transition:all .3s var(--ease)}
+.egr-arrow:hover{background:#fff;border-color:#fff;color:var(--ink)}
+.egr-cta{margin-left:auto;border-color:rgba(255,255,255,.4);color:#fff}
+.egr-cta:hover{background:#fff;color:var(--ink);border-color:#fff}
 @media(max-width:860px){
-  .egr-grid{grid-template-columns:1fr;gap:34px}
-  .egr-media{padding-right:0;padding-bottom:0}
-  .egr-accent{position:static;width:66%;margin:14px 0 0 auto;border-width:0;display:block}
+  .egr-slide.active{grid-template-columns:1fr;gap:32px}
+  .egr-media.collage{padding-right:0;padding-bottom:0}
+  .egr-accent{position:static;width:66%;margin:14px 0 0 auto;border-width:0}
+  .egr-cta{margin-left:0;width:100%;margin-top:8px}
 }
 
 /* ============ SEDES ============ */
@@ -1102,27 +1113,58 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
-<!-- ================= EGRESADA DESTACADA ================= -->
+<!-- ================= EGRESADOS DESTACADOS ================= -->
 <section class="egresada" id="egresada">
   <div class="wrap">
-    <div class="egr-grid">
-      <div class="egr-media reveal-img">
-        <img class="egr-main" src="img/sofia-danza-puntas.jpg" alt="Sofía Bonilla bailando en puntas sobre el escenario" loading="lazy">
-        <img class="egr-accent" src="img/sofia-danza-contemp.jpg" alt="Sofía Bonilla en danza contemporánea" loading="lazy">
-      </div>
-      <div class="egr-body reveal">
-        <span class="label c-teal">De En Avant al mundo</span>
-        <h2>Nuestros egresados <em>llegan lejos</em></h2>
-        <blockquote class="egr-quote">En Avant fue el lugar donde nació mi amor por la danza y donde aprendí el valor de la disciplina, la dedicación y el compromiso con este arte. Más que una escuela, fue una segunda familia que me dio las herramientas y la confianza para seguir mi camino.</blockquote>
-        <div class="egr-cite">
-          <img class="egr-avatar" src="img/sofia-bonilla.jpg" alt="Sofía Bonilla" loading="lazy">
-          <div>
-            <b>Sofía Bonilla</b>
-            <span>Egresada · Bailarina profesional en Alemania</span>
+    <div class="egr-head reveal">
+      <span class="label c-teal">De En Avant al mundo</span>
+      <h2>Nuestros egresados <em>llegan lejos</em></h2>
+    </div>
+    <div class="egr-slider reveal" id="egrSlider">
+      <div class="egr-slide active">
+        <div class="egr-media collage">
+          <img class="egr-main" src="img/sofia-danza-puntas.jpg" alt="Sofía Bonilla bailando en puntas sobre el escenario" loading="lazy">
+          <img class="egr-accent" src="img/sofia-danza-contemp.jpg" alt="Sofía Bonilla en danza contemporánea" loading="lazy">
+        </div>
+        <div class="egr-body">
+          <blockquote class="egr-quote">En Avant fue el lugar donde nació mi amor por la danza y donde aprendí el valor de la disciplina, la dedicación y el compromiso con este arte. Más que una escuela, fue una segunda familia que me dio las herramientas y la confianza para seguir mi camino.</blockquote>
+          <div class="egr-cite">
+            <img class="egr-avatar" src="img/sofia-bonilla.jpg" alt="Sofía Bonilla" loading="lazy">
+            <div>
+              <b>Sofía Bonilla</b>
+              <span>Egresada · Bailarina profesional en Alemania</span>
+            </div>
           </div>
         </div>
-        <a class="btn btn-outline" href="#cortesia">Comienza tu camino</a>
       </div>
+      <div class="egr-slide">
+        <div class="egr-media">
+          <img class="egr-main" src="img/valentina-danza.jpg" alt="Valentina Ávila en danza contemporánea sobre el escenario" loading="lazy">
+        </div>
+        <div class="egr-body">
+          <blockquote class="egr-quote">En Avant para mí significó un hogar que me hizo crecer y creer en mi propio potencial.</blockquote>
+          <div class="egr-cite">
+            <img class="egr-avatar" src="img/valentina-avila.jpg" alt="Valentina Ávila" loading="lazy">
+            <div>
+              <b>Valentina Ávila</b>
+              <span>Egresada · Bailarina profesional en Alemania</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="egr-nav">
+      <button class="egr-dot active" data-i="0" aria-label="Egresado 1"></button>
+      <button class="egr-dot" data-i="1" aria-label="Egresado 2"></button>
+      <div class="egr-arrows">
+        <button class="egr-arrow" id="egrPrev" aria-label="Anterior">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="egr-arrow" id="egrNext" aria-label="Siguiente">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <a class="btn btn-outline egr-cta" href="#cortesia">Comienza tu camino</a>
     </div>
   </div>
 </section>
@@ -1669,6 +1711,22 @@ dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(
 document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
 document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
 autoTesti();
+
+/* Carrusel de egresados */
+const egrs=document.querySelectorAll('.egr-slide'),egrDots=document.querySelectorAll('.egr-dot');
+if(egrs.length){
+  let ei=0,eTimer;
+  function showEgr(i){
+    ei=(i+egrs.length)%egrs.length;
+    egrs.forEach((s,j)=>s.classList.toggle('active',j===ei));
+    egrDots.forEach((d,j)=>d.classList.toggle('active',j===ei));
+  }
+  function autoEgr(){eTimer=setInterval(()=>showEgr(ei+1),8000)}
+  egrDots.forEach(d=>d.addEventListener('click',()=>{clearInterval(eTimer);showEgr(+d.dataset.i);autoEgr()}));
+  document.getElementById('egrPrev').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei-1);autoEgr()});
+  document.getElementById('egrNext').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei+1);autoEgr()});
+  autoEgr();
+}
 
 /* FAQ */
 document.querySelectorAll('.faq-q').forEach(q=>q.addEventListener('click',()=>{
