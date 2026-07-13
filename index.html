@@ -431,7 +431,8 @@ h2 em{font-style:italic;font-weight:340}
 .egr-body .label{color:var(--teal)}
 .egr-body h2{color:#fff}
 .egr-quote{font-family:var(--font-display);font-style:italic;font-weight:340;font-size:clamp(1.25rem,2.1vw,1.7rem);line-height:1.5;letter-spacing:-.01em;margin-top:24px;color:rgba(255,255,255,.92);border-left:2px solid var(--teal);padding-left:22px}
-.egr-cite{margin-top:26px}
+.egr-cite{margin-top:26px;display:flex;align-items:center;gap:14px}
+.egr-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.22)}
 .egr-cite b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.15rem}
 .egr-cite span{display:block;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px}
 .egr-body .btn-outline{margin-top:32px;border-color:rgba(255,255,255,.4);color:#fff}
@@ -1114,8 +1115,11 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
         <h2>Nuestros egresados <em>llegan lejos</em></h2>
         <blockquote class="egr-quote">En Avant fue el lugar donde nació mi amor por la danza y donde aprendí el valor de la disciplina, la dedicación y el compromiso con este arte. Más que una escuela, fue una segunda familia que me dio las herramientas y la confianza para seguir mi camino.</blockquote>
         <div class="egr-cite">
-          <b>Sofía Bonilla</b>
-          <span>Egresada · Bailarina profesional en Alemania</span>
+          <img class="egr-avatar" src="img/sofia-bonilla.jpg" alt="Sofía Bonilla" loading="lazy">
+          <div>
+            <b>Sofía Bonilla</b>
+            <span>Egresada · Bailarina profesional en Alemania</span>
+          </div>
         </div>
         <a class="btn btn-outline" href="#cortesia">Comienza tu camino</a>
       </div>
