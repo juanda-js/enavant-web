@@ -163,8 +163,7 @@ nav.scrolled .burger span{background:var(--ink)}
   position:absolute;inset:0;background-size:cover;background-position:center;
   opacity:0;transform:scale(1.06);transition:opacity 2s ease;
 }
-.hero-slide.active{opacity:1;animation:kenburns 9s ease-out forwards}
-@keyframes kenburns{from{transform:scale(1.06)}to{transform:scale(1)}}
+.hero-slide.active{opacity:1}
 .hero::after{
   content:"";position:absolute;inset:0;
   background:linear-gradient(to top,rgba(10,8,12,.82) 0%,rgba(10,8,12,.35) 45%,rgba(10,8,12,.25) 100%);
@@ -882,7 +881,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     <div class="academia-body reveal">
       <span class="label c-purple">Nuestra academia</span>
       <h2 class="hl"><span class="ln"><span>Un espacio donde cada estudiante</span></span><span class="ln"><span>encuentra su <em>vocación</em></span></span></h2>
-      <p class="quote">"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
+      <p class="quote" data-scroll-text>"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
       <p class="lead">Desde el año 2009, En Avant busca ser un espacio de formación artística en donde cada estudiante encuentre su verdadera vocación en el arte. Manejamos diferentes programas en danza, música, artes, estimulación y fitness para que niños, jóvenes y adultos puedan ser partícipes de nuestras clases.</p>
       <p class="lead">Encontrarás un staff de maestros y administrativos que día a día ponen no solo su conocimiento sino su alma en cada proceso. Te damos la bienvenida a nuestra familia En Avant.</p>
     </div>
@@ -1733,6 +1732,41 @@ document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval
 document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
 autoTesti();
 
+/* Texto que se ilumina letra por letra al hacer scroll */
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const items=[...document.querySelectorAll('[data-scroll-text]')].map(el=>{
+    const txt=el.textContent,chars=[];
+    el.textContent='';
+    for(const ch of txt){
+      const s=document.createElement('span');
+      s.textContent=ch;s.style.opacity='.18';
+      el.appendChild(s);chars.push(s);
+    }
+    return {el,chars};
+  });
+  if(!items.length)return;
+  let ticking=false;
+  function update(){
+    ticking=false;
+    const vh=innerHeight;
+    items.forEach(({el,chars})=>{
+      const r=el.getBoundingClientRect();
+      if(r.bottom<-50||r.top>vh+50)return;
+      const start=vh*.85,end=vh*.32;
+      const p=Math.max(0,Math.min(1,(start-r.top)/(start-end)));
+      const n=chars.length,head=p*n,soft=6;
+      for(let i=0;i<n;i++){
+        const d=head-i;
+        chars[i].style.opacity = d<=0 ? '.18' : (d>=soft ? '1' : (.18+(d/soft)*.82).toFixed(2));
+      }
+    });
+  }
+  addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
+  addEventListener('resize',update);
+  update();
+})();
+
 /* Carrusel de egresados */
 const egrs=document.querySelectorAll('.egr-slide'),egrDots=document.querySelectorAll('.egr-dot');
 if(egrs.length){
@@ -1819,25 +1853,6 @@ if(finePointer){
     ring.classList.toggle('is-hover',!!interactive&&!labelEl);
   });
   document.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-on'));
-
-  /* Botones magnéticos */
-  document.querySelectorAll('.btn,.testi-arrow,.social,.wa-btn').forEach(el=>{
-    el.addEventListener('mousemove',e=>{
-      const r=el.getBoundingClientRect();
-      el.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.2}px,${(e.clientY-r.top-r.height/2)*.28}px)`;
-    });
-    el.addEventListener('mouseleave',()=>el.style.transform='');
-  });
-
-  /* Retratos que reaccionan al cursor */
-  document.querySelectorAll('.persona .ph').forEach(ph=>{
-    ph.addEventListener('mousemove',e=>{
-      const r=ph.getBoundingClientRect();
-      const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
-      ph.style.transform=`perspective(700px) rotateX(${(0.5-py)*8}deg) rotateY(${(px-0.5)*10}deg)`;
-    });
-    ph.addEventListener('mouseleave',()=>ph.style.transform='');
-  });
 
   /* Hero: profundidad con el mouse */
   const heroEl=document.querySelector('.hero'),heroContent=document.querySelector('.hero-content'),heroSlidesEl=document.getElementById('heroSlides');
