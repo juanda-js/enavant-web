@@ -33,12 +33,12 @@
 :root{
   --purple:#A40FC4;
   --teal:#06BCBC;
-  --teal-deep:#048F8F;
+  --teal-deep:#037070;
   --green:#68C731;
-  --green-deep:#4E9A23;
+  --green-deep:#3F7D1C;
   --ink:#121014;
   --ink-70:rgba(18,16,20,.72);
-  --ink-45:rgba(18,16,20,.45);
+  --ink-45:rgba(18,16,20,.6);
   --line:rgba(18,16,20,.12);
   --paper:#FAF9F7;
   --white:#FFFFFF;
@@ -66,6 +66,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 #progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--purple);z-index:1002}
 
 /* Reveals */
+/* Accesibilidad: foco visible y salto al contenido */
+:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+.abt :focus-visible,.egresada :focus-visible,.cortesia :focus-visible,.hero :focus-visible,footer :focus-visible{outline-color:#fff}
+.skip-link{position:absolute;left:16px;top:-60px;z-index:2000;background:var(--ink);color:#fff;padding:12px 20px;font-size:.85rem;font-weight:600;letter-spacing:.06em;border-radius:2px;transition:top .2s}
+.skip-link:focus{top:16px}
+.video-note{margin-top:14px;text-align:center;font-size:.82rem;color:rgba(255,255,255,.6)}
 .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 .reveal-img{clip-path:inset(8% 8% 8% 8%);opacity:0;transition:clip-path 1.2s var(--ease),opacity 1.2s var(--ease)}
@@ -454,9 +460,10 @@ h2 em{font-style:italic;font-weight:340}
 .egr-cite b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.15rem}
 .egr-cite span{display:block;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px}
 .egr-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:clamp(34px,4vw,48px)}
-.egr-dot{width:30px;height:3px;background:rgba(255,255,255,.28);border:none;padding:0;cursor:pointer;position:relative;overflow:hidden;transition:width .4s var(--ease)}
+.egr-dot{width:30px;height:26px;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:width .4s var(--ease)}
+.egr-dot::before{content:"";position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:rgba(255,255,255,.28)}
 .egr-dot.active{width:48px}
-.egr-dot.active::after{content:"";position:absolute;inset:0;background:#fff;transform-origin:left;transform:scaleX(0);animation:barFill 8s linear forwards}
+.egr-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:#fff;transform-origin:left;transform:scaleX(0);animation:barFill 8s linear forwards}
 .egr-arrows{display:flex;gap:10px;margin-left:14px}
 .egr-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer;transition:all .3s var(--ease)}
 .egr-arrow:hover{background:#fff;border-color:#fff;color:var(--ink)}
@@ -526,9 +533,10 @@ h2 em{font-style:italic;font-weight:340}
 .testi cite b{font-weight:600;font-size:.98rem}
 .testi cite span{display:block;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-45);margin-top:2px}
 .testi-nav{display:flex;gap:8px;margin-top:44px;align-items:center}
-.testi-dot{width:30px;height:3px;background:var(--line);border:none;padding:0;cursor:pointer;position:relative;overflow:hidden;transition:width .4s var(--ease)}
+.testi-dot{width:30px;height:26px;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:width .4s var(--ease)}
+.testi-dot::before{content:"";position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:var(--line)}
 .testi-dot.active{width:48px}
-.testi-dot.active::after{content:"";position:absolute;inset:0;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill 7s linear forwards}
+.testi-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill 7s linear forwards}
 @keyframes barFill{to{transform:scaleX(1)}}
 .testi-arrows{margin-left:auto;display:flex;gap:10px}
 .testi-arrow{
@@ -694,7 +702,7 @@ h2 em{font-style:italic;font-weight:340}
   background-repeat:no-repeat;background-position:right 4px center;cursor:pointer;
 }
 .field textarea{resize:vertical;min-height:96px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-bottom-color:var(--purple)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--purple);outline-offset:2px;border-bottom-color:var(--purple)}
 .form-card .btn{margin-top:34px}
 .form-note{font-size:.78rem;color:var(--ink-45);margin-top:16px}
 
@@ -802,11 +810,19 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
   html{scroll-behavior:auto}
+  /* Detener por completo lo que se mueve solo (WCAG 2.2.2) */
+  .ticker-track{animation:none!important;transform:none!important}
+  .glow-layer{display:none}
+  .testi-dot.active::after,.egr-dot.active::after{animation:none!important;transform:scaleX(1)!important}
+  .abt-seal{animation:none!important}
 }
+/* Pausar el ticker al pasar el mouse o enfocarlo */
+.ticker:hover .ticker-track,.ticker:focus-within .ticker-track{animation-play-state:paused}
 </style>
 </head>
 <body>
 
+<a class="skip-link" href="#main">Saltar al contenido</a>
 <div id="progress"></div>
 <div class="cursor-ring" id="cursorRing"><span id="cursorLabel"></span></div>
 <div class="cursor-dot" id="cursorDot"></div>
@@ -853,6 +869,8 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   <div class="hero-dots" id="heroDots"></div>
 </header>
 
+<main id="main">
+
 <!-- ================= TICKER ================= -->
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
@@ -897,8 +915,10 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     <figure class="video-frame" id="videoFrame">
       <video id="brandVideo" preload="none" playsinline controls poster="video/conocenos-poster.jpg">
         <source src="video/conocenos.mp4" type="video/mp4">
+        <track kind="captions" src="video/conocenos.vtt" srclang="es" label="Español" default>
         Tu navegador no puede reproducir este video.
       </video>
+      <p class="video-note">Este video no contiene diálogo: el audio es únicamente música instrumental.</p>
       <img class="poster" src="video/conocenos-poster.jpg" alt="Video de En Avant" aria-hidden="true">
       <button class="play" id="playBtn" aria-label="Reproducir video">
         <span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
@@ -1581,6 +1601,8 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
+</main>
+
 <!-- ================= FOOTER ================= -->
 <footer>
   <div class="footer-grid">
@@ -1661,6 +1683,15 @@ navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
   burger.classList.remove('open');navLinks.classList.remove('open');
 }));
 
+/* Accesibilidad: no auto-rotar si el usuario pide menos movimiento (WCAG 2.2.2)
+   y pausar cualquier carrusel al pasar el mouse o al enfocarlo con el teclado. */
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function pausable(zona,detener,reanudar){
+  if(!zona)return;
+  ['mouseenter','focusin'].forEach(ev=>zona.addEventListener(ev,detener));
+  ['mouseleave','focusout'].forEach(ev=>zona.addEventListener(ev,reanudar));
+}
+
 /* Hero slideshow */
 const slides=[...document.querySelectorAll('.hero-slide')];
 const dotsWrap=document.getElementById('heroDots');
@@ -1678,8 +1709,9 @@ function showSlide(i){
   slides.forEach((s,j)=>s.classList.toggle('active',j===hi));
   heroDots.forEach((d,j)=>d.classList.toggle('active',j===hi));
 }
-function autoHero(){heroTimer=setInterval(()=>showSlide(hi+1),7000)}
+function autoHero(){if(REDUCE)return;clearInterval(heroTimer);heroTimer=setInterval(()=>showSlide(hi+1),7000)}
 autoHero();
+pausable(document.querySelector('.hero'),()=>clearInterval(heroTimer),autoHero);
 
 /* Reveals */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
@@ -1726,11 +1758,12 @@ function showTesti(i){
   testis.forEach((t,j)=>t.classList.toggle('active',j===ti));
   dots.forEach((d,j)=>d.classList.toggle('active',j===ti));
 }
-function autoTesti(){tTimer=setInterval(()=>showTesti(ti+1),7000)}
+function autoTesti(){if(REDUCE)return;clearInterval(tTimer);tTimer=setInterval(()=>showTesti(ti+1),7000)}
 dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(+d.dataset.i);autoTesti()}));
 document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
 document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
 autoTesti();
+pausable(document.getElementById('testimonios'),()=>clearInterval(tTimer),autoTesti);
 
 /* Texto que se ilumina letra por letra al hacer scroll */
 (function(){
@@ -1776,11 +1809,12 @@ if(egrs.length){
     egrs.forEach((s,j)=>s.classList.toggle('active',j===ei));
     egrDots.forEach((d,j)=>d.classList.toggle('active',j===ei));
   }
-  function autoEgr(){eTimer=setInterval(()=>showEgr(ei+1),8000)}
+  function autoEgr(){if(REDUCE)return;clearInterval(eTimer);eTimer=setInterval(()=>showEgr(ei+1),8000)}
   egrDots.forEach(d=>d.addEventListener('click',()=>{clearInterval(eTimer);showEgr(+d.dataset.i);autoEgr()}));
   document.getElementById('egrPrev').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei-1);autoEgr()});
   document.getElementById('egrNext').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei+1);autoEgr()});
   autoEgr();
+  pausable(document.getElementById('egresada'),()=>clearInterval(eTimer),autoEgr);
 }
 
 /* FAQ */
@@ -1863,6 +1897,8 @@ if(finePointer){
   /* Ticker reactivo a la velocidad del scroll */
   const tickerTrack=document.querySelector('.ticker-track');
   tickerTrack.style.animation='none';
+  let tickerPausado=false;
+  pausable(document.querySelector('.ticker'),()=>tickerPausado=true,()=>tickerPausado=false);
   let tickX=0,lastY=scrollY,vel=0;
 
   const plxEls=[...document.querySelectorAll('[data-plx]')];
@@ -1881,7 +1917,7 @@ if(finePointer){
     vel+=((scrollY-lastY)-vel)*.1;lastY=scrollY;
     /* ticker: acelera al bajar, retrocede al subir */
     const half=tickerTrack.scrollWidth/2;
-    tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
+    if(!tickerPausado)tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
     if(tickX<=-half)tickX+=half;
     if(tickX>0)tickX-=half;
     tickerTrack.style.transform=`translateX(${tickX}px)`;

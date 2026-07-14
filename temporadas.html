@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.45);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.6);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
@@ -111,9 +111,15 @@ footer a{color:#fff;transition:color .3s} footer a:hover{color:var(--accent)}
   .stack-slot,.stack-slot:last-child{height:auto;margin-bottom:20px}
   .stack-card{position:static;grid-template-columns:1fr;transform:none!important;filter:none!important}
 }
+/* Accesibilidad */
+:focus-visible{outline:2px solid var(--accent,#A40FC4);outline-offset:3px}
+.skip-link{position:absolute;left:16px;top:-60px;z-index:2000;background:var(--ink);color:#fff;padding:12px 20px;font-size:.85rem;font-weight:600;letter-spacing:.06em;border-radius:2px;transition:top .2s}
+.skip-link:focus{top:16px}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
 <nav>
   <a href="index.html" aria-label="En Avant — Inicio"><img class="logo-img" src="img/logo-en-avant.png" alt="En Avant"></a>
   <a class="nav-back" href="index.html">&larr; Volver al inicio</a>
@@ -126,7 +132,7 @@ footer a{color:#fff;transition:color .3s} footer a:hover{color:var(--accent)}
   <p>Hasta el año 2014 todas las producciones se realizaron con música original interpretada por estudiantes de música y bailada por los estudiantes del programa de danza. A partir de 2015, el programa de Música realiza un concierto y los programas de danza y teatro una puesta en escena. <strong>Toca cualquier temporada para ver su galería de fotos.</strong></p>
 </header>
 
-<main>
+<main id="main">
   <!-- Destacadas: showcase apilado -->
   <section class="stack-sec">
     <div class="stack-head">
