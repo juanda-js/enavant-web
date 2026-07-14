@@ -47,6 +47,8 @@
   --font-body:'Instrument Sans',Helvetica,sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
   --shadow-md:0 18px 44px -22px rgba(18,16,20,.28);
+  --shadow-btn:0 1px 2px 0 rgba(18,16,20,.12),0 4px 5px 0 rgba(18,16,20,.09),0 9px 7px 0 rgba(18,16,20,.05),0 16px 9px 0 rgba(18,16,20,.02),inset 0 2px 6px 0 rgba(255,255,255,.16);
+  --shadow-btn-soft:0 0 0 .5px rgba(18,16,20,.05),0 1px 2px 0 rgba(18,16,20,.06),0 7px 18px -2px rgba(18,16,20,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -70,6 +72,11 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .reveal-img.in{clip-path:inset(0 0 0 0);opacity:1}
 [data-stagger].in > *{animation:stagUp .9s var(--ease) both}
 @keyframes stagUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+/* Título que se revela por líneas (se dispara con .reveal.in) */
+.hl .ln{display:block;overflow:hidden}
+.hl .ln>span{display:block;transform:translateY(115%);transition:transform .9s var(--ease)}
+.reveal.in .hl .ln>span{transform:none}
+.reveal.in .hl .ln:nth-child(2)>span{transition-delay:.12s}
 
 /* ============ CURSOR PERSONALIZADO ============ */
 @media (pointer:fine){
@@ -196,14 +203,14 @@ nav.scrolled .burger span{background:var(--ink)}
 }
 .btn svg{transition:transform .4s var(--ease)}
 .btn:hover svg{transform:translateX(4px)}
-.btn-solid{background:#fff;color:var(--ink)}
-.btn-solid:hover{background:var(--purple);color:#fff}
+.btn-solid{background:#fff;color:var(--ink);box-shadow:var(--shadow-btn-soft)}
+.btn-solid:hover{background:var(--purple);color:#fff;transform:translateY(-2px)}
 .btn-outline{border-color:rgba(255,255,255,.55);color:#fff}
 .btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
-.btn-ink{background:var(--ink);color:#fff}
-.btn-ink:hover{background:var(--purple)}
-.btn-line{border-color:var(--ink);color:var(--ink)}
-.btn-line:hover{background:var(--ink);color:#fff}
+.btn-ink{background:var(--ink);color:#fff;box-shadow:var(--shadow-btn)}
+.btn-ink:hover{background:var(--purple);transform:translateY(-2px);box-shadow:0 2px 4px 0 rgba(164,15,196,.25),0 10px 18px -2px rgba(164,15,196,.30),inset 0 2px 6px 0 rgba(255,255,255,.18)}
+.btn-line{border-color:var(--ink);color:var(--ink);box-shadow:var(--shadow-btn-soft)}
+.btn-line:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
 .hero-dots{
   position:absolute;right:clamp(20px,4.5vw,64px);bottom:44px;z-index:3;
   display:flex;flex-direction:column;gap:10px;
@@ -424,6 +431,15 @@ h2 em{font-style:italic;font-weight:340}
 
 /* Egresados destacados (carrusel) */
 .egresada{background:var(--ink);color:#fff;overflow:hidden}
+/* Resplandor de luz de escenario (egresados + ABT) */
+.egresada,.abt{position:relative}
+.egresada>.wrap,.abt>.wrap{position:relative;z-index:1}
+.glow-layer{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.glow-layer .g{position:absolute;border-radius:50%;filter:blur(85px)}
+.glow-layer .g1{width:56vw;height:56vw;max-width:760px;max-height:760px;left:-8%;top:-28%;background:radial-gradient(circle,rgba(6,188,188,.30),transparent 66%);animation:glowA 19s ease-in-out infinite alternate}
+.glow-layer .g2{width:50vw;height:50vw;max-width:680px;max-height:680px;right:-10%;bottom:-32%;background:radial-gradient(circle,rgba(164,15,196,.28),transparent 66%);animation:glowB 24s ease-in-out infinite alternate}
+@keyframes glowA{from{transform:translate(0,0) scale(1)}to{transform:translate(12%,8%) scale(1.15)}}
+@keyframes glowB{from{transform:translate(0,0) scale(1)}to{transform:translate(-10%,-6%) scale(1.2)}}
 .egr-head .label{color:var(--teal)}
 .egr-head h2{color:#fff}
 .egr-slider{display:grid;margin-top:clamp(38px,5vw,60px)}
@@ -865,7 +881,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     </div>
     <div class="academia-body reveal">
       <span class="label c-purple">Nuestra academia</span>
-      <h2>Un espacio donde cada estudiante encuentra su <em>vocación</em></h2>
+      <h2 class="hl"><span class="ln"><span>Un espacio donde cada estudiante</span></span><span class="ln"><span>encuentra su <em>vocación</em></span></span></h2>
       <p class="quote">"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
       <p class="lead">Desde el año 2009, En Avant busca ser un espacio de formación artística en donde cada estudiante encuentre su verdadera vocación en el arte. Manejamos diferentes programas en danza, música, artes, estimulación y fitness para que niños, jóvenes y adultos puedan ser partícipes de nuestras clases.</p>
       <p class="lead">Encontrarás un staff de maestros y administrativos que día a día ponen no solo su conocimiento sino su alma en cada proceso. Te damos la bienvenida a nuestra familia En Avant.</p>
@@ -961,7 +977,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     <div class="disc-head">
       <div class="reveal">
         <span class="label c-green">Disciplinas</span>
-        <h2>Encuentra tu <em>lenguaje</em> artístico</h2>
+        <h2 class="hl"><span class="ln"><span>Encuentra tu <em>lenguaje</em></span></span><span class="ln"><span>artístico</span></span></h2>
       </div>
       <p class="lead reveal">El arte potencia las habilidades de cada estudiante: concentración, atención y habilidades interpersonales. Programas para niños, jóvenes y adultos.</p>
     </div>
@@ -1043,6 +1059,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 
 <!-- ================= ABT ================= -->
 <section class="abt" id="abt">
+  <div class="glow-layer" aria-hidden="true"><i class="g g1"></i><i class="g g2"></i></div>
   <div class="wrap">
     <div class="reveal">
       <span class="label">Certificación internacional</span>
@@ -1119,10 +1136,11 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 
 <!-- ================= EGRESADOS DESTACADOS ================= -->
 <section class="egresada" id="egresada">
+  <div class="glow-layer" aria-hidden="true"><i class="g g1"></i><i class="g g2"></i></div>
   <div class="wrap">
     <div class="egr-head reveal">
       <span class="label c-teal">De En Avant al mundo</span>
-      <h2>Nuestros egresados <em>llegan lejos</em></h2>
+      <h2 class="hl"><span class="ln"><span>Nuestros egresados</span></span><span class="ln"><span><em>llegan lejos</em></span></span></h2>
     </div>
     <div class="egr-slider reveal" id="egrSlider">
       <div class="egr-slide active">
