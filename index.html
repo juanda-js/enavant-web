@@ -1836,17 +1836,19 @@ const waNumbers={'Mazurén (Bogotá)':'573134308891','Salitre (Bogotá)':'573114
 document.getElementById('contactForm').addEventListener('submit',e=>{
   e.preventDefault();
   const f=new FormData(e.target);
-  const sede=f.get('sede');
-  const msg=`¡Hola En Avant!%0A%0A*Solicitud de información*%0A`+
-    `Nombre: ${f.get('nombre')} ${f.get('apellido')}%0A`+
-    `Email: ${f.get('email')}%0A`+
-    `Teléfono: ${f.get('telefono')}%0A`+
-    `Sede: ${sede}%0A`+
-    `Disciplina: ${f.get('disciplina')}%0A`+
-    `Edad del estudiante: ${f.get('edad')}%0A`+
-    (f.get('modalidad')?`Modalidad: ${f.get('modalidad')}%0A`:'')+
-    (f.get('mensaje')?`%0AMensaje: ${encodeURIComponent(f.get('mensaje'))}`:'');
-  open(`https://wa.me/${waNumbers[sede]||'573134308891'}?text=${msg}`,'_blank');
+  const v=k=>(f.get(k)||'').toString().trim();
+  const sede=v('sede');
+  const lineas=['¡Hola En Avant!','','*Solicitud de información*',
+    `Nombre: ${v('nombre')} ${v('apellido')}`,
+    `Email: ${v('email')}`,
+    `Teléfono: ${v('telefono')}`,
+    `Sede: ${sede}`,
+    `Disciplina: ${v('disciplina')}`,
+    `Edad del estudiante: ${v('edad')}`];
+  if(v('modalidad')) lineas.push(`Modalidad: ${v('modalidad')}`);
+  if(v('mensaje')) lineas.push('',`Mensaje: ${v('mensaje')}`);
+  const msg=encodeURIComponent(lineas.join('\n'));
+  open(`https://wa.me/${waNumbers[sede]||'573134308891'}?text=${msg}`,'_blank','noopener');
 });
 
 document.getElementById('year').textContent=new Date().getFullYear();
@@ -1909,6 +1911,10 @@ if(finePointer){
   const plxEls=[...document.querySelectorAll('[data-plx]')];
   const swBands=[...document.querySelectorAll('.scroll-words')];
   const vhOf=()=>innerHeight;
+  /* cachear el ancho del ticker: solo cambia al redimensionar (evita reflow por frame) */
+  let tickHalf=tickerTrack.scrollWidth/2;
+  addEventListener('resize',()=>{tickHalf=tickerTrack.scrollWidth/2});
+  addEventListener('load',()=>{tickHalf=tickerTrack.scrollWidth/2});
 
   (function loop(){
     /* anillo con retardo elástico */
@@ -1921,7 +1927,7 @@ if(finePointer){
     /* velocidad de scroll suavizada */
     vel+=((scrollY-lastY)-vel)*.1;lastY=scrollY;
     /* ticker: acelera al bajar, retrocede al subir */
-    const half=tickerTrack.scrollWidth/2;
+    const half=tickHalf;
     if(!tickerPausado)tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
     if(tickX<=-half)tickX+=half;
     if(tickX>0)tickX-=half;
