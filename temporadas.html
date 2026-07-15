@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.45);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
+:root{--accent:#A40FC4;--accent-soft:rgba(164,15,196,.12);--ink:#121014;--ink-70:rgba(18,16,20,.72);--ink-45:rgba(18,16,20,.6);--line:rgba(18,16,20,.12);--paper:#FAF9F7;--font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;--ease:cubic-bezier(.22,1,.36,1)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.65;-webkit-font-smoothing:antialiased}
@@ -90,9 +90,36 @@ footer a{color:#fff;transition:color .3s} footer a:hover{color:var(--accent)}
 .tlb-thumb.active{opacity:1;border-color:#fff}
 @media (max-width:640px){.tlb-thumbs{display:none} .tlb-nav{width:44px;height:44px}}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+
+/* ===== Destacadas: tarjetas apiladas ===== */
+.stack-head{margin-bottom:clamp(22px,3vw,38px)}
+.stack-head h2{font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;font-size:clamp(1.9rem,3.6vw,3rem);line-height:1.1;margin-top:14px}
+.stack{margin-bottom:clamp(56px,8vw,100px)}
+.stack-slot{height:88vh}
+.stack-slot:last-child{height:auto}
+.stack-card{position:sticky;top:11vh;display:grid;grid-template-columns:1.15fr 1fr;background:#fff;border-radius:6px;overflow:hidden;box-shadow:0 34px 74px -32px rgba(18,16,20,.5);transform-origin:center top;will-change:transform,filter}
+.stack-card .stack-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:var(--ink)}
+.stack-card .stack-media img{width:100%;height:100%;object-fit:cover;display:block}
+.stack-card .stack-info{padding:clamp(26px,3.4vw,52px);display:flex;flex-direction:column;justify-content:center;gap:14px}
+.stack-year{align-self:flex-start;background:var(--ink);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.12em;padding:6px 14px;border-radius:100px}
+.stack-card h3{font-family:var(--font-display);font-weight:400;font-size:clamp(1.8rem,3.2vw,2.7rem);line-height:1.1;letter-spacing:-.02em}
+.stack-card p{color:var(--ink-70);font-size:1rem;line-height:1.6;max-width:44ch}
+.stack-cta{display:inline-flex;align-items:center;gap:8px;margin-top:6px;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.stack-card:hover .stack-cta{text-decoration:underline}
+.grid-title{font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;font-size:clamp(1.6rem,3vw,2.4rem);line-height:1.1;margin:0 0 clamp(24px,3vw,40px);padding-top:clamp(20px,3vw,32px);border-top:1px solid var(--line)}
+@media(max-width:860px){
+  .stack-slot,.stack-slot:last-child{height:auto;margin-bottom:20px}
+  .stack-card{position:static;grid-template-columns:1fr;transform:none!important;filter:none!important}
+}
+/* Accesibilidad */
+:focus-visible{outline:2px solid var(--accent,#A40FC4);outline-offset:3px}
+.skip-link{position:absolute;left:16px;top:-60px;z-index:2000;background:var(--ink);color:#fff;padding:12px 20px;font-size:.85rem;font-weight:600;letter-spacing:.06em;border-radius:2px;transition:top .2s}
+.skip-link:focus{top:16px}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
 <nav>
   <a href="index.html" aria-label="En Avant — Inicio"><img class="logo-img" src="img/logo-en-avant.png" alt="En Avant"></a>
   <a class="nav-back" href="index.html">&larr; Volver al inicio</a>
@@ -105,7 +132,51 @@ footer a{color:#fff;transition:color .3s} footer a:hover{color:var(--accent)}
   <p>Hasta el año 2014 todas las producciones se realizaron con música original interpretada por estudiantes de música y bailada por los estudiantes del programa de danza. A partir de 2015, el programa de Música realiza un concierto y los programas de danza y teatro una puesta en escena. <strong>Toca cualquier temporada para ver su galería de fotos.</strong></p>
 </header>
 
-<main>
+<main id="main">
+  <!-- Destacadas: showcase apilado -->
+  <section class="stack-sec">
+    <div class="stack-head">
+      <span class="eyebrow">Destacadas</span>
+      <h2>Las más recientes</h2>
+    </div>
+    <div class="stack">
+      <div class="stack-slot">
+        <article class="temp-card stack-card" data-gallery="rockola-2025" data-title="Rockola · 2025" tabindex="0" role="button" aria-label="Ver galería de Rockola (2025), 11 fotos">
+          <div class="stack-media"><img src="img/temporadas/rockola-2025-00.jpg" alt="En Avant — Rockola (2025)" loading="lazy" style="object-position:center 25%"></div>
+          <div class="stack-info">
+            <span class="stack-year">2025</span>
+            <h3>Rockola</h3>
+            <p>Un viaje por las canciones que marcaron generaciones, en una temporada llena de ritmo.</p>
+            <span class="stack-cta">Ver galería · 11 fotos</span>
+          </div>
+        </article>
+      </div>
+      <div class="stack-slot">
+        <article class="temp-card stack-card" data-gallery="el-rey-leon-2025" data-title="El Rey León · 2025" tabindex="0" role="button" aria-label="Ver galería de El Rey León (2025), 21 fotos">
+          <div class="stack-media"><img src="img/temporadas/el-rey-leon-2025-00.jpg" alt="En Avant — El Rey León (2025)" loading="lazy" style="object-position:center 40%"></div>
+          <div class="stack-info">
+            <span class="stack-year">2025</span>
+            <h3>El Rey León</h3>
+            <p>Nuestra gran puesta en escena inspirada en el clásico El Rey León.</p>
+            <span class="stack-cta">Ver galería · 21 fotos</span>
+          </div>
+        </article>
+      </div>
+      <div class="stack-slot">
+        <article class="temp-card stack-card" data-gallery="el-gran-show-2024" data-title="El Gran Show · 2024" tabindex="0" role="button" aria-label="Ver galería de El Gran Show (2024), 10 fotos">
+          <div class="stack-media"><img src="img/temporadas/el-gran-show-2024-00.jpg" alt="En Avant — El Gran Show (2024)" loading="lazy" style="object-position:center 30%"></div>
+          <div class="stack-info">
+            <span class="stack-year">2024</span>
+            <h3>El Gran Show</h3>
+            <p>Una celebración del talento de nuestros estudiantes en todas las disciplinas.</p>
+            <span class="stack-cta">Ver galería · 10 fotos</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="grid-title">Todas las temporadas</h2>
   <div class="temp-grid">
       <article class="temp-card reveal" data-gallery="rockola-2025" data-title="Rockola · 2025" tabindex="0" role="button" aria-label="Ver galería de Rockola (2025), 11 fotos">
         <div class="temp-media"><img src="img/temporadas/rockola-2025-00.jpg" alt="En Avant — Rockola (2025)" loading="lazy" style="object-position:center 25%"><span class="temp-year">2025</span><span class="temp-open"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg> Ver galería · 11 fotos</span></div>
@@ -251,6 +322,7 @@ function show(i){
   var im = new Image();
   im.onload = function(){ tlbImg.src = im.src; requestAnimationFrame(function(){ requestAnimationFrame(function(){ tlbImg.classList.add('ready'); }); }); };
   im.src = big(current[idx]);
+  tlbImg.alt = 'En Avant — ' + (tlbTitle.textContent || 'Temporada') + ', foto ' + (idx + 1) + ' de ' + current.length;
   [current[(idx+1)%current.length], current[(idx-1+current.length)%current.length]].forEach(function(id){ var pl=new Image(); pl.src=big(id); });
   tlbCount.textContent = (idx + 1) + ' / ' + current.length;
   [].forEach.call(tlbThumbs.children, function(tb, j){ tb.classList.toggle('active', j === idx); if (j === idx) tb.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'}); });
@@ -278,6 +350,30 @@ document.querySelectorAll('.temp-card').forEach(function(c){
   c.addEventListener('click', act);
   c.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
 });
+/* Destacadas: tarjetas que se apilan y encogen al hacer scroll */
+(function(){
+  var cards = [].slice.call(document.querySelectorAll('.stack-card'));
+  if (!cards.length) return;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var narrow = matchMedia('(max-width:860px)');
+  var ticking = false;
+  function update(){
+    ticking = false;
+    if (reduce || narrow.matches) { cards.forEach(function(c){ c.style.transform=''; c.style.filter=''; }); return; }
+    var vh = innerHeight, stick = vh * 0.11;
+    cards.forEach(function(c, i){
+      if (i === cards.length - 1) { c.style.transform=''; c.style.filter=''; return; }
+      var r = c.parentElement.getBoundingClientRect();
+      var p = Math.max(0, Math.min(1, (stick - r.top) / r.height));
+      c.style.transform = 'scale(' + (1 - p * 0.07).toFixed(4) + ')';
+      c.style.filter = 'brightness(' + (1 - p * 0.28).toFixed(3) + ')';
+    });
+  }
+  addEventListener('scroll', function(){ if(!ticking){ ticking = true; requestAnimationFrame(update); } }, {passive:true});
+  addEventListener('resize', update);
+  update();
+})();
+
 document.getElementById('tlbClose').addEventListener('click', closeGallery);
 document.getElementById('tlbPrev').addEventListener('click', function(){ show(idx - 1); });
 document.getElementById('tlbNext').addEventListener('click', function(){ show(idx + 1); });

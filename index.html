@@ -33,12 +33,12 @@
 :root{
   --purple:#A40FC4;
   --teal:#06BCBC;
-  --teal-deep:#048F8F;
+  --teal-deep:#037070;
   --green:#68C731;
-  --green-deep:#4E9A23;
+  --green-deep:#3F7D1C;
   --ink:#121014;
   --ink-70:rgba(18,16,20,.72);
-  --ink-45:rgba(18,16,20,.45);
+  --ink-45:rgba(18,16,20,.6);
   --line:rgba(18,16,20,.12);
   --paper:#FAF9F7;
   --white:#FFFFFF;
@@ -47,6 +47,8 @@
   --font-body:'Instrument Sans',Helvetica,sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
   --shadow-md:0 18px 44px -22px rgba(18,16,20,.28);
+  --shadow-btn:0 1px 2px 0 rgba(18,16,20,.12),0 4px 5px 0 rgba(18,16,20,.09),0 9px 7px 0 rgba(18,16,20,.05),0 16px 9px 0 rgba(18,16,20,.02),inset 0 2px 6px 0 rgba(255,255,255,.16);
+  --shadow-btn-soft:0 0 0 .5px rgba(18,16,20,.05),0 1px 2px 0 rgba(18,16,20,.06),0 7px 18px -2px rgba(18,16,20,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -64,12 +66,23 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 #progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--purple);z-index:1002}
 
 /* Reveals */
+/* Accesibilidad: foco visible y salto al contenido */
+:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+.abt :focus-visible,.egresada :focus-visible,.cortesia :focus-visible,.hero :focus-visible,footer :focus-visible{outline-color:#fff}
+.skip-link{position:absolute;left:16px;top:-60px;z-index:2000;background:var(--ink);color:#fff;padding:12px 20px;font-size:.85rem;font-weight:600;letter-spacing:.06em;border-radius:2px;transition:top .2s}
+.skip-link:focus{top:16px}
+.video-note{margin-top:14px;text-align:center;font-size:.82rem;color:rgba(255,255,255,.6)}
 .reveal{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 .reveal-img{clip-path:inset(8% 8% 8% 8%);opacity:0;transition:clip-path 1.2s var(--ease),opacity 1.2s var(--ease)}
 .reveal-img.in{clip-path:inset(0 0 0 0);opacity:1}
 [data-stagger].in > *{animation:stagUp .9s var(--ease) both}
 @keyframes stagUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+/* Título que se revela por líneas (se dispara con .reveal.in) */
+.hl .ln{display:block;overflow:hidden}
+.hl .ln>span{display:block;transform:translateY(115%);transition:transform .9s var(--ease)}
+.reveal.in .hl .ln>span{transform:none}
+.reveal.in .hl .ln:nth-child(2)>span{transition-delay:.12s}
 
 /* ============ CURSOR PERSONALIZADO ============ */
 @media (pointer:fine){
@@ -156,8 +169,7 @@ nav.scrolled .burger span{background:var(--ink)}
   position:absolute;inset:0;background-size:cover;background-position:center;
   opacity:0;transform:scale(1.06);transition:opacity 2s ease;
 }
-.hero-slide.active{opacity:1;animation:kenburns 9s ease-out forwards}
-@keyframes kenburns{from{transform:scale(1.06)}to{transform:scale(1)}}
+.hero-slide.active{opacity:1}
 .hero::after{
   content:"";position:absolute;inset:0;
   background:linear-gradient(to top,rgba(10,8,12,.82) 0%,rgba(10,8,12,.35) 45%,rgba(10,8,12,.25) 100%);
@@ -196,14 +208,14 @@ nav.scrolled .burger span{background:var(--ink)}
 }
 .btn svg{transition:transform .4s var(--ease)}
 .btn:hover svg{transform:translateX(4px)}
-.btn-solid{background:#fff;color:var(--ink)}
-.btn-solid:hover{background:var(--purple);color:#fff}
+.btn-solid{background:#fff;color:var(--ink);box-shadow:var(--shadow-btn-soft)}
+.btn-solid:hover{background:var(--purple);color:#fff;transform:translateY(-2px)}
 .btn-outline{border-color:rgba(255,255,255,.55);color:#fff}
 .btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
-.btn-ink{background:var(--ink);color:#fff}
-.btn-ink:hover{background:var(--purple)}
-.btn-line{border-color:var(--ink);color:var(--ink)}
-.btn-line:hover{background:var(--ink);color:#fff}
+.btn-ink{background:var(--ink);color:#fff;box-shadow:var(--shadow-btn)}
+.btn-ink:hover{background:var(--purple);transform:translateY(-2px);box-shadow:0 2px 4px 0 rgba(164,15,196,.25),0 10px 18px -2px rgba(164,15,196,.30),inset 0 2px 6px 0 rgba(255,255,255,.18)}
+.btn-line{border-color:var(--ink);color:var(--ink);box-shadow:var(--shadow-btn-soft)}
+.btn-line:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
 .hero-dots{
   position:absolute;right:clamp(20px,4.5vw,64px);bottom:44px;z-index:3;
   display:flex;flex-direction:column;gap:10px;
@@ -424,6 +436,15 @@ h2 em{font-style:italic;font-weight:340}
 
 /* Egresados destacados (carrusel) */
 .egresada{background:var(--ink);color:#fff;overflow:hidden}
+/* Resplandor de luz de escenario (egresados + ABT) */
+.egresada,.abt{position:relative}
+.egresada>.wrap,.abt>.wrap{position:relative;z-index:1}
+.glow-layer{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.glow-layer .g{position:absolute;border-radius:50%;filter:blur(85px)}
+.glow-layer .g1{width:56vw;height:56vw;max-width:760px;max-height:760px;left:-8%;top:-28%;background:radial-gradient(circle,rgba(6,188,188,.30),transparent 66%);animation:glowA 19s ease-in-out infinite alternate}
+.glow-layer .g2{width:50vw;height:50vw;max-width:680px;max-height:680px;right:-10%;bottom:-32%;background:radial-gradient(circle,rgba(164,15,196,.28),transparent 66%);animation:glowB 24s ease-in-out infinite alternate}
+@keyframes glowA{from{transform:translate(0,0) scale(1)}to{transform:translate(12%,8%) scale(1.15)}}
+@keyframes glowB{from{transform:translate(0,0) scale(1)}to{transform:translate(-10%,-6%) scale(1.2)}}
 .egr-head .label{color:var(--teal)}
 .egr-head h2{color:#fff}
 .egr-slider{display:grid;margin-top:clamp(38px,5vw,60px)}
@@ -439,9 +460,10 @@ h2 em{font-style:italic;font-weight:340}
 .egr-cite b{display:block;font-family:var(--font-display);font-weight:500;font-size:1.15rem}
 .egr-cite span{display:block;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px}
 .egr-nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:clamp(34px,4vw,48px)}
-.egr-dot{width:30px;height:3px;background:rgba(255,255,255,.28);border:none;padding:0;cursor:pointer;position:relative;overflow:hidden;transition:width .4s var(--ease)}
+.egr-dot{width:30px;height:26px;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:width .4s var(--ease)}
+.egr-dot::before{content:"";position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:rgba(255,255,255,.28)}
 .egr-dot.active{width:48px}
-.egr-dot.active::after{content:"";position:absolute;inset:0;background:#fff;transform-origin:left;transform:scaleX(0);animation:barFill 8s linear forwards}
+.egr-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:#fff;transform-origin:left;transform:scaleX(0);animation:barFill 8s linear forwards}
 .egr-arrows{display:flex;gap:10px;margin-left:14px}
 .egr-arrow{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer;transition:all .3s var(--ease)}
 .egr-arrow:hover{background:#fff;border-color:#fff;color:var(--ink)}
@@ -511,9 +533,10 @@ h2 em{font-style:italic;font-weight:340}
 .testi cite b{font-weight:600;font-size:.98rem}
 .testi cite span{display:block;font-size:.76rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-45);margin-top:2px}
 .testi-nav{display:flex;gap:8px;margin-top:44px;align-items:center}
-.testi-dot{width:30px;height:3px;background:var(--line);border:none;padding:0;cursor:pointer;position:relative;overflow:hidden;transition:width .4s var(--ease)}
+.testi-dot{width:30px;height:26px;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:width .4s var(--ease)}
+.testi-dot::before{content:"";position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:var(--line)}
 .testi-dot.active{width:48px}
-.testi-dot.active::after{content:"";position:absolute;inset:0;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill 7s linear forwards}
+.testi-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill 7s linear forwards}
 @keyframes barFill{to{transform:scaleX(1)}}
 .testi-arrows{margin-left:auto;display:flex;gap:10px}
 .testi-arrow{
@@ -679,7 +702,7 @@ h2 em{font-style:italic;font-weight:340}
   background-repeat:no-repeat;background-position:right 4px center;cursor:pointer;
 }
 .field textarea{resize:vertical;min-height:96px}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-bottom-color:var(--purple)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--purple);outline-offset:2px;border-bottom-color:var(--purple)}
 .form-card .btn{margin-top:34px}
 .form-note{font-size:.78rem;color:var(--ink-45);margin-top:16px}
 
@@ -787,11 +810,19 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
   html{scroll-behavior:auto}
+  /* Detener por completo lo que se mueve solo (WCAG 2.2.2) */
+  .ticker-track{animation:none!important;transform:none!important}
+  .glow-layer{display:none}
+  .testi-dot.active::after,.egr-dot.active::after{animation:none!important;transform:scaleX(1)!important}
+  .abt-seal{animation:none!important}
 }
+/* Pausar el ticker al pasar el mouse o enfocarlo */
+.ticker:hover .ticker-track,.ticker:focus-within .ticker-track{animation-play-state:paused}
 </style>
 </head>
 <body>
 
+<a class="skip-link" href="#main">Saltar al contenido</a>
 <div id="progress"></div>
 <div class="cursor-ring" id="cursorRing"><span id="cursorLabel"></span></div>
 <div class="cursor-dot" id="cursorDot"></div>
@@ -807,6 +838,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     <li><a href="#disciplinas">Disciplinas</a></li>
     <li><a href="#abt">ABT</a></li>
     <li><a href="#sedes">Sedes</a></li>
+    <li><a href="temporadas.html">Temporadas</a></li>
     <li><a href="#contacto">Contacto</a></li>
     <li><a href="#cortesia" class="nav-cta">Clase de cortesía</a></li>
   </ul>
@@ -829,14 +861,16 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     </h1>
     <p class="hero-sub">Desde el 2009 acompañamos a niños, jóvenes y adultos a encontrar su vocación artística. Formación de alta calidad, certificada por el American Ballet Theatre.</p>
     <div class="hero-ctas">
-      <a href="#contacto" class="btn btn-solid">Inscripciones abiertas</a>
-      <a href="#cortesia" class="btn btn-outline">Clase de cortesía
+      <a href="#cortesia" class="btn btn-solid">Clase de cortesía
         <svg class="icon" width="16" height="16" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
+      <a href="#contacto" class="btn btn-outline">Inscripciones abiertas</a>
     </div>
   </div>
   <div class="hero-dots" id="heroDots"></div>
 </header>
+
+<main id="main">
 
 <!-- ================= TICKER ================= -->
 <div class="ticker" aria-hidden="true">
@@ -856,112 +890,13 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
-<!-- ================= ACADEMIA ================= -->
-<section class="academia" id="academia">
-  <div class="wrap">
-    <div class="academia-media reveal-img">
-      <img data-plx="0.08" src="img/academia-en-avant.jpg" alt="Estudiantes de En Avant en clase" loading="lazy">
-      <div class="badge-year"><b>2009</b><small>Fundación</small></div>
-    </div>
-    <div class="academia-body reveal">
-      <span class="label c-purple">Nuestra academia</span>
-      <h2>Un espacio donde cada estudiante encuentra su <em>vocación</em></h2>
-      <p class="quote">"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
-      <p class="lead">Desde el año 2009, En Avant busca ser un espacio de formación artística en donde cada estudiante encuentre su verdadera vocación en el arte. Manejamos diferentes programas en danza, música, artes, estimulación y fitness para que niños, jóvenes y adultos puedan ser partícipes de nuestras clases.</p>
-      <p class="lead">Encontrarás un staff de maestros y administrativos que día a día ponen no solo su conocimiento sino su alma en cada proceso. Te damos la bienvenida a nuestra familia En Avant.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ================= CONÓCENOS (video) ================= -->
-<section class="conocenos" id="conocenos">
-  <div class="wrap reveal">
-    <span class="label">Conócenos</span>
-    <h2>El arte que <em>nos mueve</em></h2>
-    <p class="lead">Un vistazo a lo que vivimos cada día en En Avant.</p>
-    <figure class="video-frame" id="videoFrame">
-      <video id="brandVideo" preload="none" playsinline controls poster="video/conocenos-poster.jpg">
-        <source src="video/conocenos.mp4" type="video/mp4">
-        Tu navegador no puede reproducir este video.
-      </video>
-      <img class="poster" src="video/conocenos-poster.jpg" alt="Video de En Avant" aria-hidden="true">
-      <button class="play" id="playBtn" aria-label="Reproducir video">
-        <span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
-      </button>
-    </figure>
-  </div>
-</section>
-
-<!-- ================= EQUIPO ================= -->
-<section class="equipo" id="equipo">
-  <div class="wrap">
-    <div class="equipo-head">
-      <div class="reveal">
-        <span class="label c-teal">Nuestro equipo</span>
-        <h2>Las personas detrás <em>del proceso</em></h2>
-      </div>
-      <p class="lead reveal">Nueve profesionales administrativos y más de cincuenta maestros especializados acompañan la formación de cada estudiante.</p>
-    </div>
-    <div class="equipo-grid reveal" data-stagger>
-      <figure class="persona">
-        <div class="ph"><img src="img/diana-salamanca.jpg" alt="Diana Salamanca, Directora Artística" loading="lazy"></div>
-        <figcaption><b>Diana Salamanca</b><small>Directora Artística</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/maritza-salamanca.jpg" alt="Maritza Salamanca, Directora Administrativa" loading="lazy"></div>
-        <figcaption><b>Maritza Salamanca</b><small>Directora Administrativa</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/fabio-mahecha.jpg" alt="Fabio Alejandro Mahecha, Coordinador de Música" loading="lazy"></div>
-        <figcaption><b>Fabio Alejandro Mahecha</b><small>Coordinador de Música</small></figcaption>
-      </figure>
-    </div>
-    <div class="equipo-grid staff reveal" data-stagger>
-      <figure class="persona">
-        <div class="ph"><img src="img/paola-bustos.jpg" alt="Paola Andrea Bustos, Administradora General" loading="lazy"></div>
-        <figcaption><b>Paola Andrea Bustos</b><small>Administradora General</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/sandra-salamanca.jpg" alt="Sandra Salamanca, Marketing y Social Media" loading="lazy"></div>
-        <figcaption><b>Sandra Salamanca</b><small>Marketing y Social Media</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/lina-jimenez.jpg" alt="Lina María Jiménez, Innovación y Servicio al Cliente" loading="lazy"></div>
-        <figcaption><b>Lina María Jiménez</b><small>Innovación y Servicio</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/luz-mendoza.jpg" alt="Luz Marina Mendoza, Asistente Comercial Mazurén" loading="lazy"></div>
-        <figcaption><b>Luz Marina Mendoza</b><small>Comercial · Mazurén</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/maria-monterroza.jpeg" alt="María Fernanda Monterroza, Asistente Administrativa Salitre" loading="lazy"></div>
-        <figcaption><b>M. Fernanda Monterroza</b><small>Administrativa · Salitre</small></figcaption>
-      </figure>
-      <figure class="persona">
-        <div class="ph"><img src="img/sandra-lopez.jpg" alt="Sandra Carolina López, Asistente Administrativa Chía" loading="lazy"></div>
-        <figcaption><b>Sandra Carolina López</b><small>Administrativa · Chía</small></figcaption>
-      </figure>
-    </div>
-    <div class="equipo-note reveal">
-      <p>A ellos se suman más de 50 maestros especializados en cada disciplina, con programas adaptados al desarrollo motriz según las edades y espacios adecuados para cada práctica.</p>
-      <a href="#contacto" class="btn btn-line">Conócenos</a>
-    </div>
-  </div>
-</section>
-
-<!-- ================= PALABRAS GIGANTES 1 ================= -->
-<div class="scroll-words" aria-hidden="true">
-  <div class="sw-line">Danza · Música · Artes · Fitness · Babies · Danza · Música · Artes · Fitness · Babies</div>
-  <div class="sw-line">Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop · Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop</div>
-</div>
-
 <!-- ================= DISCIPLINAS ================= -->
 <section class="disciplinas" id="disciplinas">
   <div class="wrap">
     <div class="disc-head">
       <div class="reveal">
         <span class="label c-green">Disciplinas</span>
-        <h2>Encuentra tu <em>lenguaje</em> artístico</h2>
+        <h2 class="hl"><span class="ln"><span>Encuentra tu <em>lenguaje</em></span></span><span class="ln"><span>artístico</span></span></h2>
       </div>
       <p class="lead reveal">El arte potencia las habilidades de cada estudiante: concentración, atención y habilidades interpersonales. Programas para niños, jóvenes y adultos.</p>
     </div>
@@ -1043,6 +978,7 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 
 <!-- ================= ABT ================= -->
 <section class="abt" id="abt">
+  <div class="glow-layer" aria-hidden="true"><i class="g g1"></i><i class="g g2"></i></div>
   <div class="wrap">
     <div class="reveal">
       <span class="label">Certificación internacional</span>
@@ -1080,6 +1016,107 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     </div>
   </div>
 </section>
+
+<!-- ================= ACADEMIA ================= -->
+<section class="academia" id="academia">
+  <div class="wrap">
+    <div class="academia-media reveal-img">
+      <img data-plx="0.08" src="img/academia-en-avant.jpg" alt="Estudiantes de En Avant en clase" loading="lazy">
+      <div class="badge-year"><b>2009</b><small>Fundación</small></div>
+    </div>
+    <div class="academia-body reveal">
+      <span class="label c-purple">Nuestra academia</span>
+      <h2 class="hl"><span class="ln"><span>Un espacio donde cada estudiante</span></span><span class="ln"><span>encuentra su <em>vocación</em></span></span></h2>
+      <p class="quote" data-scroll-text>"Formamos una familia desde el 2009 buscando generar un espacio en donde el arte fuera el eje de la formación personal."</p>
+      <p class="lead">Desde el año 2009, En Avant busca ser un espacio de formación artística en donde cada estudiante encuentre su verdadera vocación en el arte. Manejamos diferentes programas en danza, música, artes, estimulación y fitness para que niños, jóvenes y adultos puedan ser partícipes de nuestras clases.</p>
+      <p class="lead">Encontrarás un staff de maestros y administrativos que día a día ponen no solo su conocimiento sino su alma en cada proceso. Te damos la bienvenida a nuestra familia En Avant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONÓCENOS (video) ================= -->
+<section class="conocenos" id="conocenos">
+  <div class="wrap reveal">
+    <span class="label">Conócenos</span>
+    <h2>El arte que <em>nos mueve</em></h2>
+    <p class="lead">Un vistazo a lo que vivimos cada día en En Avant.</p>
+    <figure class="video-frame" id="videoFrame">
+      <video id="brandVideo" preload="none" playsinline controls poster="video/conocenos-poster.jpg">
+        <source src="video/conocenos.mp4" type="video/mp4">
+        <track kind="captions" src="video/conocenos.vtt" srclang="es" label="Español" default>
+        Tu navegador no puede reproducir este video.
+      </video>
+      <p class="video-note">Este video no contiene diálogo: el audio es únicamente música instrumental.</p>
+      <img class="poster" src="video/conocenos-poster.jpg" alt="Video de En Avant" aria-hidden="true">
+      <button class="play" id="playBtn" aria-label="Reproducir video">
+        <span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      </button>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= EQUIPO ================= -->
+<section class="equipo" id="equipo">
+  <div class="wrap">
+    <div class="equipo-head">
+      <div class="reveal">
+        <span class="label c-teal">Nuestro equipo</span>
+        <h2>Las personas detrás <em>del proceso</em></h2>
+      </div>
+      <p class="lead reveal">Nueve profesionales administrativos y más de cincuenta maestros especializados acompañan la formación de cada estudiante.</p>
+    </div>
+    <div class="equipo-grid reveal" data-stagger>
+      <figure class="persona">
+        <div class="ph"><img src="img/diana-salamanca.jpg" alt="Diana Salamanca, Directora Artística" loading="lazy"></div>
+        <figcaption><b>Diana Salamanca</b><small>Directora Artística</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/maritza-salamanca.jpg" alt="Maritza Salamanca, Directora Administrativa" loading="lazy"></div>
+        <figcaption><b>Maritza Salamanca</b><small>Directora Administrativa</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/fabio-mahecha.jpg" alt="Fabio Alejandro Mahecha, Coordinador de Música" loading="lazy"></div>
+        <figcaption><b>Fabio Alejandro Mahecha</b><small>Coordinador de Música</small></figcaption>
+      </figure>
+    </div>
+    <div class="equipo-grid staff reveal" data-stagger>
+      <figure class="persona">
+        <div class="ph"><img src="img/paola-bustos.jpg" alt="Paola Andrea Bustos, Administradora General" loading="lazy"></div>
+        <figcaption><b>Paola Andrea Bustos</b><small>Administradora General</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/sandra-salamanca.jpg" alt="Sandra Salamanca, Marketing y Social Media" loading="lazy"></div>
+        <figcaption><b>Sandra Salamanca</b><small>Marketing y Social Media</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/lina-jimenez.jpg" alt="Lina María Jiménez, Innovación y Servicio al Cliente" loading="lazy"></div>
+        <figcaption><b>Lina María Jiménez</b><small>Innovación y Servicio</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/luz-mendoza.jpg" alt="Luz Marina Mendoza, Asistente Comercial Mazurén" loading="lazy"></div>
+        <figcaption><b>Luz Marina Mendoza</b><small>Comercial · Mazurén</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/maria-monterroza.jpeg" alt="María Fernanda Monterroza, Asistente Administrativa Salitre" loading="lazy"></div>
+        <figcaption><b>M. Fernanda Monterroza</b><small>Administrativa · Salitre</small></figcaption>
+      </figure>
+      <figure class="persona">
+        <div class="ph"><img src="img/sandra-lopez.jpg" alt="Sandra Carolina López, Asistente Administrativa Chía" loading="lazy"></div>
+        <figcaption><b>Sandra Carolina López</b><small>Administrativa · Chía</small></figcaption>
+      </figure>
+    </div>
+    <div class="equipo-note reveal">
+      <p>A ellos se suman más de 50 maestros especializados en cada disciplina, con programas adaptados al desarrollo motriz según las edades y espacios adecuados para cada práctica.</p>
+      <a href="#contacto" class="btn btn-line">Conócenos</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PALABRAS GIGANTES 1 ================= -->
+<div class="scroll-words" aria-hidden="true">
+  <div class="sw-line">Danza · Música · Artes · Fitness · Babies · Danza · Música · Artes · Fitness · Babies</div>
+  <div class="sw-line">Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop · Ballet · Jazz · Piano · Pintura · Yoga · Hip Hop</div>
+</div>
 
 <!-- ================= LOGROS Y TRAYECTORIA ================= -->
 <section class="logros" id="logros">
@@ -1119,10 +1156,11 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 
 <!-- ================= EGRESADOS DESTACADOS ================= -->
 <section class="egresada" id="egresada">
+  <div class="glow-layer" aria-hidden="true"><i class="g g1"></i><i class="g g2"></i></div>
   <div class="wrap">
     <div class="egr-head reveal">
       <span class="label c-teal">De En Avant al mundo</span>
-      <h2>Nuestros egresados <em>llegan lejos</em></h2>
+      <h2 class="hl"><span class="ln"><span>Nuestros egresados</span></span><span class="ln"><span><em>llegan lejos</em></span></span></h2>
     </div>
     <div class="egr-slider reveal" id="egrSlider">
       <div class="egr-slide active">
@@ -1400,38 +1438,6 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
-<!-- ================= ALIANZAS ================= -->
-<section class="alianzas" id="alianzas">
-  <div class="wrap">
-    <div class="reveal">
-      <span class="label c-teal">Colegios y jardines</span>
-      <h2>Llevamos el <em>arte</em> a tu institución</h2>
-      <p class="lead">Trabajamos de la mano con jardines infantiles y colegios para ofrecer programas artísticos a la medida — enviamos a nuestros maestros a sus instalaciones o recibimos a sus estudiantes en nuestros salones.</p>
-      <div class="alianzas-pts" data-stagger>
-        <div class="alianzas-pt">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/></svg>
-          <div><b>Maestros a tu institución</b><span>Nuestro equipo se desplaza a tu colegio o jardín con todo lo necesario.</span></div>
-        </div>
-        <div class="alianzas-pt">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-          <div><b>Programas a la medida</b><span>Diseñamos el plan artístico según las edades y objetivos de tu institución.</span></div>
-        </div>
-        <div class="alianzas-pt">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 9l12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          <div><b>Todas las disciplinas</b><span>Danza, música, artes, fitness y estimulación temprana, con la calidad En Avant.</span></div>
-        </div>
-      </div>
-      <div class="alianzas-cta">
-        <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Represento%20a%20un%20colegio%2Fjard%C3%ADn%20y%20quiero%20informaci%C3%B3n%20sobre%20alianzas%20y%20programas%20para%20instituciones." target="_blank" rel="noopener">Quiero una alianza</a>
-        <a class="btn btn-line" href="mailto:enavantescuela@gmail.com?subject=Alianza%20institucional%20—%20En%20Avant">Escríbenos un correo</a>
-      </div>
-    </div>
-    <div class="alianzas-visual reveal-img">
-      <img src="img/academia-en-avant.jpg" alt="Estudiantes de En Avant en clase" loading="lazy" onerror="this.closest('.alianzas-visual').style.display='none'">
-    </div>
-  </div>
-</section>
-
 <!-- ================= FAQ ================= -->
 <section class="faq" id="faq">
   <div class="wrap">
@@ -1446,6 +1452,10 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
         <div class="faq-a"><p>Recibimos estudiantes desde la primera infancia con nuestros programas Babies (Baby Ballet y Estimulación Musical), y tenemos programas para niños, jóvenes y adultos en todas las disciplinas, adaptados al desarrollo motriz de cada edad.</p></div>
       </div>
       <div class="faq-item">
+        <button class="faq-q">¿Cuánto cuesta?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Depende de la disciplina y la intensidad. Escríbenos por WhatsApp y en minutos te damos el valor exacto, sin compromiso.</p></div>
+      </div>
+      <div class="faq-item">
         <button class="faq-q">¿Cómo funciona la clase de cortesía?<span class="faq-x"></span></button>
         <div class="faq-a"><p>Es una clase real, gratuita y sin compromiso. Escríbenos por WhatsApp a la sede de tu preferencia, cuéntanos la edad del estudiante y la disciplina que le interesa, y agendamos el mejor horario para que la viva.</p></div>
       </div>
@@ -1458,8 +1468,8 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
         <div class="faq-a"><p>Sí. Las clases grupales se basan en la socialización y el aprendizaje colaborativo, mientras que las personalizadas ofrecen un enfoque individualizado donde cada estudiante aprende a su propio ritmo. Ambas modalidades están disponibles en la mayoría de disciplinas.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">¿En qué horarios atienden?<span class="faq-x"></span></button>
-        <div class="faq-a"><p>Nuestras tres sedes atienden de lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m., y los sábados de 8:00 a. m. a 2:00 p. m.</p></div>
+        <button class="faq-q">¿En qué horarios hay clases?<span class="faq-x"></span></button>
+        <div class="faq-a"><p>Dictamos clases de lunes a viernes en la tarde (3:00 a 8:00 p. m.) y los sábados en la mañana (7:00 a. m. a 2:30 p. m.). Escríbenos y coordinamos el mejor horario según la edad y la disciplina del estudiante.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">¿Trabajan con colegios y jardines infantiles?<span class="faq-x"></span></button>
@@ -1543,6 +1553,38 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   </div>
 </section>
 
+<!-- ================= ALIANZAS ================= -->
+<section class="alianzas" id="alianzas">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="label c-teal">Colegios y jardines</span>
+      <h2>Llevamos el <em>arte</em> a tu institución</h2>
+      <p class="lead">Trabajamos de la mano con jardines infantiles y colegios para ofrecer programas artísticos a la medida — enviamos a nuestros maestros a sus instalaciones o recibimos a sus estudiantes en nuestros salones.</p>
+      <div class="alianzas-pts" data-stagger>
+        <div class="alianzas-pt">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/></svg>
+          <div><b>Maestros a tu institución</b><span>Nuestro equipo se desplaza a tu colegio o jardín con todo lo necesario.</span></div>
+        </div>
+        <div class="alianzas-pt">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          <div><b>Programas a la medida</b><span>Diseñamos el plan artístico según las edades y objetivos de tu institución.</span></div>
+        </div>
+        <div class="alianzas-pt">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 9l12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <div><b>Todas las disciplinas</b><span>Danza, música, artes, fitness y estimulación temprana, con la calidad En Avant.</span></div>
+        </div>
+      </div>
+      <div class="alianzas-cta">
+        <a class="btn btn-ink" href="https://wa.me/573134308891?text=%C2%A1Hola%20En%20Avant!%20Represento%20a%20un%20colegio%2Fjard%C3%ADn%20y%20quiero%20informaci%C3%B3n%20sobre%20alianzas%20y%20programas%20para%20instituciones." target="_blank" rel="noopener">Quiero una alianza</a>
+        <a class="btn btn-line" href="mailto:enavantescuela@gmail.com?subject=Alianza%20institucional%20—%20En%20Avant">Escríbenos un correo</a>
+      </div>
+    </div>
+    <div class="alianzas-visual reveal-img">
+      <img src="img/academia-en-avant.jpg" alt="Estudiantes de En Avant en clase" loading="lazy" onerror="this.closest('.alianzas-visual').style.display='none'">
+    </div>
+  </div>
+</section>
+
 <!-- ================= SÍGUENOS ================= -->
 <section class="social-cta" id="siguenos">
   <div class="wrap reveal">
@@ -1563,6 +1605,8 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
     </div>
   </div>
 </section>
+
+</main>
 
 <!-- ================= FOOTER ================= -->
 <footer>
@@ -1644,6 +1688,15 @@ navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
   burger.classList.remove('open');navLinks.classList.remove('open');
 }));
 
+/* Accesibilidad: no auto-rotar si el usuario pide menos movimiento (WCAG 2.2.2)
+   y pausar cualquier carrusel al pasar el mouse o al enfocarlo con el teclado. */
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function pausable(zona,detener,reanudar){
+  if(!zona)return;
+  ['mouseenter','focusin'].forEach(ev=>zona.addEventListener(ev,detener));
+  ['mouseleave','focusout'].forEach(ev=>zona.addEventListener(ev,reanudar));
+}
+
 /* Hero slideshow */
 const slides=[...document.querySelectorAll('.hero-slide')];
 const dotsWrap=document.getElementById('heroDots');
@@ -1661,8 +1714,9 @@ function showSlide(i){
   slides.forEach((s,j)=>s.classList.toggle('active',j===hi));
   heroDots.forEach((d,j)=>d.classList.toggle('active',j===hi));
 }
-function autoHero(){heroTimer=setInterval(()=>showSlide(hi+1),7000)}
+function autoHero(){if(REDUCE)return;clearInterval(heroTimer);heroTimer=setInterval(()=>showSlide(hi+1),7000)}
 autoHero();
+pausable(document.querySelector('.hero'),()=>clearInterval(heroTimer),autoHero);
 
 /* Reveals */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
@@ -1709,11 +1763,47 @@ function showTesti(i){
   testis.forEach((t,j)=>t.classList.toggle('active',j===ti));
   dots.forEach((d,j)=>d.classList.toggle('active',j===ti));
 }
-function autoTesti(){tTimer=setInterval(()=>showTesti(ti+1),7000)}
+function autoTesti(){if(REDUCE)return;clearInterval(tTimer);tTimer=setInterval(()=>showTesti(ti+1),7000)}
 dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(+d.dataset.i);autoTesti()}));
 document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
 document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
 autoTesti();
+pausable(document.getElementById('testimonios'),()=>clearInterval(tTimer),autoTesti);
+
+/* Texto que se ilumina letra por letra al hacer scroll */
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const items=[...document.querySelectorAll('[data-scroll-text]')].map(el=>{
+    const txt=el.textContent,chars=[];
+    el.textContent='';
+    for(const ch of txt){
+      const s=document.createElement('span');
+      s.textContent=ch;s.style.opacity='.18';
+      el.appendChild(s);chars.push(s);
+    }
+    return {el,chars};
+  });
+  if(!items.length)return;
+  let ticking=false;
+  function update(){
+    ticking=false;
+    const vh=innerHeight;
+    items.forEach(({el,chars})=>{
+      const r=el.getBoundingClientRect();
+      if(r.bottom<-50||r.top>vh+50)return;
+      const start=vh*.85,end=vh*.32;
+      const p=Math.max(0,Math.min(1,(start-r.top)/(start-end)));
+      const n=chars.length,head=p*n,soft=6;
+      for(let i=0;i<n;i++){
+        const d=head-i;
+        chars[i].style.opacity = d<=0 ? '.18' : (d>=soft ? '1' : (.18+(d/soft)*.82).toFixed(2));
+      }
+    });
+  }
+  addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
+  addEventListener('resize',update);
+  update();
+})();
 
 /* Carrusel de egresados */
 const egrs=document.querySelectorAll('.egr-slide'),egrDots=document.querySelectorAll('.egr-dot');
@@ -1724,11 +1814,12 @@ if(egrs.length){
     egrs.forEach((s,j)=>s.classList.toggle('active',j===ei));
     egrDots.forEach((d,j)=>d.classList.toggle('active',j===ei));
   }
-  function autoEgr(){eTimer=setInterval(()=>showEgr(ei+1),8000)}
+  function autoEgr(){if(REDUCE)return;clearInterval(eTimer);eTimer=setInterval(()=>showEgr(ei+1),8000)}
   egrDots.forEach(d=>d.addEventListener('click',()=>{clearInterval(eTimer);showEgr(+d.dataset.i);autoEgr()}));
   document.getElementById('egrPrev').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei-1);autoEgr()});
   document.getElementById('egrNext').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei+1);autoEgr()});
   autoEgr();
+  pausable(document.getElementById('egresada'),()=>clearInterval(eTimer),autoEgr);
 }
 
 /* FAQ */
@@ -1745,17 +1836,19 @@ const waNumbers={'Mazurén (Bogotá)':'573134308891','Salitre (Bogotá)':'573114
 document.getElementById('contactForm').addEventListener('submit',e=>{
   e.preventDefault();
   const f=new FormData(e.target);
-  const sede=f.get('sede');
-  const msg=`¡Hola En Avant!%0A%0A*Solicitud de información*%0A`+
-    `Nombre: ${f.get('nombre')} ${f.get('apellido')}%0A`+
-    `Email: ${f.get('email')}%0A`+
-    `Teléfono: ${f.get('telefono')}%0A`+
-    `Sede: ${sede}%0A`+
-    `Disciplina: ${f.get('disciplina')}%0A`+
-    `Edad del estudiante: ${f.get('edad')}%0A`+
-    (f.get('modalidad')?`Modalidad: ${f.get('modalidad')}%0A`:'')+
-    (f.get('mensaje')?`%0AMensaje: ${encodeURIComponent(f.get('mensaje'))}`:'');
-  open(`https://wa.me/${waNumbers[sede]||'573134308891'}?text=${msg}`,'_blank');
+  const v=k=>(f.get(k)||'').toString().trim();
+  const sede=v('sede');
+  const lineas=['¡Hola En Avant!','','*Solicitud de información*',
+    `Nombre: ${v('nombre')} ${v('apellido')}`,
+    `Email: ${v('email')}`,
+    `Teléfono: ${v('telefono')}`,
+    `Sede: ${sede}`,
+    `Disciplina: ${v('disciplina')}`,
+    `Edad del estudiante: ${v('edad')}`];
+  if(v('modalidad')) lineas.push(`Modalidad: ${v('modalidad')}`);
+  if(v('mensaje')) lineas.push('',`Mensaje: ${v('mensaje')}`);
+  const msg=encodeURIComponent(lineas.join('\n'));
+  open(`https://wa.me/${waNumbers[sede]||'573134308891'}?text=${msg}`,'_blank','noopener');
 });
 
 document.getElementById('year').textContent=new Date().getFullYear();
@@ -1802,25 +1895,6 @@ if(finePointer){
   });
   document.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-on'));
 
-  /* Botones magnéticos */
-  document.querySelectorAll('.btn,.testi-arrow,.social,.wa-btn').forEach(el=>{
-    el.addEventListener('mousemove',e=>{
-      const r=el.getBoundingClientRect();
-      el.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.2}px,${(e.clientY-r.top-r.height/2)*.28}px)`;
-    });
-    el.addEventListener('mouseleave',()=>el.style.transform='');
-  });
-
-  /* Retratos que reaccionan al cursor */
-  document.querySelectorAll('.persona .ph').forEach(ph=>{
-    ph.addEventListener('mousemove',e=>{
-      const r=ph.getBoundingClientRect();
-      const px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
-      ph.style.transform=`perspective(700px) rotateX(${(0.5-py)*8}deg) rotateY(${(px-0.5)*10}deg)`;
-    });
-    ph.addEventListener('mouseleave',()=>ph.style.transform='');
-  });
-
   /* Hero: profundidad con el mouse */
   const heroEl=document.querySelector('.hero'),heroContent=document.querySelector('.hero-content'),heroSlidesEl=document.getElementById('heroSlides');
   let hx=0,hy=0,thx=0,thy=0;
@@ -1830,11 +1904,17 @@ if(finePointer){
   /* Ticker reactivo a la velocidad del scroll */
   const tickerTrack=document.querySelector('.ticker-track');
   tickerTrack.style.animation='none';
+  let tickerPausado=false;
+  pausable(document.querySelector('.ticker'),()=>tickerPausado=true,()=>tickerPausado=false);
   let tickX=0,lastY=scrollY,vel=0;
 
   const plxEls=[...document.querySelectorAll('[data-plx]')];
   const swBands=[...document.querySelectorAll('.scroll-words')];
   const vhOf=()=>innerHeight;
+  /* cachear el ancho del ticker: solo cambia al redimensionar (evita reflow por frame) */
+  let tickHalf=tickerTrack.scrollWidth/2;
+  addEventListener('resize',()=>{tickHalf=tickerTrack.scrollWidth/2});
+  addEventListener('load',()=>{tickHalf=tickerTrack.scrollWidth/2});
 
   (function loop(){
     /* anillo con retardo elástico */
@@ -1847,8 +1927,8 @@ if(finePointer){
     /* velocidad de scroll suavizada */
     vel+=((scrollY-lastY)-vel)*.1;lastY=scrollY;
     /* ticker: acelera al bajar, retrocede al subir */
-    const half=tickerTrack.scrollWidth/2;
-    tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
+    const half=tickHalf;
+    if(!tickerPausado)tickX-=.6+Math.max(-2.5,Math.min(6,vel*.12));
     if(tickX<=-half)tickX+=half;
     if(tickX>0)tickX-=half;
     tickerTrack.style.transform=`translateX(${tickX}px)`;
@@ -2171,10 +2251,18 @@ if(finePointer){
         },
         {
           "@type": "Question",
-          "name": "¿En qué horarios atienden?",
+          "name": "¿En qué horarios hay clases?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Nuestras tres sedes atienden de lunes a viernes de 10:00 a. m. a 1:00 p. m. y de 3:00 a 7:00 p. m., y los sábados de 8:00 a. m. a 2:00 p. m."
+            "text": "Dictamos clases de lunes a viernes en la tarde (3:00 a 8:00 p. m.) y los sábados en la mañana (7:00 a. m. a 2:30 p. m.). Escríbenos y coordinamos el mejor horario según la edad y la disciplina del estudiante."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cuánto cuesta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende de la disciplina y la intensidad. Escríbenos por WhatsApp y en minutos te damos el valor exacto, sin compromiso."
           }
         },
         {
