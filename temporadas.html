@@ -322,6 +322,7 @@ function show(i){
   var im = new Image();
   im.onload = function(){ tlbImg.src = im.src; requestAnimationFrame(function(){ requestAnimationFrame(function(){ tlbImg.classList.add('ready'); }); }); };
   im.src = big(current[idx]);
+  tlbImg.alt = 'En Avant — ' + (tlbTitle.textContent || 'Temporada') + ', foto ' + (idx + 1) + ' de ' + current.length;
   [current[(idx+1)%current.length], current[(idx-1+current.length)%current.length]].forEach(function(id){ var pl=new Image(); pl.src=big(id); });
   tlbCount.textContent = (idx + 1) + ' / ' + current.length;
   [].forEach.call(tlbThumbs.children, function(tb, j){ tb.classList.toggle('active', j === idx); if (j === idx) tb.scrollIntoView({block:'nearest', inline:'center', behavior:'smooth'}); });
