@@ -1768,7 +1768,7 @@ function showTesti(i){
   testis.forEach((t,j)=>t.classList.toggle('active',j===ti));
   dots.forEach((d,j)=>d.classList.toggle('active',j===ti));
 }
-function autoTesti(){if(REDUCE)return;clearInterval(tTimer);tTimer=setInterval(()=>showTesti(ti+1),7000)}
+function autoTesti(){clearInterval(tTimer);tTimer=setInterval(()=>showTesti(ti+1),7000)}
 dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(+d.dataset.i);autoTesti()}));
 document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
 document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
@@ -1819,7 +1819,7 @@ if(egrs.length){
     egrs.forEach((s,j)=>s.classList.toggle('active',j===ei));
     egrDots.forEach((d,j)=>d.classList.toggle('active',j===ei));
   }
-  function autoEgr(){if(REDUCE)return;clearInterval(eTimer);eTimer=setInterval(()=>showEgr(ei+1),8000)}
+  function autoEgr(){clearInterval(eTimer);eTimer=setInterval(()=>showEgr(ei+1),8000)}
   egrDots.forEach(d=>d.addEventListener('click',()=>{clearInterval(eTimer);showEgr(+d.dataset.i);autoEgr()}));
   document.getElementById('egrPrev').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei-1);autoEgr()});
   document.getElementById('egrNext').addEventListener('click',()=>{clearInterval(eTimer);showEgr(ei+1);autoEgr()});
