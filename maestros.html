@@ -19,18 +19,17 @@
 /* ============================================================
    Portal Maestros — contenedor del app de Apps Script.
    ------------------------------------------------------------
-   El iframe se sube para dejar fuera de vista la barra de aviso
-   que Google añade a las apps de Apps Script. Esa barra vive en
-   el documento de Google (otro dominio), así que no se puede
-   ocultar con CSS: solo se puede desplazar fuera del recorte.
+   La barra de aviso que Google añade a las apps de Apps Script
+   ("Un usuario de Google Apps Script creó esta aplicación") solo
+   aparece cuando la app se abre directamente en script.google.com.
+   Al incrustarla en un iframe, Google NO la muestra: por eso aquí
+   no hace falta recortar nada.
 
-   --corte  = cuántos píxeles se suben.
-   Si algún día se ve un pedazo del aviso, sube el número.
-   Si se ve cortado el encabezado del portal, bájalo.
-   En pantallas angostas el aviso ocupa dos líneas, por eso el
-   valor es mayor en el media query de abajo.
+   --corte se deja como interruptor por si algún día Google cambia
+   ese comportamiento y el aviso reaparece. Si eso pasa, sube el
+   valor hasta que el aviso quede fuera de vista.
    ============================================================ */
-:root { --corte: 46px; }
+:root { --corte: 0px; }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -97,14 +96,6 @@ html, body {
   text-decoration: none;
 }
 #respaldo:hover { background: #A40FC4; border-color: #A40FC4; }
-
-/* Celular: el aviso de Google se parte en dos líneas y ocupa más alto. */
-@media (max-width: 760px) {
-  :root { --corte: 74px; }
-}
-@media (max-width: 420px) {
-  :root { --corte: 84px; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
