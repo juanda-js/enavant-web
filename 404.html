@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Página no encontrada | En Avant</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#A40FC4;--teal-deep:#037070;--ink:#121014;--ink-45:rgba(18,16,20,.6);
+  --paper:#FAF9F7;--line:rgba(18,16,20,.14);
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-body);color:var(--ink);background:var(--paper);
+  min-height:100vh;display:grid;place-items:center;padding:32px;line-height:1.6;
+}
+.box{max-width:620px;text-align:center}
+.label{
+  font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--teal-deep);font-weight:600;
+}
+h1{
+  font-family:var(--font-display);font-weight:400;letter-spacing:-.02em;
+  font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.1;margin:18px 0 16px;
+}
+h1 em{font-style:italic;color:var(--purple)}
+p{color:var(--ink-45);font-size:1.02rem;max-width:46ch;margin:0 auto}
+.links{
+  margin-top:36px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+}
+.links a{
+  font-size:.84rem;font-weight:600;letter-spacing:.02em;text-decoration:none;
+  color:var(--ink);border:1px solid var(--line);border-radius:100px;
+  padding:11px 22px;transition:all .3s var(--ease);
+}
+.links a:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.links a.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.links a.primary:hover{background:var(--purple);border-color:var(--purple)}
+.links a:focus-visible{outline:2px solid var(--purple);outline-offset:3px}
+#redir{display:none;margin-top:28px;font-size:.9rem;color:var(--ink-45)}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <span class="label">Error 404</span>
+  <h1>Esta página <em>cambió de lugar</em></h1>
+  <p>Renovamos nuestro sitio y algunas direcciones se movieron. Te ayudamos a encontrar lo que buscas.</p>
+
+  <div class="links">
+    <a class="primary" href="/">Ir al inicio</a>
+    <a href="/danza.html">Danza</a>
+    <a href="/musica.html">Música</a>
+    <a href="/artes.html">Artes</a>
+    <a href="/fitness.html">Fitness</a>
+    <a href="/babies.html">Babies</a>
+    <a href="/temporadas.html">Temporadas</a>
+    <a href="/#contacto">Contacto</a>
+  </div>
+
+  <p id="redir">Redirigiendo…</p>
+</div>
+
+<script>
+/* ============================================================
+   Redirección de las URLs del sitio anterior (Wix).
+   GitHub Pages no permite redirecciones 301 del lado del
+   servidor, así que se resuelven aquí. Mantener esta tabla
+   actualizada si aparecen más URLs antiguas en Search Console.
+   ============================================================ */
+(function () {
+  var MAPA = {
+    '/disciplinas': '/#disciplinas',
+    '/services-5': '/#disciplinas',
+    '/academia': '/#academia',
+    '/abt-1': '/#abt',
+    '/portfolio': '/#logros',
+    '/contacto': '/#contacto',
+    '/contact-8': '/#contacto',
+    '/danza-1': '/danza.html',
+    '/musica': '/musica.html',
+    '/artes-1': '/artes.html',
+    '/fitness-1': '/fitness.html',
+    '/babies': '/babies.html',
+    '/funcion-danza': '/temporadas.html',
+    '/copia-de-funcion-danza': '/temporadas.html',
+    '/inscripciones-temporada-2025': '/temporadas.html',
+    '/copia-de-listado-de-artistas-musica': '/musica.html',
+    '/terminos-y-condiciones': '/solicitudes.html',
+    '/general-6': '/',
+    '/copia-de-pagina-redireccion': '/'
+  };
+
+  var ruta = location.pathname;
+  try { ruta = decodeURIComponent(ruta); } catch (e) {}
+
+  // Normalizar: minúsculas, sin tildes, sin barra final.
+  ruta = ruta.toLowerCase()
+             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+             .replace(/\/+$/, '');
+  if (ruta === '') ruta = '/';
+
+  var destino = MAPA[ruta];
+  if (destino) {
+    document.getElementById('redir').style.display = 'block';
+    location.replace(destino);
+  }
+})();
+</script>
+
+</body>
+</html>
