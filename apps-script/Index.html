@@ -28,6 +28,7 @@
     --field: #F1EFED;
     --ok: #2E7D32;
     --no: #B3261E;
+    --warn: #8A5A00;
     --display: 'Fraunces', Georgia, serif;
     --body: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
     --ease: cubic-bezier(.22,1,.36,1);
@@ -47,25 +48,15 @@
 
   /* ================= LOGIN ================= */
   #login-view {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: fixed; inset: 0; z-index: 999;
+    display: flex; justify-content: center; align-items: center;
     padding: 24px;
     background: var(--ink);
-    overflow: hidden;
+    overflow: auto;
   }
-
-  /* Resplandor de "luz de escenario", igual que en el sitio. */
-  #login-view::before,
-  #login-view::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
+  #login-view::before, #login-view::after {
+    content: ""; position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none;
   }
   #login-view::before {
     width: 70vw; height: 70vw; max-width: 520px; max-height: 520px;
@@ -79,77 +70,48 @@
   }
 
   .login-card {
-    position: relative;
-    z-index: 1;
+    position: relative; z-index: 1;
     background: var(--paper);
     padding: 40px 32px 34px;
     border-radius: 4px;
-    width: 100%;
-    max-width: 380px;
+    width: 100%; max-width: 380px;
     text-align: center;
     box-shadow: 0 30px 70px -24px rgba(0,0,0,.7);
   }
-
   .logo-img { width: 116px; height: auto; margin: 0 auto 26px; display: block; }
-
   .login-card h1 {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: 1.95rem;
-    letter-spacing: -.02em;
-    line-height: 1.1;
-    margin: 0 0 8px;
+    font-family: var(--display); font-weight: 400; font-size: 1.95rem;
+    letter-spacing: -.02em; line-height: 1.1; margin: 0 0 8px;
   }
   .login-card h1 em { font-style: italic; color: var(--purple); }
-
-  .login-card .sub {
-    margin: 0 0 26px;
-    font-size: .92rem;
-    color: var(--ink-60);
-  }
+  .login-card .sub { margin: 0 0 24px; font-size: .92rem; color: var(--ink-60); }
+  .login-card .field + .field { margin-top: 10px; }
 
   /* ================= CAMPOS ================= */
   .field {
-    width: 100%;
-    height: 54px;
-    padding: 0 16px;
+    width: 100%; height: 54px; padding: 0 16px;
     font-family: var(--body);
     font-size: 16px;           /* 16px evita que iOS haga zoom al enfocar */
-    font-weight: 500;
-    color: var(--ink);
+    font-weight: 500; color: var(--ink);
     background: var(--field);
-    border: 1.5px solid transparent;
-    border-radius: 3px;
+    border: 1.5px solid transparent; border-radius: 3px;
     outline: none;
     transition: border-color .25s var(--ease), background .25s var(--ease);
-    -webkit-appearance: none;
-    appearance: none;
+    -webkit-appearance: none; appearance: none;
   }
   .field::placeholder { color: var(--ink-40); font-weight: 400; }
-  .field:focus {
-    background: var(--white);
-    border-color: var(--purple);
-  }
+  .field:focus { background: var(--white); border-color: var(--purple); }
 
-  /* Oculta las flechitas del input numérico */
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=number] { -moz-appearance: textfield; }
 
   .btn {
-    width: 100%;
-    height: 54px;
-    margin-top: 14px;
-    font-family: var(--body);
-    font-size: .82rem;
-    font-weight: 600;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--paper);
-    background: var(--ink);
-    border: none;
-    border-radius: 100px;
-    cursor: pointer;
+    width: 100%; height: 54px; margin-top: 16px;
+    font-family: var(--body); font-size: .82rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--paper); background: var(--ink);
+    border: none; border-radius: 100px; cursor: pointer;
     transition: background .3s var(--ease), transform .2s var(--ease);
   }
   .btn:hover:not(:disabled) { background: var(--purple); }
@@ -161,209 +123,251 @@
   #app-view { display: none; padding-bottom: 48px; }
 
   .header {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 16px 20px;
-    padding-top: calc(16px + env(safe-area-inset-top));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: var(--ink); color: var(--paper);
+    padding: 16px 20px; padding-top: calc(16px + env(safe-area-inset-top));
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 100;
   }
   .header .nombre {
-    font-family: var(--display);
-    font-weight: 400;
-    font-size: 1.15rem;
-    letter-spacing: -.01em;
-    line-height: 1.25;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-family: var(--display); font-weight: 400; font-size: 1.15rem;
+    letter-spacing: -.01em; line-height: 1.25;
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .header .rol {
-    display: block;
-    font-size: .64rem;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: rgba(250,249,247,.55);
-    margin-top: 3px;
+    display: block; font-size: .64rem; letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(250,249,247,.55); margin-top: 3px;
   }
   .logout-btn {
-    flex-shrink: 0;
-    width: 42px; height: 42px;
-    display: grid;
-    place-items: center;
-    background: transparent;
-    border: 1px solid rgba(250,249,247,.28);
-    border-radius: 50%;
-    color: var(--paper);
-    cursor: pointer;
+    flex-shrink: 0; width: 42px; height: 42px;
+    display: grid; place-items: center;
+    background: transparent; border: 1px solid rgba(250,249,247,.28);
+    border-radius: 50%; color: var(--paper); cursor: pointer;
     transition: background .25s var(--ease), border-color .25s var(--ease);
   }
   .logout-btn:hover { background: rgba(250,249,247,.12); border-color: rgba(250,249,247,.5); }
   .logout-btn svg { width: 17px; height: 17px; }
 
-  .controls {
-    display: flex;
-    gap: 12px;
-    padding: 20px 16px 6px;
+  /* ================= PESTAÑAS ================= */
+  .tabs {
+    display: flex; gap: 26px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 90;
   }
+  .tab {
+    position: relative;
+    padding: 15px 0 13px;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--body); font-size: .74rem; font-weight: 600;
+    letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-40);
+    transition: color .25s var(--ease);
+  }
+  .tab::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--purple);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .3s var(--ease);
+  }
+  .tab.active { color: var(--ink); }
+  .tab.active::after { transform: scaleX(1); }
+  .tab:focus-visible { outline: 2px solid var(--purple); outline-offset: -4px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ================= CONTROLES ================= */
+  .controls { display: flex; gap: 12px; padding: 20px 16px 6px; }
   .input-group { flex: 1; min-width: 0; }
   .input-group label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: .64rem;
-    font-weight: 600;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: .64rem; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--teal); margin-bottom: 8px;
   }
   .input-group label svg { width: 12px; height: 12px; flex-shrink: 0; }
 
   select.field {
     padding-right: 34px;
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23A40FC4' stroke-width='1.6' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 11px auto;
-    text-overflow: ellipsis;
+    background-repeat: no-repeat; background-position: right 14px center;
+    background-size: 11px auto; text-overflow: ellipsis;
   }
   select.field:disabled {
-    background-image: none;
-    padding-right: 16px;
-    color: var(--ink);
-    -webkit-text-fill-color: var(--ink);
-    opacity: 1;
+    background-image: none; padding-right: 16px;
+    color: var(--ink); -webkit-text-fill-color: var(--ink); opacity: 1;
   }
-  input[type=date].field { font-weight: 500; }
 
-  /* ================= LISTA ================= */
-  .student-list { padding: 14px 16px 0; }
+  /* ================= LISTA DE CLASES ================= */
+  .student-list, .resumen-body { padding: 14px 16px 0; }
 
   .list-count {
-    font-size: .68rem;
-    font-weight: 600;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--ink-40);
-    padding: 0 2px 12px;
+    font-size: .68rem; font-weight: 600; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-40); padding: 0 2px 12px;
   }
 
   .student-card {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--purple);
-    border-radius: 3px;
-    padding: 18px;
-    margin-bottom: 12px;
+    background: var(--white); border: 1px solid var(--line);
+    border-left: 3px solid var(--purple); border-radius: 3px;
+    padding: 18px; margin-bottom: 12px;
   }
-
   .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 10px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; margin-bottom: 10px;
   }
   .time-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: .74rem;
-    font-weight: 700;
-    letter-spacing: .04em;
-    color: var(--purple-dark);
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .74rem; font-weight: 700; letter-spacing: .04em;
+    color: var(--purple-dark); white-space: nowrap;
   }
   .time-badge svg { width: 12px; height: 12px; }
   .modalidad-text {
-    font-size: .68rem;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--ink-40);
-    text-align: right;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 52%;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-40); text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 52%;
   }
-
   .student-name {
-    font-family: var(--display);
-    font-weight: 500;
-    font-size: 1.22rem;
-    letter-spacing: -.015em;
-    line-height: 1.25;
-    margin-bottom: 3px;
+    font-family: var(--display); font-weight: 500; font-size: 1.22rem;
+    letter-spacing: -.015em; line-height: 1.25; margin-bottom: 3px;
   }
   .details { font-size: .86rem; color: var(--ink-60); margin-bottom: 16px; }
 
-  /* Botones Sí / No */
-  .radio-group {
-    display: flex;
-    gap: 8px;
-  }
+  .radio-group { display: flex; gap: 8px; }
   .radio-option { flex: 1; }
   .radio-option input { position: absolute; opacity: 0; pointer-events: none; }
-
   .radio-option label {
-    display: block;
-    height: 48px;
-    line-height: 46px;
-    text-align: center;
-    border: 1.5px solid var(--line);
-    border-radius: 100px;
-    font-size: .78rem;
-    font-weight: 600;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--ink-60);
-    background: var(--white);
-    cursor: pointer;
-    transition: all .25s var(--ease);
-    -webkit-tap-highlight-color: transparent;
+    display: block; height: 48px; line-height: 46px; text-align: center;
+    border: 1.5px solid var(--line); border-radius: 100px;
+    font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-60); background: var(--white); cursor: pointer;
+    transition: all .25s var(--ease); -webkit-tap-highlight-color: transparent;
   }
   .radio-option label:active { transform: scale(.97); }
-
-  input[value="Si"]:checked + label {
-    background: var(--ok); border-color: var(--ok); color: #fff;
-  }
-  input[value="No"]:checked + label {
-    background: var(--no); border-color: var(--no); color: #fff;
-  }
+  input[value="Si"]:checked + label { background: var(--ok); border-color: var(--ok); color: #fff; }
+  input[value="No"]:checked + label { background: var(--no); border-color: var(--no); color: #fff; }
   .radio-option input:focus-visible + label { outline: 2px solid var(--purple); outline-offset: 2px; }
   .radio-option input:disabled + label { opacity: .5; cursor: default; }
 
+  .ver-historial {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 14px; padding: 0;
+    background: none; border: none; cursor: pointer;
+    font-family: var(--body); font-size: .72rem; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--teal);
+  }
+  .ver-historial svg { width: 13px; height: 13px; }
+  .ver-historial:hover { color: var(--purple); }
+  .ver-historial:focus-visible { outline: 2px solid var(--purple); outline-offset: 3px; }
+
+  /* ================= RESUMEN ================= */
+  .stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--white); border: 1px solid var(--line);
+    border-radius: 3px; padding: 16px;
+  }
+  .stat b {
+    display: block; font-family: var(--display); font-weight: 400;
+    font-size: 2rem; line-height: 1; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat span {
+    display: block; margin-top: 7px;
+    font-size: .64rem; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-40);
+  }
+  .stat.alerta { border-color: rgba(138,90,0,.4); background: rgba(138,90,0,.05); }
+  .stat.alerta b { color: var(--warn); }
+  .stat.alerta span { color: var(--warn); }
+
+  .sesion {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    background: var(--white); border: 1px solid var(--line);
+    border-radius: 3px; padding: 14px 16px; margin-bottom: 8px;
+  }
+  .sesion .izq { min-width: 0; }
+  .sesion .fecha {
+    font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--purple-dark); margin-bottom: 4px;
+  }
+  .sesion .prog {
+    font-size: .92rem; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sesion .meta { font-size: .76rem; color: var(--ink-40); margin-top: 3px; }
+  .sesion .der { flex-shrink: 0; text-align: right; }
+  .pill {
+    display: inline-block; padding: 4px 10px; border-radius: 100px;
+    font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .pill.ok { background: rgba(46,125,50,.1); color: var(--ok); }
+  .pill.pend { background: rgba(138,90,0,.12); color: var(--warn); }
+
+  /* ================= HISTORIAL (modal) ================= */
+  .modal {
+    position: fixed; inset: 0; z-index: 300;
+    display: none; align-items: flex-end; justify-content: center;
+    background: rgba(18,16,20,.55);
+  }
+  .modal.open { display: flex; }
+  .modal-card {
+    background: var(--paper); width: 100%; max-width: 520px;
+    max-height: 88vh; overflow-y: auto;
+    border-radius: 12px 12px 0 0;
+    padding: 26px 20px calc(26px + env(safe-area-inset-bottom));
+    animation: subir .32s var(--ease);
+  }
+  @keyframes subir { from { transform: translateY(30px); opacity: 0; } }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 14px; margin-bottom: 18px;
+  }
+  .modal-head h2 {
+    font-family: var(--display); font-weight: 400; font-size: 1.5rem;
+    letter-spacing: -.02em; line-height: 1.2; margin: 0;
+  }
+  .modal-head .cerrar {
+    flex-shrink: 0; width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: none; border: 1px solid var(--line); border-radius: 50%;
+    color: var(--ink-60); cursor: pointer;
+  }
+  .modal-head .cerrar:hover { background: var(--field); color: var(--ink); }
+  .modal-head .cerrar svg { width: 15px; height: 15px; }
+
+  .hist-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .hist-row:last-child { border-bottom: none; }
+  .hist-row .f { font-size: .88rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .hist-row .p { font-size: .76rem; color: var(--ink-40); margin-top: 2px; }
+  .marca {
+    flex-shrink: 0; font-size: .68rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 100px;
+  }
+  .marca.si { background: rgba(46,125,50,.1); color: var(--ok); }
+  .marca.no { background: rgba(179,38,30,.1); color: var(--no); }
+  .marca.sin { background: var(--field); color: var(--ink-40); }
+
   /* ================= ESTADOS ================= */
   .empty-state {
-    text-align: center;
-    color: var(--ink-40);
-    padding: 54px 24px;
-    font-size: .94rem;
+    text-align: center; color: var(--ink-40);
+    padding: 54px 24px; font-size: .94rem;
   }
   .empty-state svg { width: 40px; height: 40px; margin-bottom: 16px; opacity: .38; }
 
   .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(250,249,247,.86);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
+    position: fixed; inset: 0; background: rgba(250,249,247,.86);
+    display: none; justify-content: center; align-items: center; z-index: 400;
   }
   .spinner {
     width: 34px; height: 34px;
-    border: 2px solid var(--line);
-    border-top-color: var(--purple);
-    border-radius: 50%;
-    animation: giro .8s linear infinite;
+    border: 2px solid var(--line); border-top-color: var(--purple);
+    border-radius: 50%; animation: giro .8s linear infinite;
   }
   @keyframes giro { to { transform: rotate(360deg); } }
 
@@ -371,10 +375,12 @@
     * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
 
-  /* Pantallas grandes: se centra, no se estira. */
   @media (min-width: 720px) {
-    .header { padding-left: 32px; padding-right: 32px; }
-    .controls, .student-list { max-width: 680px; margin-left: auto; margin-right: auto; }
+    .header, .tabs { padding-left: 32px; padding-right: 32px; }
+    .controls, .student-list, .resumen-body { max-width: 680px; margin-left: auto; margin-right: auto; }
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .modal { align-items: center; }
+    .modal-card { border-radius: 6px; }
   }
 </style>
 </head>
@@ -388,9 +394,11 @@
       <!-- Logo servido desde el sitio propio, NO desde Wix. -->
       <img src="https://www.enavantescuela.com/img/logo-en-avant.png" alt="En Avant" class="logo-img">
       <h1>Portal <em>Docente</em></h1>
-      <p class="sub">Ingresa tu cédula para continuar</p>
+      <p class="sub">Ingresa tu cédula y la contraseña</p>
       <input type="number" id="cedulaInput" class="field" placeholder="Número de documento"
              inputmode="numeric" autocomplete="off">
+      <input type="password" id="claveInput" class="field" placeholder="Contraseña"
+             autocomplete="current-password">
       <button class="btn" id="btnLogin">Ingresar</button>
     </div>
   </div>
@@ -409,34 +417,73 @@
       </button>
     </div>
 
-    <div class="controls">
-      <div class="input-group">
-        <label for="sedeSelect">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
-          </svg>
-          Sede
-        </label>
-        <select id="sedeSelect" class="field"></select>
+    <div class="tabs">
+      <button class="tab active" id="tabClases">Mis clases</button>
+      <button class="tab" id="tabResumen">Mi resumen</button>
+    </div>
+
+    <!-- ---------- Vista: clases del día ---------- -->
+    <div class="view active" id="view-clases">
+      <div class="controls">
+        <div class="input-group">
+          <label for="sedeSelect">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            Sede
+          </label>
+          <select id="sedeSelect" class="field"></select>
+        </div>
+        <div class="input-group">
+          <label for="dateInput">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            Fecha
+          </label>
+          <input type="date" id="dateInput" class="field">
+        </div>
       </div>
-      <div class="input-group">
-        <label for="dateInput">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+
+      <div class="student-list" id="listaEstudiantes">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
           </svg>
-          Fecha
-        </label>
-        <input type="date" id="dateInput" class="field">
+          <div>Selecciona una sede y una fecha<br>para ver tus clases.</div>
+        </div>
       </div>
     </div>
 
-    <div class="student-list" id="listaEstudiantes">
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-        </svg>
-        <div>Selecciona una sede y una fecha<br>para ver tus clases.</div>
+    <!-- ---------- Vista: resumen del mes ---------- -->
+    <div class="view" id="view-resumen">
+      <div class="controls">
+        <div class="input-group">
+          <label for="mesInput">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+            </svg>
+            Mes
+          </label>
+          <input type="month" id="mesInput" class="field">
+        </div>
       </div>
+      <div class="resumen-body" id="resumenBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= HISTORIAL ================= -->
+  <div class="modal" id="modalHistorial" role="dialog" aria-modal="true" aria-labelledby="histTitulo">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="histTitulo">Historial</h2>
+        <button class="cerrar" id="btnCerrarHist" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="histBody"></div>
     </div>
   </div>
 
@@ -444,39 +491,51 @@
   var CLAVE_SESION = 'usuarioEnAvant';
   var currentUser = {};
 
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio',
+               'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
   /* ---------- Utilidades ---------- */
 
   // Escapa texto antes de meterlo en HTML. Sin esto, un nombre con
   // "<" o "&" rompe la tarjeta del estudiante.
   function esc(txt) {
     return String(txt == null ? '' : txt)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   function mostrarCarga(show) {
     document.getElementById('loader').style.display = show ? 'flex' : 'none';
   }
 
-  function errorGrave(msg) {
-    mostrarCarga(false);
-    Swal.fire({
-      icon: 'error',
-      title: 'Sin conexión',
-      text: msg || 'No pudimos conectar con el servidor. Revisa tu internet e intenta de nuevo.',
-      confirmButtonColor: '#A40FC4'
-    });
-  }
-
   function avisar(icono, titulo, texto) {
     Swal.fire({ icon: icono, title: titulo, text: texto, confirmButtonColor: '#A40FC4' });
   }
 
-  // Comprueba que una sesión guardada tenga la forma esperada.
-  // Si quedó una sesión vieja o incompleta, la app arrancaba rota.
+  function errorGrave(msg) {
+    mostrarCarga(false);
+    avisar('error', 'Sin conexión',
+      msg || 'No pudimos conectar con el servidor. Revisa tu internet e intenta de nuevo.');
+  }
+
+  function vacio(mensaje) {
+    return '<div class="empty-state"><div>' + esc(mensaje) + '</div></div>';
+  }
+
+  // "2026-07-18" -> "18 jul"
+  function fechaCorta(iso) {
+    var p = String(iso).split('-');
+    if (p.length !== 3) return iso;
+    return Number(p[2]) + ' ' + MESES[Number(p[1]) - 1].slice(0, 3);
+  }
+
+  // "2026-07" -> "julio de 2026"
+  function mesLargo(anioMes) {
+    var p = String(anioMes).split('-');
+    if (p.length !== 2) return anioMes;
+    return MESES[Number(p[1]) - 1] + ' de ' + p[0];
+  }
+
   function sesionValida(u) {
     return u && typeof u.nombre === 'string' && u.nombre !== '' &&
            Object.prototype.toString.call(u.sedes) === '[object Array]' &&
@@ -487,22 +546,35 @@
     try { localStorage.removeItem(CLAVE_SESION); } catch (e) {}
   }
 
-  function vacio(mensaje) {
-    return '<div class="empty-state"><div>' + esc(mensaje) + '</div></div>';
-  }
-
   /* ---------- Arranque ---------- */
 
   window.addEventListener('load', function () {
-    document.getElementById('dateInput').valueAsDate = new Date();
+    var hoy = new Date();
+    document.getElementById('dateInput').valueAsDate = hoy;
+    document.getElementById('mesInput').value =
+      hoy.getFullYear() + '-' + ('0' + (hoy.getMonth() + 1)).slice(-2);
 
     document.getElementById('btnLogin').addEventListener('click', handleLogin);
     document.getElementById('btnLogout').addEventListener('click', logout);
     document.getElementById('sedeSelect').addEventListener('change', cargarClases);
     document.getElementById('dateInput').addEventListener('change', cargarClases);
+    document.getElementById('mesInput').addEventListener('change', cargarResumen);
 
-    document.getElementById('cedulaInput').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') handleLogin();
+    document.getElementById('tabClases').addEventListener('click', function () { cambiarTab('clases'); });
+    document.getElementById('tabResumen').addEventListener('click', function () { cambiarTab('resumen'); });
+
+    document.getElementById('btnCerrarHist').addEventListener('click', cerrarHistorial);
+    document.getElementById('modalHistorial').addEventListener('click', function (e) {
+      if (e.target === this) cerrarHistorial();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') cerrarHistorial();
+    });
+
+    ['cedulaInput', 'claveInput'].forEach(function (id) {
+      document.getElementById(id).addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') handleLogin();
+      });
     });
 
     var guardado = null;
@@ -512,7 +584,7 @@
       currentUser = guardado;
       mostrarApp();
     } else {
-      limpiarSesion();   // sesión corrupta: se descarta y se pide login
+      limpiarSesion();   // sesión corrupta o vieja: se descarta y se pide login
     }
   });
 
@@ -520,7 +592,10 @@
 
   function handleLogin() {
     var cedula = document.getElementById('cedulaInput').value;
+    var clave = document.getElementById('claveInput').value;
+
     if (!cedula) return avisar('warning', 'Falta tu cédula', 'Digita tu número de documento.');
+    if (!clave)  return avisar('warning', 'Falta la contraseña', 'Digita la contraseña que te dieron.');
 
     var btn = document.getElementById('btnLogin');
     btn.disabled = true;
@@ -531,18 +606,20 @@
         btn.disabled = false;
         mostrarCarga(false);
         if (res && res.success) {
+          // La contraseña NO se guarda: solo se usa para entrar.
           currentUser = { cedula: cedula, nombre: res.nombre, sedes: res.sedes };
           try { localStorage.setItem(CLAVE_SESION, JSON.stringify(currentUser)); } catch (e) {}
+          document.getElementById('claveInput').value = '';
           mostrarApp();
         } else {
-          avisar('error', 'No pudimos entrar', (res && res.message) || 'Revisa tu número de documento.');
+          avisar('error', 'No pudimos entrar', (res && res.message) || 'Revisa tus datos.');
         }
       })
       .withFailureHandler(function (err) {
         btn.disabled = false;
         errorGrave(err && err.message);
       })
-      .loginMaestro(cedula);
+      .loginMaestro(cedula, clave);
   }
 
   function mostrarApp() {
@@ -554,12 +631,9 @@
     select.innerHTML = '';
     currentUser.sedes.forEach(function (sede) {
       var opt = document.createElement('option');
-      opt.value = sede;
-      opt.innerText = sede;
+      opt.value = sede; opt.innerText = sede;
       select.appendChild(opt);
     });
-
-    // Con una sola sede el desplegable se bloquea; el CSS le quita la flecha.
     select.disabled = (currentUser.sedes.length === 1);
 
     cargarClases();
@@ -569,12 +643,30 @@
     limpiarSesion();
     currentUser = {};
     document.getElementById('cedulaInput').value = '';
+    document.getElementById('claveInput').value = '';
     document.getElementById('listaEstudiantes').innerHTML = '';
+    document.getElementById('resumenBody').innerHTML = '';
     document.getElementById('app-view').style.display = 'none';
     document.getElementById('login-view').style.display = 'flex';
+    cambiarTab('clases');
   }
 
-  /* ---------- Clases ---------- */
+  /* ---------- Pestañas ---------- */
+
+  function cambiarTab(cual) {
+    var esClases = (cual === 'clases');
+    document.getElementById('tabClases').classList.toggle('active', esClases);
+    document.getElementById('tabResumen').classList.toggle('active', !esClases);
+    document.getElementById('view-clases').classList.toggle('active', esClases);
+    document.getElementById('view-resumen').classList.toggle('active', !esClases);
+
+    // El resumen se pide solo la primera vez que se abre.
+    if (!esClases && !document.getElementById('resumenBody').innerHTML.trim()) {
+      cargarResumen();
+    }
+  }
+
+  /* ---------- Clases del día ---------- */
 
   function cargarClases() {
     var sede = document.getElementById('sedeSelect').value;
@@ -611,6 +703,16 @@
       .obtenerClases(sede, currentUser.nombre, fecha);
   }
 
+  var ICONO_RELOJ =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>' +
+    '<path d="M12 7v5l3 2"/></svg>';
+
+  var ICONO_HIST =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/>' +
+    '<path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>';
+
   function renderizarEstudiantes(clases, sede) {
     var contenedor = document.getElementById('listaEstudiantes');
     contenedor.innerHTML = '';
@@ -620,17 +722,13 @@
     conteo.textContent = clases.length + (clases.length === 1 ? ' estudiante' : ' estudiantes');
     contenedor.appendChild(conteo);
 
-    var reloj = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-                'stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>' +
-                '<path d="M12 7v5l3 2"/></svg>';
-
     clases.forEach(function (clase, index) {
       var uniqueId = 'row-' + index;
       var card = document.createElement('div');
       card.className = 'student-card';
       card.innerHTML =
         '<div class="card-header">' +
-          '<span class="time-badge">' + reloj + esc(clase.horario) + '</span>' +
+          '<span class="time-badge">' + ICONO_RELOJ + esc(clase.horario) + '</span>' +
           '<span class="modalidad-text">' + esc(clase.modalidad) + '</span>' +
         '</div>' +
         '<div class="student-name">' + esc(clase.estudiante) + '</div>' +
@@ -638,13 +736,18 @@
         '<div class="radio-group">' +
           generarOpcion(uniqueId, 'Si', clase.asistencia) +
           generarOpcion(uniqueId, 'No', clase.asistencia) +
-        '</div>';
+        '</div>' +
+        '<button class="ver-historial" type="button">' + ICONO_HIST + 'Ver historial</button>';
 
       var radios = card.querySelectorAll('input[name="' + uniqueId + '"]');
       Array.prototype.forEach.call(radios, function (radio) {
         radio.addEventListener('change', function () {
           guardarCambio(this.value, clase, sede, radios);
         });
+      });
+
+      card.querySelector('.ver-historial').addEventListener('click', function () {
+        abrirHistorial(sede, clase.idEst, clase.estudiante);
       });
 
       contenedor.appendChild(card);
@@ -660,7 +763,7 @@
            '</div>';
   }
 
-  /* ---------- Guardar ---------- */
+  /* ---------- Guardar asistencia ---------- */
 
   function guardarCambio(nuevoValor, claseObj, sede, radios) {
     var Toast = Swal.mixin({
@@ -669,7 +772,6 @@
     });
     var anterior = claseObj.asistencia;
 
-    // Se bloquean los botones de esa tarjeta mientras guarda.
     Array.prototype.forEach.call(radios, function (r) { r.disabled = true; });
 
     function desbloquear() {
@@ -691,20 +793,163 @@
         if (res && res.success) {
           claseObj.asistencia = nuevoValor;
           Toast.fire({ icon: 'success', title: 'Guardado' });
+          // El resumen quedó desactualizado: se recalcula al volver a abrirlo.
+          document.getElementById('resumenBody').innerHTML = '';
         } else {
           revertir();
           avisar('error', 'No se guardó', (res && res.message) || 'Intenta de nuevo.');
         }
       })
       .withFailureHandler(function (err) {
-        desbloquear();
-        revertir();
+        desbloquear(); revertir();
         errorGrave(err && err.message);
       })
       .guardarAsistencia(sede, claseObj.fila, nuevoValor, {
-        idEst: claseObj.idEst,
-        programa: claseObj.programa
+        idEst: claseObj.idEst, programa: claseObj.programa
       });
+  }
+
+  /* ---------- Resumen del mes ---------- */
+
+  function cargarResumen() {
+    var mes = document.getElementById('mesInput').value;
+    var cuerpo = document.getElementById('resumenBody');
+
+    if (!mes) {
+      cuerpo.innerHTML = vacio('Selecciona un mes.');
+      return;
+    }
+
+    mostrarCarga(true);
+    cuerpo.innerHTML = '';
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        mostrarCarga(false);
+        if (res && res.success) {
+          renderizarResumen(res);
+        } else {
+          cuerpo.innerHTML = vacio('No pudimos cargar tu resumen.');
+          avisar('error', 'Error', (res && res.message) || 'No pudimos cargar tu resumen.');
+        }
+      })
+      .withFailureHandler(function (err) {
+        cuerpo.innerHTML = vacio('No pudimos cargar tu resumen.');
+        errorGrave(err && err.message);
+      })
+      .obtenerResumenMes(currentUser.nombre, currentUser.sedes, mes);
+  }
+
+  function renderizarResumen(res) {
+    var cuerpo = document.getElementById('resumenBody');
+    var t = res.totales;
+
+    if (!t.sesiones) {
+      cuerpo.innerHTML = vacio('No hay clases registradas en ' + mesLargo(res.mes) + '.');
+      return;
+    }
+
+    var html = '<div class="list-count">' + esc(mesLargo(res.mes)) + '</div>';
+
+    html += '<div class="stats">' +
+      '<div class="stat"><b>' + t.sesiones + '</b><span>Clases dictadas</span></div>' +
+      '<div class="stat"><b>' + t.estudiantes + '</b><span>Estudiantes</span></div>' +
+      '<div class="stat"><b>' + (t.porcentajeAsistencia === null ? '—' : t.porcentajeAsistencia + '%') +
+        '</b><span>Asistencia</span></div>' +
+      '<div class="stat' + (t.pendientes ? ' alerta' : '') + '"><b>' + t.pendientes +
+        '</b><span>Sin marcar</span></div>' +
+    '</div>';
+
+    if (t.pendientes) {
+      html += '<div class="list-count" style="color:var(--warn)">' +
+              t.sesionesConPendientes +
+              (t.sesionesConPendientes === 1 ? ' clase con asistencia pendiente' : ' clases con asistencia pendiente') +
+              '</div>';
+    }
+
+    html += '<div class="list-count">Detalle de clases</div>';
+
+    res.sesiones.forEach(function (s) {
+      var pendiente = s.pendientes > 0;
+      html +=
+        '<div class="sesion">' +
+          '<div class="izq">' +
+            '<div class="fecha">' + esc(fechaCorta(s.fecha)) + ' · ' + esc(s.horario) + '</div>' +
+            '<div class="prog">' + esc(s.programa) + '</div>' +
+            '<div class="meta">' + esc(s.sede) + ' · ' + s.estudiantes +
+              (s.estudiantes === 1 ? ' estudiante' : ' estudiantes') + '</div>' +
+          '</div>' +
+          '<div class="der">' +
+            (pendiente
+              ? '<span class="pill pend">' + s.pendientes + ' sin marcar</span>'
+              : '<span class="pill ok">' + s.presentes + '/' + s.estudiantes + '</span>') +
+          '</div>' +
+        '</div>';
+    });
+
+    cuerpo.innerHTML = html;
+  }
+
+  /* ---------- Historial del estudiante ---------- */
+
+  function abrirHistorial(sede, idEst, nombreEstudiante) {
+    var modal = document.getElementById('modalHistorial');
+    document.getElementById('histTitulo').textContent = nombreEstudiante || 'Historial';
+    document.getElementById('histBody').innerHTML =
+      '<div class="empty-state">Cargando historial…</div>';
+    modal.classList.add('open');
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (res && res.success) {
+          renderizarHistorial(res);
+        } else {
+          document.getElementById('histBody').innerHTML =
+            vacio((res && res.message) || 'No pudimos cargar el historial.');
+        }
+      })
+      .withFailureHandler(function (err) {
+        document.getElementById('histBody').innerHTML =
+          vacio('No pudimos cargar el historial. Revisa tu internet.');
+      })
+      .obtenerHistorialEstudiante(sede, idEst, currentUser.nombre);
+  }
+
+  function renderizarHistorial(res) {
+    var t = res.totales;
+
+    if (!t.clases) {
+      document.getElementById('histBody').innerHTML =
+        vacio('Todavía no hay clases registradas con este estudiante.');
+      return;
+    }
+
+    var html = '<div class="stats">' +
+      '<div class="stat"><b>' + t.clases + '</b><span>Clases</span></div>' +
+      '<div class="stat"><b>' + t.presentes + '</b><span>Asistió</span></div>' +
+      '<div class="stat"><b>' + t.ausentes + '</b><span>Faltó</span></div>' +
+      '<div class="stat"><b>' + (t.porcentaje === null ? '—' : t.porcentaje + '%') +
+        '</b><span>Asistencia</span></div>' +
+    '</div>';
+
+    res.registros.forEach(function (r) {
+      var clase = !r.marcada ? 'sin' : (r.presente ? 'si' : 'no');
+      var texto = !r.marcada ? 'Sin marcar' : (r.presente ? 'Asistió' : 'Faltó');
+      html +=
+        '<div class="hist-row">' +
+          '<div>' +
+            '<div class="f">' + esc(fechaCorta(r.fecha)) + ' · ' + esc(r.horario) + '</div>' +
+            '<div class="p">' + esc(r.programa) + '</div>' +
+          '</div>' +
+          '<span class="marca ' + clase + '">' + texto + '</span>' +
+        '</div>';
+    });
+
+    document.getElementById('histBody').innerHTML = html;
+  }
+
+  function cerrarHistorial() {
+    document.getElementById('modalHistorial').classList.remove('open');
   }
 </script>
 </body>
