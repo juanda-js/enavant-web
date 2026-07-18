@@ -8,3 +8,6 @@ Disallow: /maestros.html
 Disallow: /backend/
 
 Sitemap: https://www.enavantescuela.com/sitemap.xml
+
+# Copia de los archivos del Apps Script (no es parte del sitio)
+Disallow: /apps-script/

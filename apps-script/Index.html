@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    :root {
+      --primary: #000000;
+      --secondary: #9b59b6;
+      --secondary-dark: #8e44ad;
+      --light: #f8f9fa;
+      --white: #ffffff;
+      --gray-input: #f0f2f5;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--light);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    /* --- PANTALLA LOGIN --- */
+    #login-view {
+      height: 100vh;
+      width: 100%;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #000000 0%, #4a235a 100%);
+    }
+
+    .login-card {
+      background: var(--white);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      width: 85%;
+      max-width: 380px;
+      text-align: center;
+      border-top: 5px solid var(--secondary);
+    }
+
+    .logo-img { max-width: 140px; margin-bottom: 20px; }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 14px;
+      margin: 15px 0;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border 0.3s;
+    }
+
+    input[type="number"]:focus { border-color: var(--secondary); }
+
+    .btn-main {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    }
+    .btn-main:disabled { opacity: .6; cursor: default; }
+
+    /* --- HEADER --- */
+    #app-view {
+      display: none;
+      width: 100%;
+      padding-bottom: 80px;
+      flex: 1;
+    }
+
+    .header {
+      background-color: var(--primary);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .user-info span { display: block; font-size: 0.75rem; color: #d7bde2; margin-top:2px; }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--secondary);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* --- CONTROLES / FILTROS --- */
+    .controls {
+      background: white;
+      padding: 15px 15px;
+      margin: 20px 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-group {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-size: 0.7rem;
+      color: #999;
+      margin-bottom: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .input-group label i { color: var(--secondary); }
+
+    select, input[type="date"] {
+      width: 100%;
+      height: 48px;
+      padding-left: 12px;
+      padding-right: 30px;
+      border: 1px solid transparent;
+      background-color: var(--gray-input);
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #333;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    select {
+       background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239b59b6%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+       background-repeat: no-repeat;
+       background-position: right 10px center;
+       background-size: 10px auto;
+    }
+
+    select:disabled {
+        background-image: none !important;
+        padding-right: 12px;
+        color: #333 !important;
+        -webkit-text-fill-color: #333;
+        opacity: 1;
+        background-color: var(--gray-input);
+    }
+
+    select:focus, input[type="date"]:focus {
+        background-color: white;
+        border: 1px solid var(--secondary);
+        box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+    }
+
+    /* --- TARJETAS DE ESTUDIANTES --- */
+    .student-list { padding: 0 15px; }
+
+    .student-card {
+      background: white;
+      border-left: 5px solid var(--secondary);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+
+    .time-badge {
+      background: #f5eef8;
+      color: var(--secondary-dark);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .modalidad-text {
+      font-size: 0.75rem;
+      color: #888;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 50%;
+    }
+
+    .student-name { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 4px;}
+    .details { font-size: 0.9rem; color: #777; margin-bottom: 15px; }
+
+    .attendance-actions { display: flex; gap: 5px; }
+
+    .radio-group {
+      display: flex;
+      width: 100%;
+      background: #f0f2f5;
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .radio-option { flex: 1; text-align: center; }
+    .radio-option input { display: none; }
+
+    .radio-option label {
+      display: block;
+      padding: 10px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #777;
+      transition: all 0.2s;
+    }
+
+    input[value="Si"]:checked + label {
+      background-color: #27ae60; color: white;
+      box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    }
+    input[value="No"]:checked + label {
+      background-color: #e74c3c; color: white;
+      box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    /* SPINNER */
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.9);
+      display: none; justify-content: center; align-items: center; z-index: 200;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3; border-top: 4px solid var(--secondary);
+      border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .empty-state { text-align: center; color: #888; margin-top: 40px; padding: 20px; font-weight: 300; }
+  </style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+
+  <div id="login-view">
+    <div class="login-card">
+      <!-- Logo servido desde el sitio propio, NO desde Wix. -->
+      <img src="https://www.enavantescuela.com/img/logo-en-avant.png" alt="En Avant" class="logo-img">
+      <h2 style="margin:0; color:var(--primary);">Portal Docente</h2>
+      <p style="color:#666; font-size:0.9rem;">Ingresa tu cédula para continuar</p>
+      <input type="number" id="cedulaInput" placeholder="Número de Documento" autocomplete="off">
+      <button class="btn-main" id="btnLogin">INGRESAR</button>
+    </div>
+  </div>
+
+  <div id="app-view">
+    <div class="header">
+      <div class="user-info">
+        <div style="font-weight: 700; font-size: 1rem;" id="displayNombre">Cargando...</div>
+        <span>DOCENTE EN AVANT</span>
+      </div>
+      <button class="logout-btn" id="btnLogout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <div class="controls">
+      <div class="input-group">
+        <label><i class="fas fa-map-marker-alt"></i> Sede</label>
+        <select id="sedeSelect"></select>
+      </div>
+      <div class="input-group">
+        <label><i class="far fa-calendar-alt"></i> Fecha</label>
+        <input type="date" id="dateInput">
+      </div>
+    </div>
+
+    <div class="student-list" id="listaEstudiantes">
+      <div class="empty-state">
+        <i class="fas fa-chalkboard-teacher" style="font-size: 3rem; margin-bottom:15px; color:#ddd;"></i><br>
+        Selecciona una sede y fecha<br>para ver tus clases.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var CLAVE_SESION = 'usuarioEnAvant';
+    var currentUser = {};
+
+    /* ---------- Utilidades ---------- */
+
+    // Escapa texto antes de meterlo en HTML. Sin esto, un nombre con
+    // "<" o "&" rompe la tarjeta del estudiante.
+    function esc(txt) {
+      return String(txt == null ? '' : txt)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function mostrarCarga(show) {
+      document.getElementById('loader').style.display = show ? 'flex' : 'none';
+    }
+
+    function errorGrave(msg) {
+      mostrarCarga(false);
+      Swal.fire('Error', msg || 'No pudimos conectar con el servidor. Revisa tu internet e intenta de nuevo.', 'error');
+    }
+
+    // Comprueba que una sesión guardada tenga la forma esperada.
+    // Si quedó una sesión vieja o incompleta, la app arrancaba rota.
+    function sesionValida(u) {
+      return u && typeof u.nombre === 'string' && u.nombre !== '' &&
+             Object.prototype.toString.call(u.sedes) === '[object Array]' &&
+             u.sedes.length > 0;
+    }
+
+    function limpiarSesion() {
+      try { localStorage.removeItem(CLAVE_SESION); } catch (e) {}
+    }
+
+    /* ---------- Arranque ---------- */
+
+    window.addEventListener('load', function () {
+      document.getElementById('dateInput').valueAsDate = new Date();
+
+      document.getElementById('btnLogin').addEventListener('click', handleLogin);
+      document.getElementById('btnLogout').addEventListener('click', logout);
+      document.getElementById('sedeSelect').addEventListener('change', cargarClases);
+      document.getElementById('dateInput').addEventListener('change', cargarClases);
+
+      // Enter para entrar
+      document.getElementById('cedulaInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') handleLogin();
+      });
+
+      var guardado = null;
+      try { guardado = JSON.parse(localStorage.getItem(CLAVE_SESION)); } catch (e) { guardado = null; }
+
+      if (sesionValida(guardado)) {
+        currentUser = guardado;
+        mostrarApp();
+      } else {
+        limpiarSesion();   // sesión corrupta: se descarta y se pide login
+      }
+    });
+
+    /* ---------- Login ---------- */
+
+    function handleLogin() {
+      var cedula = document.getElementById('cedulaInput').value;
+      if (!cedula) return Swal.fire('Atención', 'Digita tu cédula', 'warning');
+
+      var btn = document.getElementById('btnLogin');
+      btn.disabled = true;
+      mostrarCarga(true);
+
+      google.script.run
+        .withSuccessHandler(function (res) {
+          btn.disabled = false;
+          mostrarCarga(false);
+          if (res && res.success) {
+            currentUser = { cedula: cedula, nombre: res.nombre, sedes: res.sedes };
+            try { localStorage.setItem(CLAVE_SESION, JSON.stringify(currentUser)); } catch (e) {}
+            mostrarApp();
+          } else {
+            Swal.fire('Error', (res && res.message) || 'No pudimos validar tu cédula.', 'error');
+          }
+        })
+        .withFailureHandler(function (err) {
+          btn.disabled = false;
+          errorGrave(err && err.message);
+        })
+        .loginMaestro(cedula);
+    }
+
+    function mostrarApp() {
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('app-view').style.display = 'block';
+      document.getElementById('displayNombre').innerText = currentUser.nombre;
+
+      var select = document.getElementById('sedeSelect');
+      select.innerHTML = '';
+      currentUser.sedes.forEach(function (sede) {
+        var opt = document.createElement('option');
+        opt.value = sede;
+        opt.innerText = sede;
+        select.appendChild(opt);
+      });
+
+      // Con una sola sede el desplegable se bloquea; el CSS le quita la flecha.
+      select.disabled = (currentUser.sedes.length === 1);
+
+      cargarClases();
+    }
+
+    function logout() {
+      limpiarSesion();
+      currentUser = {};
+      document.getElementById('cedulaInput').value = '';
+      document.getElementById('listaEstudiantes').innerHTML = '';
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('login-view').style.display = 'flex';
+    }
+
+    /* ---------- Clases ---------- */
+
+    function cargarClases() {
+      var sede = document.getElementById('sedeSelect').value;
+      var fecha = document.getElementById('dateInput').value;
+      var contenedor = document.getElementById('listaEstudiantes');
+
+      if (!sede || !fecha) {
+        contenedor.innerHTML =
+          '<div class="empty-state">Selecciona una sede y una fecha para ver tus clases.</div>';
+        return;
+      }
+
+      mostrarCarga(true);
+      contenedor.innerHTML = '';
+
+      google.script.run
+        .withSuccessHandler(function (res) {
+          mostrarCarga(false);
+          if (res && res.success) {
+            if (!res.clases.length) {
+              contenedor.innerHTML = '<div class="empty-state">No hay clases programadas.</div>';
+              return;
+            }
+            renderizarEstudiantes(res.clases, sede);
+          } else {
+            contenedor.innerHTML = '<div class="empty-state">No pudimos cargar tus clases.</div>';
+            Swal.fire('Error', (res && res.message) || 'No pudimos cargar tus clases.', 'error');
+          }
+        })
+        .withFailureHandler(function (err) {
+          // Sin esto el spinner giraba para siempre y el maestro no sabía qué pasaba.
+          contenedor.innerHTML = '<div class="empty-state">No pudimos cargar tus clases.</div>';
+          errorGrave(err && err.message);
+        })
+        .obtenerClases(sede, currentUser.nombre, fecha);
+    }
+
+    function renderizarEstudiantes(clases, sede) {
+      var contenedor = document.getElementById('listaEstudiantes');
+      contenedor.innerHTML = '';
+
+      clases.forEach(function (clase, index) {
+        var uniqueId = 'row-' + index;
+        var card = document.createElement('div');
+        card.className = 'student-card';
+        card.innerHTML =
+          '<div class="card-header">' +
+            '<span class="time-badge"><i class="far fa-clock"></i> ' + esc(clase.horario) + '</span>' +
+            '<span class="modalidad-text">' + esc(clase.modalidad) + '</span>' +
+          '</div>' +
+          '<div class="student-name">' + esc(clase.estudiante) + '</div>' +
+          '<div class="details">' + esc(clase.programa) + '</div>' +
+          '<div class="attendance-actions">' +
+            '<div class="radio-group">' +
+              generarOpcion(uniqueId, 'Si', clase.asistencia) +
+              generarOpcion(uniqueId, 'No', clase.asistencia) +
+            '</div>' +
+          '</div>';
+
+        var radios = card.querySelectorAll('input[name="' + uniqueId + '"]');
+        Array.prototype.forEach.call(radios, function (radio) {
+          radio.addEventListener('change', function () {
+            guardarCambio(this.value, clase, sede, radios);
+          });
+        });
+
+        contenedor.appendChild(card);
+      });
+    }
+
+    function generarOpcion(name, val, actual) {
+      var isChecked = String(actual).toLowerCase() === String(val).toLowerCase() ? 'checked' : '';
+      return '<div class="radio-option">' +
+               '<input type="radio" id="' + name + '-' + val + '" name="' + name + '" value="' + val + '" ' + isChecked + '>' +
+               '<label for="' + name + '-' + val + '">' + val + '</label>' +
+             '</div>';
+    }
+
+    /* ---------- Guardar ---------- */
+
+    function guardarCambio(nuevoValor, claseObj, sede, radios) {
+      var Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1200 });
+      var anterior = claseObj.asistencia;
+
+      // Se bloquean los botones de esa tarjeta mientras guarda.
+      Array.prototype.forEach.call(radios, function (r) { r.disabled = true; });
+
+      function desbloquear() {
+        Array.prototype.forEach.call(radios, function (r) { r.disabled = false; });
+      }
+
+      // Si falla, se devuelve el botón a como estaba para no mostrar
+      // una asistencia que en realidad no se guardó.
+      function revertir() {
+        claseObj.asistencia = anterior;
+        Array.prototype.forEach.call(radios, function (r) {
+          r.checked = (String(r.value).toLowerCase() === String(anterior).toLowerCase());
+        });
+      }
+
+      google.script.run
+        .withSuccessHandler(function (res) {
+          desbloquear();
+          if (res && res.success) {
+            claseObj.asistencia = nuevoValor;
+            Toast.fire({ icon: 'success', title: 'Guardado' });
+          } else {
+            revertir();
+            Swal.fire('No se guardó', (res && res.message) || 'Intenta de nuevo.', 'error');
+          }
+        })
+        .withFailureHandler(function (err) {
+          desbloquear();
+          revertir();
+          errorGrave(err && err.message);
+        })
+        .guardarAsistencia(sede, claseObj.fila, nuevoValor, {
+          idEst: claseObj.idEst,
+          programa: claseObj.programa
+        });
+    }
+  </script>
+</body>
+</html>
