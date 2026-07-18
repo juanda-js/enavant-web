@@ -4,6 +4,7 @@ Allow: /
 # Herramientas internas (no indexar)
 Disallow: /boleteria.html
 Disallow: /escaner.html
+Disallow: /maestros.html
 Disallow: /backend/
 
 Sitemap: https://www.enavantescuela.com/sitemap.xml
