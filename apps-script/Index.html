@@ -7,7 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- defer: 79 KB que ya no bloquean el primer dibujado de la pantalla -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
 <style>
   /* ============================================================
@@ -508,7 +509,13 @@
     document.getElementById('loader').style.display = show ? 'flex' : 'none';
   }
 
+  // SweetAlert se carga con defer. En el caso raro de que un aviso salga
+  // antes de que termine de bajar, se usa el diálogo del navegador.
   function avisar(icono, titulo, texto) {
+    if (typeof Swal === 'undefined') {
+      alert(titulo + (texto ? '\n\n' + texto : ''));
+      return;
+    }
     Swal.fire({ icon: icono, title: titulo, text: texto, confirmButtonColor: '#A40FC4' });
   }
 
@@ -766,7 +773,7 @@
   /* ---------- Guardar asistencia ---------- */
 
   function guardarCambio(nuevoValor, claseObj, sede, radios) {
-    var Toast = Swal.mixin({
+    var Toast = (typeof Swal === 'undefined') ? null : Swal.mixin({
       toast: true, position: 'top-end', showConfirmButton: false,
       timer: 1300, timerProgressBar: true
     });
@@ -792,7 +799,7 @@
         desbloquear();
         if (res && res.success) {
           claseObj.asistencia = nuevoValor;
-          Toast.fire({ icon: 'success', title: 'Guardado' });
+          if (Toast) Toast.fire({ icon: 'success', title: 'Guardado' });
           // El resumen quedó desactualizado: se recalcula al volver a abrirlo.
           document.getElementById('resumenBody').innerHTML = '';
         } else {

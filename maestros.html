@@ -15,6 +15,13 @@
 <link rel="apple-touch-icon" href="img/favicon.png">
 <link rel="icon" href="img/favicon.png">
 
+<!-- El portal vive en Google. Adelantar el DNS y el saludo TLS de estos
+     dominios ahorra un par de vueltas de red, sobre todo en celular. -->
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
 <style>
 /* ============================================================
    Portal Maestros — contenedor del app de Apps Script.

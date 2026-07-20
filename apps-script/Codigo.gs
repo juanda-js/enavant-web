@@ -98,6 +98,50 @@ function estaMarcada(valor) {
   return normalizar(valor) !== '';
 }
 
+/**
+ * Lee solo las columnas A:H de una hoja de sede, desde la fila 2.
+ * Leer el rango completo con getDataRange() traía también las columnas
+ * auxiliares que tenga la hoja, y eso pesa en cada consulta.
+ * Devuelve [] si la hoja solo tiene encabezado.
+ */
+function filasDeSede(sheet) {
+  var ultima = sheet.getLastRow();
+  if (ultima < 2) return [];
+  return sheet.getRange(2, 1, ultima - 1, 8).getValues();
+}
+
+/**
+ * "Base Maestros" cambia muy poco, así que se guarda en caché 10 minutos.
+ * Con esto el login deja de releer la hoja en cada intento.
+ * OJO: un maestro recién agregado puede tardar hasta 10 minutos en poder
+ * entrar. Si necesitas que sea inmediato, ejecuta limpiarCacheMaestros().
+ */
+function datosMaestros() {
+  var cache = CacheService.getScriptCache();
+  var guardado = null;
+  try { guardado = cache.get('base_maestros'); } catch (e) {}
+  if (guardado) {
+    try { return JSON.parse(guardado); } catch (e) {}
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HOJA_MAESTROS);
+  if (!sheet) return null;
+
+  var data = sheet.getDataRange().getValues();
+  try {
+    var texto = JSON.stringify(data);
+    // El límite por clave de CacheService son 100 KB; si se pasa, no se cachea.
+    if (texto.length < 90000) cache.put('base_maestros', texto, 600);
+  } catch (e) {}
+
+  return data;
+}
+
+/** Borra la caché para que un maestro nuevo pueda entrar de inmediato. */
+function limpiarCacheMaestros() {
+  try { CacheService.getScriptCache().remove('base_maestros'); } catch (e) {}
+}
+
 /* ============================================================
    1. LOGIN DE MAESTRO  (cédula + contraseña general)
    ============================================================ */
@@ -109,18 +153,15 @@ function loginMaestro(cedula, clave) {
       return { success: false, message: 'Cédula o contraseña incorrecta.' };
     }
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(HOJA_MAESTROS);
-    if (!sheet) {
-      return { success: false, message: 'No se encuentra la hoja "' + HOJA_MAESTROS + '". Avisa a administración.' };
-    }
-
     var buscada = soloDigitos(cedula);
     if (!buscada) {
       return { success: false, message: 'Digita un número de documento válido.' };
     }
 
-    var data = sheet.getDataRange().getValues();
+    var data = datosMaestros();
+    if (!data) {
+      return { success: false, message: 'No se encuentra la hoja "' + HOJA_MAESTROS + '". Avisa a administración.' };
+    }
 
     for (var i = 1; i < data.length; i++) {
       if (soloDigitos(data[i][4]) !== buscada) continue;   // E: Cédula
@@ -165,17 +206,17 @@ function obtenerClases(sede, nombreMaestro, fechaStr) {
     }
 
     var tz = ss.getSpreadsheetTimeZone();
-    var data = sheet.getDataRange().getValues();
+    var data = filasDeSede(sheet);          // data[0] es la fila 2 de la hoja
     var maestroBuscado = normalizar(nombreMaestro);
     var clases = [];
 
-    for (var i = 1; i < data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
       var row = data[i];
       if (aFechaTexto(row[0], tz) !== fechaStr) continue;      // A: Fecha
       if (normalizar(row[5]) !== maestroBuscado) continue;     // F: Maestro
 
       clases.push({
-        fila: i + 1,
+        fila: i + 2,
         idEst: row[1],               // B
         estudiante: row[2],          // C
         horario: row[3],             // D
@@ -259,9 +300,9 @@ function obtenerResumenMes(nombreMaestro, sedes, anioMes) {
       var sheet = buscarHoja(ss, sede);
       if (!sheet) return;
 
-      var data = sheet.getDataRange().getValues();
+      var data = filasDeSede(sheet);
 
-      for (var i = 1; i < data.length; i++) {
+      for (var i = 0; i < data.length; i++) {
         var row = data[i];
 
         var fecha = aFechaTexto(row[0], tz);
@@ -336,7 +377,7 @@ function obtenerHistorialEstudiante(sede, idEst, nombreMaestro) {
     }
 
     var tz = ss.getSpreadsheetTimeZone();
-    var data = sheet.getDataRange().getValues();
+    var data = filasDeSede(sheet);
     var maestroBuscado = normalizar(nombreMaestro);
     var idBuscado = String(idEst).trim();
 
@@ -344,7 +385,7 @@ function obtenerHistorialEstudiante(sede, idEst, nombreMaestro) {
     var nombre = '';
     var presentes = 0, ausentes = 0, pendientes = 0;
 
-    for (var i = 1; i < data.length; i++) {
+    for (var i = 0; i < data.length; i++) {
       var row = data[i];
       if (String(row[1]).trim() !== idBuscado) continue;        // B: IdEst
       if (normalizar(row[5]) !== maestroBuscado) continue;      // F: Maestro
