@@ -75,7 +75,7 @@
     box.setAttribute('aria-label', 'Aviso de cookies');
     box.innerHTML =
       '<p>Usamos cookies para medir el uso del sitio y mejorar tu experiencia. ' +
-      '¿Nos permites activarlas? <a href="https://www.enavantescuela.com" target="_blank" rel="noopener">Política de datos</a></p>' +
+      '¿Nos permites activarlas? <a href="https://drive.google.com/file/d/1r3E473rLCzm0WyGBS0XYS_4X1ET_WoxN/view?usp=sharing" target="_blank" rel="noopener">Política de datos</a></p>' +
       '<div class="ea-cc-row">' +
         '<button class="ea-ok" type="button">Aceptar</button>' +
         '<button class="ea-no" type="button">Rechazar</button>' +
