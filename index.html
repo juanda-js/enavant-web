@@ -1797,6 +1797,33 @@ pausable(document.getElementById('testimonios'),()=>clearInterval(tTimer),autoTe
   update();
 })();
 
+/* Palabras gigantes que se desplazan con el scroll.
+   Va aparte del bloque "solo escritorio" para que también funcione en
+   móvil/tablet (táctil). Se apaga con prefers-reduced-motion y usa
+   requestAnimationFrame para no recalcular en cada evento de scroll. */
+(function(){
+  if(REDUCE)return;
+  const bands=[...document.querySelectorAll('.scroll-words')];
+  if(!bands.length)return;
+  let ticking=false;
+  function update(){
+    ticking=false;
+    const vh=innerHeight;
+    bands.forEach(b=>{
+      const r=b.getBoundingClientRect();
+      if(r.bottom<0||r.top>vh)return;
+      const p=(vh-r.top)/(vh+r.height);
+      const x=(p-.5)*22;
+      const lines=b.children;
+      lines[0].style.transform=`translateX(${x}%)`;
+      if(lines[1])lines[1].style.transform=`translateX(${-x}%)`;
+    });
+  }
+  addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(update)}},{passive:true});
+  addEventListener('resize',update);
+  update();
+})();
+
 /* Carrusel de egresados */
 const egrs=document.querySelectorAll('.egr-slide'),egrDots=document.querySelectorAll('.egr-dot');
 if(egrs.length){
@@ -1901,7 +1928,6 @@ if(finePointer){
   let tickX=0,lastY=scrollY,vel=0;
 
   const plxEls=[...document.querySelectorAll('[data-plx]')];
-  const swBands=[...document.querySelectorAll('.scroll-words')];
   const vhOf=()=>innerHeight;
   /* cachear el ancho del ticker: solo cambia al redimensionar (evita reflow por frame) */
   let tickHalf=tickerTrack.scrollWidth/2;
@@ -1932,16 +1958,8 @@ if(finePointer){
       const y=((r.top+r.height/2)-vh/2)*-el.dataset.plx;
       el.style.transform=`translateY(${y}px) scale(1.12)`;
     });
-    /* palabras gigantes ligadas al scroll */
-    swBands.forEach(b=>{
-      const r=b.getBoundingClientRect();
-      if(r.bottom<0||r.top>vh)return;
-      const p=(vh-r.top)/(vh+r.height);
-      const x=(p-.5)*22;
-      const lines=b.children;
-      lines[0].style.transform=`translateX(${x}%)`;
-      if(lines[1])lines[1].style.transform=`translateX(${-x}%)`;
-    });
+    /* (Las palabras gigantes ahora se animan en un bloque aparte,
+       activo también en móvil.) */
     requestAnimationFrame(loop);
   })();
 }
