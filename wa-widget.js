@@ -15,7 +15,7 @@
       sede: 'En Avant · Mazurén',
       photo: 'img/luz-mendoza.jpg',
       pos: '50% 22%',
-      phone: '573134308891',
+      phone: '573126356696',
       intro: '¡Estás contactando a En Avant Mazurén! ✨ Mi nombre es Luz Marina y es un gusto para mí brindarte la información de nuestras clases. Cuéntame, ¿cómo puedo ayudarte?',
       salida: '¡Hola Luz Marina! Quisiera información sobre las clases de En Avant Mazurén.'
     },
@@ -24,7 +24,7 @@
       sede: 'En Avant · Chía',
       photo: 'img/sandra-lopez.jpg',
       pos: '50% 20%',
-      phone: '573219216471',
+      phone: '573126356696',
       intro: '¡Estás contactando a En Avant Chía! ✨ Mi nombre es Sandra López y con gusto te doy toda la información de nuestras clases. Cuéntame, ¿cómo puedo ayudarte?',
       salida: '¡Hola Sandra! Quisiera información sobre las clases de En Avant Chía.'
     },
@@ -33,7 +33,7 @@
       sede: 'En Avant · Salitre',
       photo: 'img/maria-monterroza.jpeg',
       pos: '50% 28%',
-      phone: '573114929959',
+      phone: '573126356696',
       intro: '¡Estás contactando a En Avant Salitre! ✨ Mi nombre es María Fernanda y será un placer brindarte la información de nuestras clases. Cuéntame, ¿cómo puedo ayudarte?',
       salida: '¡Hola María Fernanda! Quisiera información sobre las clases de En Avant Salitre.'
     }
