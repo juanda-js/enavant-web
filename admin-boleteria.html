@@ -71,6 +71,18 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
 #pvSvg .rz{fill:var(--accent);cursor:nwse-resize}
 #pvSvg .roth{fill:#fff;stroke:var(--accent);stroke-width:2;cursor:grab}
 #pvSvg .rotln{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+#pvSvg .g-el.dragging{opacity:.9}
+#pvSvg .g-el.dragging .seat{stroke:var(--accent);stroke-width:1.4}
+#pvSvg .g-el.sel .seat{stroke:var(--accent);stroke-width:1.4}
+#pvSvg .g-el.sel rect.area,#pvSvg .g-el.sel rect.stage{stroke:var(--accent);stroke-width:2.6;stroke-dasharray:none}
+.pvwrap{position:relative}
+#pvBox{cursor:grab;touch-action:none}
+#pvBox.panning{cursor:grabbing}
+.zoombar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;background:#fff;border:1px solid #e7e4e9;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.14);padding:4px;z-index:5}
+.zoombar button{width:32px;height:32px;border-radius:7px;background:transparent;color:#2a2730;font-size:1.15rem;line-height:1;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer}
+.zoombar button:hover{background:#f1eff3}
+.zoombar .zlabel{min-width:50px;text-align:center;font-size:.8rem;font-weight:700;color:#2a2730}
+.zoombar .zfit{width:auto;padding:0 12px;font-size:.74rem;font-weight:700}
 .palette{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .palette button{font-size:.72rem;font-weight:600;padding:8px 11px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;transition:background .2s}
 .palette button:hover{background:var(--accent);border-color:var(--accent)}
@@ -161,11 +173,19 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
             </div>
           </div>
         </div>
-        <p class="hint">El mapa usa un lienzo de 1400 × 920. Arrastra los bloques, palcos y áreas en la vista previa para ubicarlos “a tu antojo”.</p>
+        <p class="hint">Arrastra cualquier elemento para moverlo. Usa la rueda del mouse o los botones <b>+ / −</b> para hacer zoom, y arrastra un espacio vacío para desplazar el mapa. <b>“Ajustar”</b> vuelve a ver todo.</p>
       </div>
 
       <div class="mapgrid">
-        <div class="preview"><div id="pvBox"></div></div>
+        <div class="preview"><div class="pvwrap">
+          <div class="zoombar">
+            <button type="button" title="Alejar" onclick="zoomBy(1/1.2)">−</button>
+            <span class="zlabel" id="zlabel">100%</span>
+            <button type="button" title="Acercar" onclick="zoomBy(1.2)">+</button>
+            <button type="button" class="zfit" title="Ver todo el mapa" onclick="zoomFit()">Ajustar</button>
+          </div>
+          <div id="pvBox"></div>
+        </div></div>
 
         <div>
           <!-- Zonas -->
@@ -230,6 +250,9 @@ function $(id){ return document.getElementById(id); }
 var clave='', eventos=[], recintos=[], editId=null;
 var mapa={zonas:[],palcos:[],bloques:[],bloqueadas:[],areas:[]};
 var VB={w:1400,h:920}, SEP=13, R=5.2;
+var view={x:0,y:0,w:VB.w,h:VB.h};   // zoom/paneo del lienzo
+var selEl=null;                     // elemento seleccionado {kind,i}
+function clampN(v,a,b){ return Math.max(a,Math.min(b,v)); }
 
 /* ---------- Convertir enlaces de Drive a imagen directa ---------- */
 function normalizarImagen(u){
@@ -383,7 +406,7 @@ function addAmenity(label,w,h){
   mapa.areas.push({etiqueta:label, x:250+(n%4)*180, y:820-(Math.floor(n/4)*70), w:w, h:h, rot:0});
   renderTodo();
 }
-function del(arr,i){ arr.splice(i,1); renderTodo(); }
+function del(arr,i){ arr.splice(i,1); selEl=null; renderTodo(); }
 
 // Genera etiquetas de fila (A,B,…,Z,AA,AB…) para N filas
 function filasStr(n){
@@ -454,7 +477,7 @@ function expandirFilas(txt){
 function colorDe(zid){ var z=mapa.zonas.find(function(z){return z.id===zid;}); return z?z.color:'#bbb'; }
 
 function renderPreview(){
-  var s='<svg id="pvSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
+  var s='<svg id="pvSvg" viewBox="'+view.x+' '+view.y+' '+view.w+' '+view.h+'" xmlns="http://www.w3.org/2000/svg">';
   // Áreas
   mapa.areas.forEach(function(a,i){
     var rz='<rect class="rz" data-i="'+i+'" x="'+(a.x+a.w/2-13)+'" y="'+(a.y+a.h-13)+'" width="13" height="13" rx="2"/>';
@@ -492,7 +515,9 @@ function renderPreview(){
   });
   s+='</svg>';
   $('pvBox').innerHTML=s;
-  habilitarArrastre();
+  if(selEl){ var sg=$('pvBox').querySelector('.g-el[data-kind="'+selEl.kind+'"][data-i="'+selEl.i+'"]'); if(sg) sg.classList.add('sel'); }
+  actualizarZoomLabel();
+  initMapInteractions();
   var totalSillas=0;
   mapa.bloques.forEach(function(b){ totalSillas+=expandirFilas(b.filas).length*(Number(b.sillas)||0); });
   mapa.palcos.forEach(function(p){ totalSillas+=Number(p.sillas)||0; });
@@ -501,38 +526,87 @@ function renderPreview(){
 
 function renderTodo(){ renderEditors(); renderPreview(); }
 
-/* ---- Arrastre en la vista previa ---- */
-function habilitarArrastre(){
-  var svg=$('pvSvg'); if(!svg) return;
+/* ---- Zoom / paneo del lienzo ---- */
+function actualizarZoomLabel(){ var z=$('zlabel'); if(z) z.textContent=Math.round(VB.w/view.w*100)+'%'; }
+function aplicarViewBox(){ var svg=$('pvSvg'); if(svg){ svg.setAttribute('viewBox', view.x+' '+view.y+' '+view.w+' '+view.h); } actualizarZoomLabel(); }
+function zoomBy(f){
+  var nw=clampN(view.w/f, VB.w*0.18, VB.w*3), nh=nw*(VB.h/VB.w);
+  var cx=view.x+view.w/2, cy=view.y+view.h/2;
+  view.w=nw; view.h=nh; view.x=cx-nw/2; view.y=cy-nh/2; aplicarViewBox();
+}
+function zoomFit(){ view={x:0,y:0,w:VB.w,h:VB.h}; aplicarViewBox(); }
+function zoomAt(e,f){
+  var svg=$('pvSvg'); if(!svg) return; var r=svg.getBoundingClientRect();
+  var mx=view.x+(e.clientX-r.left)/r.width*view.w, my=view.y+(e.clientY-r.top)/r.height*view.h;
+  var nw=clampN(view.w/f, VB.w*0.18, VB.w*3), nh=nw*(VB.h/VB.w);
+  view.x=mx-(mx-view.x)*(nw/view.w); view.y=my-(my-view.y)*(nh/view.h);
+  view.w=nw; view.h=nh; aplicarViewBox();
+}
+
+/* ---- Interacción del lienzo (se enlaza una sola vez a #pvBox) ---- */
+function liveArea(g,a){
+  var rect=g.querySelector('rect.area, rect.stage'); if(!rect) return;
+  var stage=rect.classList.contains('stage');
+  rect.setAttribute('x', a.x-a.w/2); rect.setAttribute('y', a.y);
+  rect.setAttribute('width', a.w); rect.setAttribute('height', a.h);
+  var t=g.querySelector('text'); if(t){ t.setAttribute('x', a.x); t.setAttribute('y', stage ? (a.y+a.h/2+7) : (a.y+a.h+13)); }
+  var hz=g.querySelector('rect.rz'); if(hz){ hz.setAttribute('x', a.x+a.w/2-13); hz.setAttribute('y', a.y+a.h-13); }
+}
+function initMapInteractions(){
+  var box=$('pvBox'); if(!box || box.dataset.bound) return; box.dataset.bound='1';
   var drag=null;
-  function pt(e){ var r=svg.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*VB.w, y:(e.clientY-r.top)/r.height*VB.h }; }
-  svg.addEventListener('pointerdown', function(e){
+  function pvPoint(e){ var svg=$('pvSvg'); var r=svg.getBoundingClientRect();
+    return { x:view.x+(e.clientX-r.left)/r.width*view.w, y:view.y+(e.clientY-r.top)/r.height*view.h }; }
+  box.addEventListener('pointerdown', function(e){
+    var svg=$('pvSvg'); if(!svg) return;
     var roth=e.target.closest('.roth');
-    if(roth){ drag={modo:'rot',obj:mapa.bloques[+roth.dataset.i]}; svg.setPointerCapture(e.pointerId); return; }
+    if(roth){ drag={modo:'rot', obj:mapa.bloques[+roth.dataset.i], g:roth.closest('.g-el')}; box.setPointerCapture(e.pointerId); return; }
     var rz=e.target.closest('.rz');
-    if(rz){ drag={modo:'rz',obj:mapa.areas[+rz.dataset.i]}; svg.setPointerCapture(e.pointerId); return; }
-    var g=e.target.closest('.g-el'); if(!g) return;
-    var kind=g.dataset.kind, i=+g.dataset.i, p=pt(e), obj=(kind==='bloque'?mapa.bloques:kind==='palco'?mapa.palcos:mapa.areas)[i];
-    drag={modo:'mover',kind:kind,i:i,obj:obj,ox:p.x-(Number(obj.x)||0),oy:p.y-(Number(obj.y)||0)};
-    svg.setPointerCapture(e.pointerId);
-  });
-  svg.addEventListener('pointermove', function(e){
-    if(!drag) return;
-    var p=pt(e);
-    if(drag.modo==='rz'){
-      drag.obj.w=Math.max(24,Math.round(2*(p.x-drag.obj.x)));
-      drag.obj.h=Math.max(16,Math.round(p.y-drag.obj.y));
-    } else if(drag.modo==='rot'){
-      var b=drag.obj, cols=Number(b.sillas)||1, topCx=((cols-1)*SEP)/2;
-      var ang0=Math.atan2(-30, topCx||0.001);
-      var ang=Math.atan2(p.y-(Number(b.y)||0), p.x-(Number(b.x)||0));
-      b.rot=Math.round((ang-ang0)*180/Math.PI);
-    } else {
-      drag.obj.x=Math.round(p.x-drag.ox); drag.obj.y=Math.round(p.y-drag.oy);
+    if(rz){ drag={modo:'rz', obj:mapa.areas[+rz.dataset.i], g:rz.closest('.g-el')}; box.setPointerCapture(e.pointerId); return; }
+    var g=e.target.closest('.g-el');
+    if(g){
+      var kind=g.dataset.kind, i=+g.dataset.i, p=pvPoint(e);
+      var obj=(kind==='bloque'?mapa.bloques:kind==='palco'?mapa.palcos:mapa.areas)[i];
+      selEl={kind:kind,i:i};
+      $('pvBox').querySelectorAll('.g-el.sel').forEach(function(x){x.classList.remove('sel');});
+      g.classList.add('sel','dragging');
+      drag={modo:'mover', kind:kind, obj:obj, g:g, sx:p.x, sy:p.y, bx:Number(obj.x)||0, by:Number(obj.y)||0, rot:Number(obj.rot)||0};
+      box.setPointerCapture(e.pointerId); return;
     }
-    renderPreview();
+    // clic en vacío → deseleccionar + paneo
+    selEl=null; $('pvBox').querySelectorAll('.g-el.sel').forEach(function(x){x.classList.remove('sel');});
+    drag={modo:'pan', cx:e.clientX, cy:e.clientY, vx:view.x, vy:view.y};
+    box.classList.add('panning'); box.setPointerCapture(e.pointerId);
   });
-  svg.addEventListener('pointerup', function(){ if(drag){ drag=null; renderEditors(); } });
+  box.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    if(drag.modo==='pan'){
+      var svg=$('pvSvg'); if(!svg) return; var r=svg.getBoundingClientRect();
+      view.x=drag.vx-(e.clientX-drag.cx)/r.width*view.w;
+      view.y=drag.vy-(e.clientY-drag.cy)/r.height*view.h;
+      aplicarViewBox(); return;
+    }
+    var p=pvPoint(e);
+    if(drag.modo==='mover'){
+      var nx=Math.round(drag.bx+(p.x-drag.sx)), ny=Math.round(drag.by+(p.y-drag.sy));
+      drag.obj.x=nx; drag.obj.y=ny;
+      if(drag.kind==='bloque'){ drag.g.setAttribute('transform','translate('+nx+','+ny+') rotate('+drag.rot+')'); }
+      else { drag.g.setAttribute('transform','translate('+(nx-drag.bx)+','+(ny-drag.by)+')'); }
+    } else if(drag.modo==='rz'){
+      var a=drag.obj;
+      a.w=Math.max(24, Math.round(2*(p.x-a.x)));
+      a.h=Math.max(16, Math.round(p.y-a.y));
+      liveArea(drag.g, a);
+    } else if(drag.modo==='rot'){
+      var b=drag.obj, cols=Number(b.sillas)||1, topCx=((cols-1)*SEP)/2, ang0=Math.atan2(-30, topCx||0.001);
+      b.rot=Math.round((Math.atan2(p.y-b.y, p.x-b.x)-ang0)*180/Math.PI);
+      drag.g.setAttribute('transform','translate('+b.x+','+b.y+') rotate('+b.rot+')');
+    }
+  });
+  function fin(){ if(!drag) return; var modo=drag.modo; box.classList.remove('panning'); if(drag.g) drag.g.classList.remove('dragging'); drag=null; if(modo!=='pan') renderTodo(); }
+  box.addEventListener('pointerup', fin);
+  box.addEventListener('pointercancel', fin);
+  box.addEventListener('wheel', function(e){ e.preventDefault(); zoomAt(e, e.deltaY<0?1.12:1/1.12); }, {passive:false});
 }
 
 /* ---- Guardar mapa ---- */
