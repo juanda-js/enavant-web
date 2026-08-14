@@ -97,6 +97,13 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .area-txt{fill:rgba(255,255,255,.62);font:600 11px var(--body);text-anchor:middle}
 .ico{fill:none;stroke:rgba(255,255,255,.62);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .ico .f{fill:rgba(255,255,255,.62);stroke:none}
+/* barra del temporizador de apartado */
+.holdbar{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:11px 14px;border-radius:11px;
+  background:rgba(3,112,112,.09);border:1px solid rgba(3,112,112,.28);color:var(--ink);font-size:.87rem}
+.holdbar svg{width:17px;height:17px;color:var(--teal);flex-shrink:0}
+.holdbar b{font-variant-numeric:tabular-nums;font-weight:700}
+.holdbar.warn{background:rgba(217,130,24,.12);border-color:rgba(217,130,24,.42)}
+.holdbar.warn svg{color:#B96D10}
 /* leyenda */
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:.8rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
@@ -209,13 +216,14 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
   <section class="panel" id="p3">
     <h1 class="title">Tus datos</h1>
     <p class="evsub">Enviaremos las boletas a tu correo.</p>
+    <div class="holdbar" id="holdbar3"></div>
     <div class="form">
       <div class="f"><label for="f-cli">Nombre de quien compra *</label><input id="f-cli" autocomplete="name"></div>
       <div class="f"><label for="f-est">Nombre del estudiante</label><input id="f-est"></div>
       <div class="f"><label for="f-tel">Teléfono / WhatsApp *</label><input id="f-tel" type="tel" inputmode="tel" placeholder="(57) 312 635 6696"></div>
       <div class="f"><label for="f-cor">Correo electrónico *</label><input id="f-cor" type="email" inputmode="email" placeholder="tucorreo@ejemplo.com"><p class="err" id="f-err"></p></div>
       <div class="btn-row">
-        <button class="btn btn-ghost" onclick="goStep(2)">Volver al mapa</button>
+        <button class="btn btn-ghost" onclick="volverAlMapa()">Volver al mapa</button>
         <button class="btn" id="toPago">Continuar al pago</button>
       </div>
     </div>
@@ -225,11 +233,12 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
   <section class="panel" id="p4">
     <h1 class="title">Pago</h1>
     <p class="evsub">Revisa tu compra antes de confirmar.</p>
+    <div class="holdbar" id="holdbar4"></div>
     <div class="form">
       <div class="resumen" id="resumenPago"></div>
       <div class="testbanner">
         <b>⚠ Modo de prueba — no se cobra dinero.</b><br>
-        Tus sillas quedan apartadas 20 minutos. Cuando el equipo apruebe la pasarela (Wompi), este botón abrirá el pago real (tarjeta, PSE, Nequi). Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
+        Cuando el equipo apruebe la pasarela (Wompi), este botón abrirá el pago real (tarjeta, PSE, Nequi). Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goStep(3)">Volver</button>
@@ -270,7 +279,82 @@ function $(id){ return document.getElementById(id); }
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 var VB={w:1800,h:900}, SEP=13, RS=5.6;   // debe coincidir con admin-boleteria.html
-var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0 };
+var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
+            token:null, expira:0 };   // token = identificador de esta sesión de compra; expira = fin del apartado
+
+/* ============================================================
+   APARTADO TEMPORAL + TEMPORIZADOR
+   Elegir sillas NO las aparta (como Ticketmaster). Se apartan al
+   pasar a "Datos" y se sueltan si se vence el tiempo o el cliente
+   se va. El servidor es el que manda: aquí solo mostramos el conteo.
+   ============================================================ */
+var holdTick=null;
+function nuevoToken(){
+  try{ if(window.crypto&&crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+  return 'tk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);
+}
+var ICO_CLOCK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+function mmss(s){ s=Math.max(0,Math.round(s)); var m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0'); }
+function pintarHold(){
+  var falta=(state.expira-Date.now())/1000;
+  ['holdbar3','holdbar4'].forEach(function(id){
+    var el=$(id); if(!el) return;
+    if(!state.expira){ el.innerHTML=''; el.style.display='none'; return; }
+    el.style.display='flex';
+    el.classList.toggle('warn', falta<=60);
+    el.innerHTML=ICO_CLOCK+'<span>Tus sillas están apartadas por <b>'+mmss(falta)+'</b>. '+
+      (falta<=60?'¡Apúrate! ':'')+'Si se vence el tiempo, vuelven a quedar disponibles para todos.</span>';
+  });
+}
+function iniciarHold(expiraMs){
+  state.expira=expiraMs; detenerTick(); pintarHold();
+  holdTick=setInterval(function(){
+    if(!state.expira) return detenerTick();
+    if(Date.now()>=state.expira){ detenerTick(); vencerHold(); return; }
+    pintarHold();
+  },1000);
+}
+function detenerTick(){ if(holdTick){ clearInterval(holdTick); holdTick=null; } }
+function limpiarHold(){ detenerTick(); state.expira=0; pintarHold(); }
+// Suelta el apartado en el servidor (o cancela la orden si ya se creó)
+function soltarHold(){
+  var t=state.token, o=state.orden;
+  limpiarHold(); state.orden=null;
+  if(!t) return Promise.resolve();
+  return apiPost(o?{action:'cancelar',orden:o,token:t}:{action:'soltar',token:t}).catch(function(){});
+}
+function vencerHold(){
+  var t=state.token, o=state.orden;
+  limpiarHold(); state.orden=null; state.sel={};
+  if(t) apiPost(o?{action:'cancelar',orden:o,token:t}:{action:'soltar',token:t}).catch(function(){});
+  state.token=null;
+  toast('Se venció el tiempo. Vuelve a elegir tus sillas.');
+  if(state.event) refrescarDisponibilidad();
+  goStep(2);
+}
+// Si el cliente cierra la pestaña, avisamos al servidor para no dejar sillas bloqueadas
+window.addEventListener('pagehide', function(){
+  if(!state.token || !state.expira) return;
+  var body=JSON.stringify(state.orden?{action:'cancelar',orden:state.orden,token:state.token}
+                                     :{action:'soltar',token:state.token});
+  try{ navigator.sendBeacon(API, new Blob([body],{type:'text/plain;charset=utf-8'})); }catch(e){}
+});
+// "Volver al mapa": libera lo apartado para no dejar sillas bloqueadas a los demás
+function volverAlMapa(){
+  var tenia=!!state.expira;
+  soltarHold().then(function(){ if(tenia && state.event) refrescarDisponibilidad(); });
+  goStep(2);
+}
+function refrescarDisponibilidad(){
+  return apiGet('action=disponibilidad&evento='+encodeURIComponent(state.event.id)+
+                (state.token?'&token='+encodeURIComponent(state.token):''))
+    .then(function(r){
+      if(!r||!r.ok) return;
+      state.occ={}; (r.ocupadas||[]).forEach(function(id){ state.occ[id]=1; });
+      Object.keys(state.sel).forEach(function(id){ if(state.occ[id]) delete state.sel[id]; });
+      renderMapa(); renderCart();
+    }).catch(function(){});
+}
 
 /* ---------- Pasos ---------- */
 var PASOS=['Evento','Sillas','Datos','Pago','Boletas'], pasoActual=1;
@@ -317,7 +401,8 @@ apiGet('action=eventos').then(function(r){
    PASO 2 — Mapa (zona → zoom → silla) + carrito
    ============================================================ */
 function abrirEvento(ev){
-  state.event=ev; state.sel={}; state.seccion=null;
+  if(state.expira) soltarHold();          // si venía de otra compra sin terminar, libera esas sillas
+  state.event=ev; state.sel={}; state.seccion=null; state.orden=null; state.token=null; limpiarHold();
   vbNow=[0,0,VB.w,VB.h];   // arranca en vista general del teatro
   $('p2Nombre').textContent=ev.nombre;
   $('p2Meta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
@@ -516,7 +601,7 @@ function renderCart(){
     inner.innerHTML='<ul>'+ul+'</ul>'+
       '<div class="tot"><span>'+ids.length+' silla'+(ids.length>1?'s':'')+'</span><b>'+pesos(state.total)+'</b></div>'+
       '<button class="btn" id="toDatos">Continuar</button>';
-    $('toDatos').addEventListener('click', function(){ goStep(3); });
+    $('toDatos').addEventListener('click', function(){ apartarYSeguir(this); });
     inner.querySelectorAll('.x').forEach(function(b){ b.addEventListener('click', function(){ toggleSeat(b.dataset.id); }); });
   }
   // barra móvil
@@ -524,7 +609,24 @@ function renderCart(){
   $('barCnt').textContent=ids.length+' silla'+(ids.length===1?'':'s');
   $('cartbar').classList.toggle('show', pasoActual===2 && ids.length>0);
 }
-$('barCont').addEventListener('click', function(){ if(Object.keys(state.sel).length) goStep(3); });
+$('barCont').addEventListener('click', function(){ if(Object.keys(state.sel).length) apartarYSeguir(this); });
+
+/* Paso 2 → 3: aquí sí se apartan las sillas en el servidor */
+function apartarYSeguir(btn){
+  var ids=Object.keys(state.sel); if(!ids.length) return;
+  var txt=btn.textContent; btn.disabled=true; btn.textContent='Apartando…';
+  state.token=state.token||nuevoToken();
+  apiPost({action:'apartar', evento:state.event.id, token:state.token, sillas:ids}).then(function(r){
+    btn.disabled=false; btn.textContent=txt;
+    if(!r||!r.ok){
+      if(r&&r.sillas){ r.sillas.forEach(function(id){ delete state.sel[id]; state.occ[id]=1; }); renderMapa(); renderCart(); }
+      toast((r&&r.error)||'No pudimos apartar las sillas.');
+      return;
+    }
+    iniciarHold(r.expira||(Date.now()+(r.segundos||480)*1000));
+    goStep(3);
+  }).catch(function(){ btn.disabled=false; btn.textContent=txt; toast('Error de conexión.'); });
+}
 
 /* Tooltip de silla */
 function onMapHover(e){
@@ -547,7 +649,7 @@ $('toPago').addEventListener('click', function(){
   if(!tel){ err.textContent='Escribe un teléfono de contacto.'; return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cor)){ err.textContent='Escribe un correo válido.'; return; }
   var btn=this; btn.disabled=true; btn.textContent='Apartando sillas…';
-  apiPost({action:'reservar', evento:state.event.id, cliente:cli, estudiante:$('f-est').value.trim(), telefono:tel, correo:cor,
+  apiPost({action:'reservar', evento:state.event.id, token:state.token, cliente:cli, estudiante:$('f-est').value.trim(), telefono:tel, correo:cor,
     sillas:Object.keys(state.sel).map(function(id){ var s=state.sel[id]; return {id:id, zona:s.zona, etiqueta:s.etiqueta}; })
   }).then(function(res){
     btn.disabled=false; btn.textContent='Continuar al pago';
@@ -576,6 +678,7 @@ $('payBtn').addEventListener('click', function(){
   apiPost({action:'confirmar', orden:state.orden, ref:'DEMO'}).then(function(res){
     btn.disabled=false; btn.innerHTML='Confirmar orden <span id="payAmount">'+pesos(state.total)+'</span>';
     if(!res.ok){ alert(res.error||'No pudimos confirmar la orden.'); return; }
+    limpiarHold(); state.orden=null;   // ya está pagada: el temporizador no aplica
     emitirBoletas(res.boletas);
     if(res.aviso){ var w=$('avisoCorreo'); w.textContent='⚠ Tus boletas están listas aquí, pero el correo no se pudo enviar ('+res.aviso+'). Descárgalas con el botón de abajo.'; w.style.display='block'; }
     goStep(5);

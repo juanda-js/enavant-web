@@ -9,7 +9,8 @@
     Si pide autorizar permisos, acéptalos con tu cuenta.
     ============================================================ */
 
-var HOLD_MIN = 20; // minutos que una silla queda "apartada" sin pagar antes de liberarse
+var HOLD_MIN = 20; // minutos que una ORDEN pendiente de pago retiene sus sillas
+var APARTADO_MIN = 8; // minutos del temporizador: desde que el cliente pasa a "Datos" hasta que paga
 var CLAVE_ADMIN = 'AdminEA2026'; // clave del panel admin-boleteria.html — cámbiala si quieres
 
 /* ============================================================
@@ -20,6 +21,7 @@ function setup() {
   mkSheet(ss, 'Eventos', ['id','nombre','fecha','hora','lugar','imagen','recinto','activo']);
   mkSheet(ss, 'Ordenes', ['orden_id','fecha','evento_id','cliente','estudiante','telefono','correo','sillas','total','estado','ref_pago']);
   mkSheet(ss, 'Boletas', ['boleta_id','orden_id','evento_id','silla','etiqueta','zona','precio','estudiante','estado','token','fecha_ingreso']);
+  mkSheet(ss, 'Apartadas', ['token','evento_id','silla','expira']); // apartado temporal mientras el cliente llena datos y paga
 
   var ev = ss.getSheetByName('Eventos');
   if (ev.getLastRow() === 1) {
@@ -111,7 +113,7 @@ function doGet(e) {
   var a = ((e.parameter.action) || '').toLowerCase();
   if (a === 'eventos')        return json({ ok: true, eventos: getEventos() });
   if (a === 'mapa')           return json({ ok: true, mapa: getMapa(e.parameter.recinto) });
-  if (a === 'disponibilidad') return json({ ok: true, ocupadas: getOcupadas(e.parameter.evento) });
+  if (a === 'disponibilidad') return json({ ok: true, ocupadas: getOcupadas(e.parameter.evento, e.parameter.token) });
   return json({ ok: false, error: 'acción desconocida' });
 }
 
@@ -135,7 +137,9 @@ function getMapa(recinto) {
   };
 }
 
-function getOcupadas(evento) {
+/* Sillas no disponibles: vendidas, usadas, en órdenes pendientes vigentes
+   y las apartadas por OTRA persona (excepto las del propio token). */
+function getOcupadas(evento, exceptoToken) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ords = {}; tabla(ss, 'Ordenes').forEach(function (o) { ords[o.orden_id] = o.fecha; });
   var now = Date.now(), out = [];
@@ -147,7 +151,82 @@ function getOcupadas(evento) {
       if (f && (now - new Date(f).getTime()) < HOLD_MIN * 60000) out.push(b.silla);
     }
   });
+  getApartadas(evento, exceptoToken).forEach(function (s) { if (out.indexOf(s) < 0) out.push(s); });
   return out;
+}
+
+/* Sillas apartadas y aún vigentes, sin contar las del token indicado */
+function getApartadas(evento, exceptoToken) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), now = Date.now(), out = [];
+  tabla(ss, 'Apartadas').forEach(function (a) {
+    if (String(a.evento_id) !== String(evento)) return;
+    if (exceptoToken && String(a.token) === String(exceptoToken)) return;
+    if (new Date(a.expira).getTime() > now) out.push(a.silla);
+  });
+  return out;
+}
+
+/* Borra los apartados vencidos (y opcionalmente los de un token). Llamar dentro de un lock. */
+function purgarApartadas(token) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName('Apartadas');
+  if (!sh || sh.getLastRow() < 2) return 0;
+  var v = sh.getDataRange().getValues(), now = Date.now(), n = 0;
+  for (var i = v.length - 1; i >= 1; i--) {               // de abajo hacia arriba para no descuadrar filas
+    var vencida = !v[i][3] || new Date(v[i][3]).getTime() <= now;
+    var propia = token && String(v[i][0]) === String(token);
+    if (vencida || propia) { sh.deleteRow(i + 1); n++; }
+  }
+  return n;
+}
+
+/* Aparta las sillas por APARTADO_MIN minutos. Es lo que se llama al pasar a "Datos". */
+function apartar(b) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (e) { return { ok: false, error: 'El sistema está ocupado, intenta de nuevo.' }; }
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var token = String(b.token || '');
+    if (!token) return { ok: false, error: 'Falta el identificador de la sesión.' };
+    var ids = (b.sillas || []).map(function (s) { return typeof s === 'string' ? s : s.id; }).filter(String);
+    if (!ids.length) return { ok: false, error: 'No seleccionaste sillas.' };
+
+    purgarApartadas(token);   // limpia vencidas y libera un apartado anterior del mismo cliente
+
+    var ocup = getOcupadas(b.evento, token);
+    var choque = ids.filter(function (id) { return ocup.indexOf(id) >= 0; });
+    if (choque.length) return { ok: false, error: 'Alguien tomó estas sillas antes: ' + choque.join(', '), sillas: choque };
+
+    var expira = new Date(Date.now() + APARTADO_MIN * 60000);
+    var sh = ss.getSheetByName('Apartadas');
+    sh.getRange(sh.getLastRow() + 1, 1, ids.length, 4).setValues(ids.map(function (id) { return [token, b.evento, id, expira]; }));
+    SpreadsheetApp.flush();
+    return { ok: true, expira: expira.getTime(), segundos: APARTADO_MIN * 60 };
+  } finally { lock.releaseLock(); }
+}
+
+/* Suelta el apartado (el cliente volvió al mapa, cerró la página o se venció el tiempo) */
+function soltar(b) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (e) { return { ok: false, error: 'ocupado' }; }
+  try { return { ok: true, borradas: purgarApartadas(String(b.token || '')) }; }
+  finally { lock.releaseLock(); }
+}
+
+/* Cancela una orden que nunca se pagó y libera sus sillas de inmediato */
+function cancelar(b) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var oid = String(b.orden || ''); if (!oid) return { ok: false, error: 'Falta la orden.' };
+  var pagada = false;
+  tabla(ss, 'Ordenes').forEach(function (o) { if (String(o.orden_id) === oid && o.estado === 'pagada') pagada = true; });
+  if (pagada) return { ok: false, error: 'La orden ya está pagada.' };
+  marcar(ss, 'Ordenes', 'orden_id', oid, function (sh, row) { sh.getRange(row, 10).setValue('expirada'); });
+  var bsh = ss.getSheetByName('Boletas'), v = bsh.getDataRange().getValues(), n = 0;
+  for (var i = 1; i < v.length; i++) {
+    if (String(v[i][1]) === oid && v[i][8] === 'reservada') { bsh.getRange(i + 1, 9).setValue('liberada'); n++; }
+  }
+  purgarApartadas(String(b.token || ''));
+  SpreadsheetApp.flush();
+  return { ok: true, liberadas: n };
 }
 
 /* ============================================================
@@ -157,6 +236,9 @@ function doPost(e) {
   var body = {};
   try { body = JSON.parse((e.postData && e.postData.contents) || '{}'); } catch (err) {}
   var a = (body.action || '').toLowerCase();
+  if (a === 'apartar')       return json(apartar(body));
+  if (a === 'soltar')        return json(soltar(body));
+  if (a === 'cancelar')      return json(cancelar(body));
   if (a === 'reservar')      return json(reservar(body));
   if (a === 'confirmar')     return json(confirmar(body));
   if (a === 'validar')       return json(validar(body));
@@ -184,7 +266,8 @@ function reservar(b) {
     var invalidas = sillas.filter(function (s) { return !zonas[s.zona] || bloqueadas[s.id]; });
     if (invalidas.length) return { ok: false, error: 'Sillas no disponibles: ' + invalidas.map(function (s) { return s.id; }).join(', ') };
 
-    var ocup = getOcupadas(b.evento);
+    // No cuenta el apartado propio: esas sillas son justamente las que este cliente viene apartando.
+    var ocup = getOcupadas(b.evento, b.token);
     var choque = sillas.filter(function (s) { return ocup.indexOf(s.id) >= 0; });
     if (choque.length) return { ok: false, error: 'Estas sillas ya no están disponibles: ' + choque.map(function (s) { return s.id; }).join(', '), sillas: choque.map(function (s) { return s.id; }) };
 
@@ -197,6 +280,7 @@ function reservar(b) {
     sillas.forEach(function (s, i) {
       bsh.appendRow([oid + '-' + (i + 1), oid, b.evento, s.id, s.etiqueta || s.id, zonas[s.zona].nombre, zonas[s.zona].precio, b.estudiante, 'reservada', Utilities.getUuid(), '']);
     });
+    purgarApartadas(b.token);   // ya no hace falta el apartado: ahora la orden retiene las sillas
     return { ok: true, orden: oid, total: total };
   } finally { lock.releaseLock(); }
 }
