@@ -137,6 +137,7 @@ function apiGet(p){ return fetch(API+'?'+p).then(function(r){return r.json();});
 function apiPost(b){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();}); }
 
 var evento=null, clave='', ultimo='', ultimoTs=0, escaneando=false, detector=null;
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 /* ---------- Acceso ---------- */
 apiGet('action=eventos').then(function(r){
@@ -240,17 +241,17 @@ function validar(token){
 function mostrar(res){
   var el=document.getElementById('result');
   var clase = res.ok ? 'ok' : (res.estado==='usada' ? 'warn' : 'bad');
-  var html='<div class="estado">'+(res.ok?'✔ ':'✖ ')+(res.mensaje||'Error')+'</div>';
-  if(res.etiqueta)   html+='<div class="linea"><span>Ubicación</span><b>'+res.etiqueta+'</b></div>';
-  if(res.zona)       html+='<div class="linea"><span>Zona</span><b>'+res.zona+'</b></div>';
-  if(res.estudiante) html+='<div class="linea"><span>Estudiante</span><b>'+res.estudiante+'</b></div>';
+  var html='<div class="estado">'+(res.ok?'✔ ':'✖ ')+esc(res.mensaje||'Error')+'</div>';
+  if(res.etiqueta)   html+='<div class="linea"><span>Ubicación</span><b>'+esc(res.etiqueta)+'</b></div>';
+  if(res.zona)       html+='<div class="linea"><span>Zona</span><b>'+esc(res.zona)+'</b></div>';
+  if(res.estudiante) html+='<div class="linea"><span>Estudiante</span><b>'+esc(res.estudiante)+'</b></div>';
   el.className='result show '+clase; el.innerHTML=html;
 }
 function agregarHist(res){
   var ul=document.getElementById('hist'), li=document.createElement('li');
   if(!res.ok) li.className='no';
   var hora=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  li.innerHTML='<span>'+(res.etiqueta||res.mensaje||'—')+'</span><span class="h">'+hora+'</span>';
+  li.innerHTML='<span>'+esc(res.etiqueta||res.mensaje||'—')+'</span><span class="h">'+esc(hora)+'</span>';
   ul.insertBefore(li, ul.firstChild);
   while(ul.children.length>25) ul.removeChild(ul.lastChild);
 }

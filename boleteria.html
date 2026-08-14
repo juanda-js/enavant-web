@@ -222,11 +222,14 @@ footer a{color:#fff}
     <h2 class="sec">Pago</h2>
     <p class="sub">Revisa tu compra y realiza el pago de forma segura.</p>
     <div class="form-wrap">
-      <div class="pay-note"><b>Tus sillas ya están apartadas</b> (20 minutos). En la Fase 2 este botón abrirá el pago real de <b>Wompi</b> (tarjeta, PSE, Nequi) y el dinero llegará directo a la cuenta de En Avant. Por ahora, al pulsarlo confirmamos la orden y se emiten las boletas.</div>
+      <div class="pay-note" style="background:rgba(217,130,24,.1);border-left:4px solid #D98218;padding:14px 16px;border-radius:0 8px 8px 0">
+        <b>⚠ Modo de prueba — no se cobra dinero.</b><br>
+        Tus sillas quedan apartadas (20 minutos). Cuando el equipo apruebe <b>Wompi</b>, este botón abrirá el pago real (tarjeta, PSE, Nequi) y el dinero llegará a la cuenta de En Avant. Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
+      </div>
       <div class="resumen" id="resumenPago"></div>
       <button class="btn btn-ink" style="width:auto;padding:16px 40px" id="payBtn" onclick="pagar()">
         <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-        Pagar <span id="payAmount"></span>
+        Confirmar orden <span id="payAmount"></span> <small style="opacity:.7;font-weight:400">(prueba)</small>
       </button>
     </div>
   </section>
@@ -531,14 +534,21 @@ function emitirBoletas(boletas){
   boletas.forEach(function(b){
     var qr='https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+encodeURIComponent(b.token);
     var el=document.createElement('div'); el.className='ticket';
-    el.innerHTML='<div class="stub"><img src="'+qr+'" alt="QR '+b.id+'"><small>'+b.id+'</small></div>'+
-      '<div class="info"><div class="ev">'+state.event.nombre+'</div>'+
-      '<div class="row"><span>Fecha</span><b>'+state.event.fecha+'</b></div>'+
-      '<div class="row"><span>Hora</span><b>'+state.event.hora+'</b></div>'+
-      '<div class="row"><span>Lugar</span><b>'+state.event.lugar+'</b></div>'+
-      '<div class="row"><span>Ubicación</span><b>'+b.etiqueta+'</b></div>'+
-      '<div class="row"><span>Zona</span><b>'+b.zona+'</b></div>'+
-      '<div class="row"><span>Estudiante</span><b>'+b.estudiante+'</b></div></div>';
+    // Si el QR externo no carga, se muestra el código en texto: el escáner
+    // acepta ingresarlo a mano, así la boleta nunca queda inservible.
+    el.innerHTML='<div class="stub">'+
+        '<img src="'+esc(qr)+'" alt="QR '+esc(b.id)+'" '+
+          'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';">'+
+        '<div class="qr-fallback" style="display:none;font-family:monospace;font-size:.66rem;word-break:break-all;padding:8px;border:1px dashed #999;border-radius:8px">'+esc(b.token)+'</div>'+
+        '<small>'+esc(b.id)+'</small>'+
+      '</div>'+
+      '<div class="info"><div class="ev">'+esc(state.event.nombre)+'</div>'+
+      '<div class="row"><span>Fecha</span><b>'+esc(state.event.fecha)+'</b></div>'+
+      '<div class="row"><span>Hora</span><b>'+esc(state.event.hora)+'</b></div>'+
+      '<div class="row"><span>Lugar</span><b>'+esc(state.event.lugar)+'</b></div>'+
+      '<div class="row"><span>Ubicación</span><b>'+esc(b.etiqueta)+'</b></div>'+
+      '<div class="row"><span>Zona</span><b>'+esc(b.zona)+'</b></div>'+
+      '<div class="row"><span>Estudiante</span><b>'+esc(b.estudiante)+'</b></div></div>';
     box.appendChild(el);
   });
 }
