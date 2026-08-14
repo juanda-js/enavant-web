@@ -78,7 +78,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .btn-back-map{display:none;align-items:center;gap:7px;font-size:.8rem;font-weight:600;color:var(--accent-ink);padding:8px 14px;border:1px solid var(--line);border-radius:100px;transition:background .2s}
 .btn-back-map.show{display:inline-flex}
 .btn-back-map:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
-.canvas{position:relative;background:var(--canvas);border-radius:16px;overflow:hidden;aspect-ratio:1.5/1;touch-action:none}
+.canvas{position:relative;background:var(--canvas);border-radius:16px;overflow:hidden;aspect-ratio:2/1;touch-action:none}
 #seatSvg{width:100%;height:100%;display:block;cursor:default}
 #seatSvg text{user-select:none}
 .seat{transition:opacity .2s,transform .12s}
@@ -93,8 +93,10 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .sect-price{fill:rgba(255,255,255,.7);font:500 12px var(--body);text-anchor:middle;pointer-events:none}
 .stage-shape{fill:#E0362B}
 .stage-txt{fill:#fff;font:600 18px var(--body);letter-spacing:5px;text-anchor:middle}
-.area-shape{fill:none;stroke:rgba(255,255,255,.25);stroke-width:1.2;stroke-dasharray:5 5}
-.area-txt{fill:rgba(255,255,255,.45);font:500 11px var(--body);text-anchor:middle}
+.area-shape{fill:rgba(255,255,255,.05);stroke:rgba(255,255,255,.42);stroke-width:1.3}
+.area-txt{fill:rgba(255,255,255,.62);font:600 11px var(--body);text-anchor:middle}
+.ico{fill:none;stroke:rgba(255,255,255,.62);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ico .f{fill:rgba(255,255,255,.62);stroke:none}
 /* leyenda */
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:.8rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
@@ -364,6 +366,27 @@ function secciones(){
   return arr;
 }
 
+/* ---- Símbolos de los objetos del recinto (dibujados en un cuadro de -10..10) ---- */
+function slugTxt(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function simboloArea(etiqueta){
+  var t=slugTxt(etiqueta), d='';
+  if(t.indexOf('bano')>=0 || t.indexOf('sanitario')>=0){          // baños: dos figuras
+    d='<circle class="f" cx="-5" cy="-7" r="2.2"/><path d="M-5 -4.2V1M-8.2 -2.2h6.4M-5 1l-2 7M-5 1l2 7"/>'+
+      '<circle class="f" cx="5" cy="-7" r="2.2"/><path d="M5 -4.2 1.6 2.2h6.8L5 -4.2M3.5 2.2V8M6.5 2.2V8"/>';
+  } else if(t.indexOf('ascensor')>=0 || t.indexOf('elevador')>=0){ // ascensor: caja con flechas
+    d='<rect x="-7" y="-8.5" width="14" height="17" rx="1.6"/><path d="M-3.2 4V-2.5M-5.4 -0.3l2.2-2.2 2.2 2.2M3.2 -4v6.5M1 0.3l2.2 2.2 2.2-2.2"/>';
+  } else if(t.indexOf('escalera')>=0){                             // escaleras: peldaños
+    d='<path d="M-9 8h4.5V3.4H-.2v-4.6h4.7v-4.6H9"/>';
+  } else if(t.indexOf('entrada')>=0 || t.indexOf('ingreso')>=0){   // entrada: flecha hacia adentro
+    d='<path d="M4 -8h5v16H4"/><path d="M-9 0h9M-3.4 -4.6 1.2 0l-4.6 4.6"/>';
+  } else if(t.indexOf('salida')>=0){                               // salida: flecha hacia afuera
+    d='<path d="M-4 -8h-5v16h5"/><path d="M-1 0h10M4.4 -4.6 9 0l-4.6 4.6"/>';
+  } else if(t.indexOf('cabina')>=0 || t.indexOf('sonido')>=0){     // cabina: consola de sonido
+    d='<path d="M-6 -8v16M0 -8v16M6 -8v16"/><path class="f" d="M-8 -3.6h4v2.2h-4zM-2 1.4h4v2.2h-4zM4 -5.6h4v2.2h-4z"/>';
+  } else { return ''; }
+  return '<g class="ico">'+d+'</g>';
+}
+
 function renderMapa(){
   var vistaSeccion = state.seccion !== null;
   var s='<svg id="seatSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
@@ -372,7 +395,11 @@ function renderMapa(){
     if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
       s+='<rect class="stage-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/><text class="stage-txt" x="'+a.x+'" y="'+(a.y+a.h/2+6)+'">ESCENARIO</text>';
     } else {
-      s+='<rect class="area-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/><text class="area-txt" x="'+a.x+'" y="'+(a.y+a.h+13)+'">'+esc(a.etiqueta)+'</text>';
+      var sim=simboloArea(a.etiqueta);
+      var k=Math.min(1.35, Math.max(.6, Math.min(a.w,a.h)/34));
+      s+='<rect class="area-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+
+         (sim?'<g transform="translate('+a.x+','+(a.y+a.h/2)+') scale('+k.toFixed(2)+')">'+sim+'</g>':'')+
+         '<text class="area-txt" x="'+a.x+'" y="'+(a.y+a.h+14)+'">'+esc(a.etiqueta)+'</text>';
     }
   });
   // Sillas de cada sección

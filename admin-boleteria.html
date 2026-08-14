@@ -70,12 +70,17 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
 #pvSvg .g-el{cursor:grab}#pvSvg .g-el:active{cursor:grabbing}
 #pvSvg .seat{}
 #pvSvg .stage{fill:#E0362B}#pvSvg .stage-t{fill:#fff;font:600 20px sans-serif;letter-spacing:6px;text-anchor:middle}
-#pvSvg .area{fill:none;stroke:#9a95a3;stroke-width:1.4;stroke-dasharray:4 4}
-#pvSvg .area-t{fill:#7a7580;font:500 12px sans-serif;text-anchor:middle}
+#pvSvg .area{fill:#fff;stroke:#121014;stroke-width:1.6}
+#pvSvg .area-t{fill:#121014;font:600 11px sans-serif;text-anchor:middle}
+#pvSvg .g-el[data-kind="area"]{color:#121014}   /* los símbolos heredan este color */
+#pvSvg .ico{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#pvSvg .ico .f{fill:currentColor;stroke:none}
 #pvSvg .sel{outline:2px dashed var(--accent)}
 #pvSvg .rz{fill:var(--accent);cursor:nwse-resize}
 #pvSvg .roth{fill:#fff;stroke:var(--accent);stroke-width:2;cursor:grab}
 #pvSvg .rotln{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+#pvSvg .guia{stroke:#E0007A;stroke-width:1.4;stroke-dasharray:7 5;pointer-events:none}
+#pvSvg .guiac{stroke:#00A3E0;stroke-width:1.4;stroke-dasharray:7 5;pointer-events:none}
 #pvSvg .g-el.dragging{opacity:.9}
 #pvSvg .g-el.dragging .seat{stroke:var(--accent);stroke-width:1.4}
 #pvSvg .g-el.sel .seat{stroke:var(--accent);stroke-width:1.4}
@@ -200,7 +205,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
             </div>
           </div>
         </div>
-        <p class="hint"><b>Haz clic en cualquier elemento</b> para editarlo en una ventanita, o <b>arrástralo</b> para moverlo. Zoom con la rueda del mouse o <b>+ / −</b>; arrastra un espacio vacío para desplazar el mapa. <b>“Ajustar”</b> vuelve a ver todo.</p>
+        <p class="hint"><b>Haz clic en cualquier elemento</b> para editarlo en una ventanita, o <b>arrástralo</b> para moverlo. Al arrastrar aparecen <b>guías de alineación</b>: la <b style="color:#F06FB4">línea rosada</b> indica que quedó alineado con otro elemento y la <b style="color:#6FC8F0">azul</b> que quedó en el centro del lienzo — así los palcos quedan en fila perfecta. Mantén <b>Alt</b> presionado para mover libre sin imán. Zoom con la rueda del mouse o <b>+ / −</b>; arrastra un espacio vacío para desplazar el mapa; <b>“Ajustar”</b> vuelve a ver todo.</p>
       </div>
 
       <div class="mapgrid">
@@ -562,6 +567,29 @@ function expandirFilas(txt){
 }
 function colorDe(zid){ var z=mapa.zonas.find(function(z){return z.id===zid;}); return z?z.color:'#bbb'; }
 
+/* ---- Símbolos de los objetos del recinto (dibujados en un cuadro de -10..10) ---- */
+function slugTxt(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function simboloArea(etiqueta){
+  var t=slugTxt(etiqueta), d='';
+  if(t.indexOf('bano')>=0 || t.indexOf('sanitario')>=0){          // baños: dos figuras
+    d='<circle class="f" cx="-5" cy="-7" r="2.2"/><path d="M-5 -4.2V1M-8.2 -2.2h6.4M-5 1l-2 7M-5 1l2 7"/>'+
+      '<circle class="f" cx="5" cy="-7" r="2.2"/><path d="M5 -4.2 1.6 2.2h6.8L5 -4.2M3.5 2.2V8M6.5 2.2V8"/>';
+  } else if(t.indexOf('ascensor')>=0 || t.indexOf('elevador')>=0){ // ascensor: flechas arriba/abajo
+    d='<rect x="-9" y="-9.5" width="18" height="19" rx="1.8"/>'+
+      '<path class="f" d="M-4.2-7.2-1.5-3h-5.4z"/><path d="M-4.2-3v9.6"/>'+
+      '<path class="f" d="M4.2 7.2 1.5 3h5.4z"/><path d="M4.2 3v-9.6"/>';
+  } else if(t.indexOf('escalera')>=0){                             // escaleras: peldaños
+    d='<path d="M-9 8h4.5V3.4H-.2v-4.6h4.7v-4.6H9"/>';
+  } else if(t.indexOf('entrada')>=0 || t.indexOf('ingreso')>=0){   // entrada: flecha hacia adentro
+    d='<path d="M4 -8h5v16H4"/><path d="M-9 0h9M-3.4 -4.6 1.2 0l-4.6 4.6"/>';
+  } else if(t.indexOf('salida')>=0){                               // salida: flecha hacia afuera
+    d='<path d="M-4 -8h-5v16h5"/><path d="M-1 0h10M4.4 -4.6 9 0l-4.6 4.6"/>';
+  } else if(t.indexOf('cabina')>=0 || t.indexOf('sonido')>=0){     // cabina: consola de sonido
+    d='<path d="M-6 -8v16M0 -8v16M6 -8v16"/><path class="f" d="M-8 -3.6h4v2.2h-4zM-2 1.4h4v2.2h-4zM4 -5.6h4v2.2h-4z"/>';
+  } else { return ''; }
+  return '<g class="ico">'+d+'</g>';
+}
+
 function renderPreview(){
   var s='<svg id="pvSvg" viewBox="'+view.x+' '+view.y+' '+view.w+' '+view.h+'" xmlns="http://www.w3.org/2000/svg">';
   // Áreas
@@ -572,9 +600,13 @@ function renderPreview(){
          '<rect class="stage" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/>'+
          '<text class="stage-t" x="'+a.x+'" y="'+(a.y+a.h/2+7)+'">ESCENARIO</text>'+rz+'</g>';
     } else {
+      var sim=simboloArea(a.etiqueta);
+      // el símbolo se centra dentro del recinto y se escala para que quepa siempre
+      var esc2=Math.min(1.35, Math.max(.6, Math.min(a.w,a.h)/34));
+      var simG=sim ? '<g transform="translate('+a.x+','+(a.y+a.h/2)+') scale('+esc2.toFixed(2)+')">'+sim+'</g>' : '';
       s+='<g class="g-el" data-kind="area" data-i="'+i+'">'+
-         '<rect class="area" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+
-         '<text class="area-t" x="'+a.x+'" y="'+(a.y+a.h+13)+'">'+esc(a.etiqueta)+'</text>'+rz+'</g>';
+         '<rect class="area" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+simG+
+         '<text class="area-t" x="'+a.x+'" y="'+(a.y+a.h+14)+'">'+esc(a.etiqueta)+'</text>'+rz+'</g>';
     }
   });
   // Palcos
@@ -599,7 +631,7 @@ function renderPreview(){
     g+='<line class="rotln" x1="'+topCx+'" y1="-6" x2="'+topCx+'" y2="-26"/><circle class="roth" data-i="'+i+'" cx="'+topCx+'" cy="-30" r="6.5"/>';
     s+=g+'</g>';
   });
-  s+='</svg>';
+  s+='<g id="pvGuias"></g></svg>';   // capa de guías de alineación (encima de todo)
   $('pvBox').innerHTML=s;
   if(selEl){ var sg=$('pvBox').querySelector('.g-el[data-kind="'+selEl.kind+'"][data-i="'+selEl.i+'"]'); if(sg) sg.classList.add('sel'); }
   actualizarZoomLabel();
@@ -635,9 +667,60 @@ function liveArea(g,a){
   var stage=rect.classList.contains('stage');
   rect.setAttribute('x', a.x-a.w/2); rect.setAttribute('y', a.y);
   rect.setAttribute('width', a.w); rect.setAttribute('height', a.h);
-  var t=g.querySelector('text'); if(t){ t.setAttribute('x', a.x); t.setAttribute('y', stage ? (a.y+a.h/2+7) : (a.y+a.h+13)); }
+  var t=g.querySelector('text'); if(t){ t.setAttribute('x', a.x); t.setAttribute('y', stage ? (a.y+a.h/2+7) : (a.y+a.h+14)); }
+  var ico=g.querySelector('.ico'); if(ico && ico.parentNode!==g){
+    var k=Math.min(1.35, Math.max(.6, Math.min(a.w,a.h)/34));
+    ico.parentNode.setAttribute('transform','translate('+a.x+','+(a.y+a.h/2)+') scale('+k.toFixed(2)+')');
+  }
   var hz=g.querySelector('rect.rz'); if(hz){ hz.setAttribute('x', a.x+a.w/2-13); hz.setAttribute('y', a.y+a.h-13); }
 }
+/* ---- Guías de alineación con imán (como Wix / Tuboleta) ---- */
+// Centro visual de un elemento, en coordenadas del lienzo
+function centroDe(kind,o){
+  if(kind==='palco') return {x:Number(o.x)||0, y:Number(o.y)||0};
+  if(kind==='area')  return {x:Number(o.x)||0, y:(Number(o.y)||0)+(Number(o.h)||0)/2};
+  var cols=Number(o.sillas)||1, lx=((cols-1)*SEP)/2, ly=(nFilas(o)-1)*SEP/2;
+  var rad=(Number(o.rot)||0)*Math.PI/180, cs=Math.cos(rad), sn=Math.sin(rad);
+  return {x:(Number(o.x)||0)+lx*cs-ly*sn, y:(Number(o.y)||0)+lx*sn+ly*cs};
+}
+// Todos los centros excepto el elemento que se arrastra
+function centrosOtros(kind,i){
+  var out=[];
+  mapa.bloques.forEach(function(b,j){ if(!(kind==='bloque'&&j===i)) out.push(centroDe('bloque',b)); });
+  mapa.palcos.forEach(function(p,j){ if(!(kind==='palco'&&j===i)) out.push(centroDe('palco',p)); });
+  mapa.areas.forEach(function(a,j){ if(!(kind==='area'&&j===i)) out.push(centroDe('area',a)); });
+  return out;
+}
+function dibujarGuias(gs){
+  var capa=$('pvGuias'); if(!capa) return;
+  capa.innerHTML=gs.map(function(g){
+    return g.eje==='x'
+      ? '<line class="'+g.cls+'" x1="'+g.v+'" y1="0" x2="'+g.v+'" y2="'+VB.h+'"/>'
+      : '<line class="'+g.cls+'" x1="0" y1="'+g.v+'" x2="'+VB.w+'" y2="'+g.v+'"/>';
+  }).join('');
+}
+function limpiarGuias(){ var c=$('pvGuias'); if(c) c.innerHTML=''; }
+// Ajusta nx,ny para que el centro del elemento se pegue a otros centros o al eje del lienzo
+function aplicarIman(kind,obj,nx,ny,i){
+  var TOL=7/(VB.w/view.w);                 // tolerancia constante en pantalla, sea cual sea el zoom
+  var c=centroDe(kind, Object.assign({},obj,{x:nx,y:ny}));
+  var offx=c.x-nx, offy=c.y-ny;            // distancia del ancla al centro
+  var cands=centrosOtros(kind,i), gs=[];
+  var mejorX=null, mejorY=null;
+  cands.forEach(function(o){
+    var dx=Math.abs(o.x-c.x); if(dx<=TOL && (!mejorX||dx<mejorX.d)) mejorX={v:o.x,d:dx,cls:'guia'};
+    var dy=Math.abs(o.y-c.y); if(dy<=TOL && (!mejorY||dy<mejorY.d)) mejorY={v:o.y,d:dy,cls:'guia'};
+  });
+  // eje central del lienzo (para centrar de verdad)
+  var ejeX=VB.w/2, ejeY=VB.h/2;
+  if(Math.abs(ejeX-c.x)<=TOL && (!mejorX||Math.abs(ejeX-c.x)<mejorX.d)) mejorX={v:ejeX,d:Math.abs(ejeX-c.x),cls:'guiac'};
+  if(Math.abs(ejeY-c.y)<=TOL && (!mejorY||Math.abs(ejeY-c.y)<mejorY.d)) mejorY={v:ejeY,d:Math.abs(ejeY-c.y),cls:'guiac'};
+  if(mejorX){ nx=Math.round(mejorX.v-offx); gs.push({eje:'x',v:mejorX.v,cls:mejorX.cls}); }
+  if(mejorY){ ny=Math.round(mejorY.v-offy); gs.push({eje:'y',v:mejorY.v,cls:mejorY.cls}); }
+  dibujarGuias(gs);
+  return {x:nx,y:ny};
+}
+
 function initMapInteractions(){
   var box=$('pvBox'); if(!box || box.dataset.bound) return; box.dataset.bound='1';
   var drag=null;
@@ -657,7 +740,7 @@ function initMapInteractions(){
       $('pvBox').querySelectorAll('.g-el.sel').forEach(function(x){x.classList.remove('sel');});
       g.classList.add('sel','dragging');
       $('elPop').classList.remove('on');   // se muestra al soltar, ya en su sitio
-      drag={modo:'mover', kind:kind, obj:obj, g:g, sx:p.x, sy:p.y, bx:Number(obj.x)||0, by:Number(obj.y)||0, rot:Number(obj.rot)||0};
+      drag={modo:'mover', kind:kind, i:i, obj:obj, g:g, sx:p.x, sy:p.y, bx:Number(obj.x)||0, by:Number(obj.y)||0, rot:Number(obj.rot)||0};
       box.setPointerCapture(e.pointerId); return;
     }
     // clic en vacío → cerrar ventanita + paneo
@@ -676,6 +759,8 @@ function initMapInteractions(){
     var p=pvPoint(e);
     if(drag.modo==='mover'){
       var nx=Math.round(drag.bx+(p.x-drag.sx)), ny=Math.round(drag.by+(p.y-drag.sy));
+      if(!e.altKey){ var sn=aplicarIman(drag.kind, drag.obj, nx, ny, drag.i); nx=sn.x; ny=sn.y; }  // Alt = sin imán
+      else limpiarGuias();
       drag.obj.x=nx; drag.obj.y=ny;
       if(drag.kind==='bloque'){ drag.g.setAttribute('transform','translate('+nx+','+ny+') rotate('+drag.rot+')'); }
       else { drag.g.setAttribute('transform','translate('+(nx-drag.bx)+','+(ny-drag.by)+')'); }
@@ -691,6 +776,7 @@ function initMapInteractions(){
     }
   });
   function fin(){ if(!drag) return; var modo=drag.modo; box.classList.remove('panning'); if(drag.g) drag.g.classList.remove('dragging'); drag=null;
+    limpiarGuias();
     if(modo!=='pan') renderTodo(); else if(selEl) posPop(); }
   box.addEventListener('pointerup', fin);
   box.addEventListener('pointercancel', fin);
