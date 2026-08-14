@@ -267,7 +267,7 @@ function pesos(n){ return '$'+Number(n||0).toLocaleString('es-CO'); }
 function $(id){ return document.getElementById(id); }
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-var VB={w:1400,h:920}, SEP=13, RS=5.6;
+var VB={w:1800,h:900}, SEP=13, RS=5.6;   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0 };
 
 /* ---------- Pasos ---------- */
