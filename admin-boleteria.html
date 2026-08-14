@@ -68,6 +68,14 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
 #pvSvg .area{fill:none;stroke:#9a95a3;stroke-width:1.4;stroke-dasharray:4 4}
 #pvSvg .area-t{fill:#7a7580;font:500 12px sans-serif;text-anchor:middle}
 #pvSvg .sel{outline:2px dashed var(--accent)}
+#pvSvg .rz{fill:var(--accent);cursor:nwse-resize}
+.palette{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.palette button{font-size:.72rem;font-weight:600;padding:8px 11px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;transition:background .2s}
+.palette button:hover{background:var(--accent);border-color:var(--accent)}
+.qty{display:inline-flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.qty button{width:26px;height:30px;background:rgba(255,255,255,.06);color:#fff;font-size:1rem;line-height:1}
+.qty button:hover{background:var(--accent)}
+.qty span{min-width:30px;text-align:center;font-size:.9rem;font-variant-numeric:tabular-nums}
 .subcard{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
 .subcard h4{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
 .mini{display:grid;gap:6px}
@@ -163,19 +171,38 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
             <h4>Zonas (precio y color) <button class="btn btn-ghost btn-sm" onclick="addZona()">+ Zona</button></h4>
             <div class="mini" id="zonasEd"></div>
           </div>
+          <!-- Agregar elementos -->
+          <div class="subcard">
+            <h4>Agregar al mapa</h4>
+            <div class="palette">
+              <button onclick="addBloque()">+ Bloque de sillas</button>
+              <button onclick="addPalco()">+ Palco</button>
+            </div>
+            <div class="palette">
+              <button onclick="addAmenity('ESCENARIO',320,70)">+ Escenario</button>
+              <button onclick="addAmenity('Baños',90,44)">+ Baños</button>
+              <button onclick="addAmenity('Cabina de sonido',150,44)">+ Cabina</button>
+              <button onclick="addAmenity('Escaleras',80,44)">+ Escaleras</button>
+              <button onclick="addAmenity('Ascensor',54,44)">+ Ascensor</button>
+              <button onclick="addAmenity('Entrada',120,32)">+ Entrada</button>
+              <button onclick="addAmenity('Salida',120,32)">+ Salida</button>
+              <button onclick="addAmenity('Área',140,44)">+ Área libre</button>
+            </div>
+            <p class="hint" style="margin-top:2px">En la vista previa: <b>arrastra</b> cualquier elemento para moverlo; en las áreas, arrastra la <b>esquina morada</b> para cambiar el tamaño.</p>
+          </div>
           <!-- Bloques -->
           <div class="subcard">
-            <h4>Bloques de sillas <button class="btn btn-ghost btn-sm" onclick="addBloque()">+ Bloque</button></h4>
+            <h4>Bloques de sillas</h4>
             <div class="mini" id="bloquesEd"></div>
           </div>
           <!-- Palcos -->
           <div class="subcard">
-            <h4>Palcos <button class="btn btn-ghost btn-sm" onclick="addPalco()">+ Palco</button></h4>
+            <h4>Palcos</h4>
             <div class="mini" id="palcosEd"></div>
           </div>
           <!-- Áreas -->
           <div class="subcard">
-            <h4>Áreas (escenario, etc.) <button class="btn btn-ghost btn-sm" onclick="addArea()">+ Área</button></h4>
+            <h4>Áreas y servicios</h4>
             <div class="mini" id="areasEd"></div>
           </div>
         </div>
@@ -346,10 +373,25 @@ function cargarMapa(recinto){
 
 /* ---- Editores (tablas dinámicas) ---- */
 function addZona(){ mapa.zonas.push({id:'Z'+(mapa.zonas.length+1),nombre:'Nueva zona',precio:0,color:'#7FBF3F'}); renderTodo(); }
-function addBloque(){ mapa.bloques.push({id:'B'+(mapa.bloques.length+1),zona:(mapa.zonas[0]||{}).id||'',nombre:'Bloque',filas:'A-E',sillas:10,x:600,y:500,rot:0}); renderTodo(); }
+function addBloque(){ mapa.bloques.push({id:'B'+(mapa.bloques.length+1),zona:(mapa.zonas[0]||{}).id||'',nombre:'Bloque',filas:filasStr(5),sillas:10,x:600,y:500,rot:0}); renderTodo(); }
 function addPalco(){ mapa.palcos.push({palco:(mapa.palcos.length+1),zona:(mapa.zonas[0]||{}).id||'',sillas:5,x:500,y:200}); renderTodo(); }
-function addArea(){ mapa.areas.push({etiqueta:'Área',x:700,y:800,w:160,h:24,rot:0}); renderTodo(); }
+// Elemento del recinto (escenario, baños, cabina, escaleras, etc.) — se guarda como "área"
+function addAmenity(label,w,h){
+  var n=mapa.areas.length;
+  mapa.areas.push({etiqueta:label, x:250+(n%4)*180, y:820-(Math.floor(n/4)*70), w:w, h:h, rot:0});
+  renderTodo();
+}
 function del(arr,i){ arr.splice(i,1); renderTodo(); }
+
+// Genera etiquetas de fila (A,B,…,Z,AA,AB…) para N filas
+function filasStr(n){
+  n=Math.max(1,Math.min(60, parseInt(n,10)||1)); var out=[];
+  for(var i=0;i<n;i++){ var s='',x=i; do{ s=String.fromCharCode(65+(x%26))+s; x=Math.floor(x/26)-1; }while(x>=0); out.push(s); }
+  return out.join(',');
+}
+function nFilas(b){ return expandirFilas(b.filas).length; }
+function setFilas(i,n){ mapa.bloques[i].filas=filasStr(n); renderTodo(); }
+function setCols(i,n){ mapa.bloques[i].sillas=Math.max(1,Math.min(60,parseInt(n,10)||1)); renderTodo(); }
 
 function zonaOptions(sel){
   return mapa.zonas.map(function(z){ return '<option value="'+esc(z.id)+'"'+(z.id===sel?' selected':'')+'>'+esc(z.nombre)+'</option>'; }).join('');
@@ -368,17 +410,18 @@ function renderEditors(){
 
   // Bloques
   $('bloquesEd').innerHTML = mapa.bloques.map(function(b,i){
+    var nf=nFilas(b), nc=Number(b.sillas)||0;
     return '<div class="r">'+
       '<input value="'+esc(b.nombre)+'" oninput="setB('+i+',\'nombre\',this.value)" placeholder="Nombre del bloque">'+
-      '<div class="cols"><div><label>Filas</label><input value="'+esc(b.filas)+'" oninput="setB('+i+',\'filas\',this.value)" placeholder="A-E"></div>'+
-        '<div><label>Sillas/fila</label><input type="number" value="'+(Number(b.sillas)||0)+'" oninput="setB('+i+',\'sillas\',this.value)"></div>'+
+      '<div class="cols"><div><label>Filas</label><div class="qty"><button onclick="setFilas('+i+','+(nf-1)+')">−</button><span>'+nf+'</span><button onclick="setFilas('+i+','+(nf+1)+')">+</button></div></div>'+
+        '<div><label>Columnas (sillas)</label><div class="qty"><button onclick="setCols('+i+','+(nc-1)+')">−</button><span>'+nc+'</span><button onclick="setCols('+i+','+(nc+1)+')">+</button></div></div>'+
         '<div><label>Zona</label><select onchange="setB('+i+',\'zona\',this.value)">'+zonaOptions(b.zona)+'</select></div></div>'+
       '<div class="cols4"><div><label>X</label><input type="number" value="'+(Number(b.x)||0)+'" oninput="setB('+i+',\'x\',this.value)"></div>'+
         '<div><label>Y</label><input type="number" value="'+(Number(b.y)||0)+'" oninput="setB('+i+',\'y\',this.value)"></div>'+
         '<div><label>Rotación</label><input type="number" value="'+(Number(b.rot)||0)+'" oninput="setB('+i+',\'rot\',this.value)"></div>'+
         '<div><label>&nbsp;</label><button class="btn btn-del btn-sm" onclick="del(mapa.bloques,'+i+')">✕</button></div></div>'+
     '</div>';
-  }).join('') || '<p class="hint">Sin bloques.</p>';
+  }).join('') || '<p class="hint">Sin bloques. Usa “+ Bloque de sillas”.</p>';
 
   // Palcos
   $('palcosEd').innerHTML = mapa.palcos.map(function(p,i){
@@ -420,14 +463,15 @@ function renderPreview(){
   var s='<svg id="pvSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
   // Áreas
   mapa.areas.forEach(function(a,i){
+    var rz='<rect class="rz" data-i="'+i+'" x="'+(a.x+a.w/2-13)+'" y="'+(a.y+a.h-13)+'" width="13" height="13" rx="2"/>';
     if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
       s+='<g class="g-el" data-kind="area" data-i="'+i+'">'+
          '<rect class="stage" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/>'+
-         '<text class="stage-t" x="'+a.x+'" y="'+(a.y+a.h/2+7)+'">ESCENARIO</text></g>';
+         '<text class="stage-t" x="'+a.x+'" y="'+(a.y+a.h/2+7)+'">ESCENARIO</text>'+rz+'</g>';
     } else {
       s+='<g class="g-el" data-kind="area" data-i="'+i+'">'+
          '<rect class="area" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+
-         '<text class="area-t" x="'+a.x+'" y="'+(a.y+a.h+13)+'">'+esc(a.etiqueta)+'</text></g>';
+         '<text class="area-t" x="'+a.x+'" y="'+(a.y+a.h+13)+'">'+esc(a.etiqueta)+'</text>'+rz+'</g>';
     }
   });
   // Palcos
@@ -467,15 +511,22 @@ function habilitarArrastre(){
   var drag=null;
   function pt(e){ var r=svg.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*VB.w, y:(e.clientY-r.top)/r.height*VB.h }; }
   svg.addEventListener('pointerdown', function(e){
+    var rz=e.target.closest('.rz');
+    if(rz){ drag={modo:'rz',obj:mapa.areas[+rz.dataset.i]}; svg.setPointerCapture(e.pointerId); return; }
     var g=e.target.closest('.g-el'); if(!g) return;
     var kind=g.dataset.kind, i=+g.dataset.i, p=pt(e), obj=(kind==='bloque'?mapa.bloques:kind==='palco'?mapa.palcos:mapa.areas)[i];
-    drag={kind:kind,i:i,obj:obj,ox:p.x-(Number(obj.x)||0),oy:p.y-(Number(obj.y)||0)};
+    drag={modo:'mover',kind:kind,i:i,obj:obj,ox:p.x-(Number(obj.x)||0),oy:p.y-(Number(obj.y)||0)};
     svg.setPointerCapture(e.pointerId);
   });
   svg.addEventListener('pointermove', function(e){
     if(!drag) return;
     var p=pt(e);
-    drag.obj.x=Math.round(p.x-drag.ox); drag.obj.y=Math.round(p.y-drag.oy);
+    if(drag.modo==='rz'){
+      drag.obj.w=Math.max(24,Math.round(2*(p.x-drag.obj.x)));
+      drag.obj.h=Math.max(16,Math.round(p.y-drag.obj.y));
+    } else {
+      drag.obj.x=Math.round(p.x-drag.ox); drag.obj.y=Math.round(p.y-drag.oy);
+    }
     renderPreview();
   });
   svg.addEventListener('pointerup', function(){ if(drag){ drag=null; renderEditors(); } });
