@@ -69,6 +69,8 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
 #pvSvg .area-t{fill:#7a7580;font:500 12px sans-serif;text-anchor:middle}
 #pvSvg .sel{outline:2px dashed var(--accent)}
 #pvSvg .rz{fill:var(--accent);cursor:nwse-resize}
+#pvSvg .roth{fill:#fff;stroke:var(--accent);stroke-width:2;cursor:grab}
+#pvSvg .rotln{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
 .palette{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .palette button{font-size:.72rem;font-weight:600;padding:8px 11px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;transition:background .2s}
 .palette button:hover{background:var(--accent);border-color:var(--accent)}
@@ -412,14 +414,10 @@ function renderEditors(){
   $('bloquesEd').innerHTML = mapa.bloques.map(function(b,i){
     var nf=nFilas(b), nc=Number(b.sillas)||0;
     return '<div class="r">'+
-      '<input value="'+esc(b.nombre)+'" oninput="setB('+i+',\'nombre\',this.value)" placeholder="Nombre del bloque">'+
+      '<div style="display:flex;gap:8px;align-items:center"><input style="flex:1" value="'+esc(b.nombre)+'" oninput="setB('+i+',\'nombre\',this.value)" placeholder="Nombre del bloque"><button class="btn btn-del btn-sm" onclick="del(mapa.bloques,'+i+')">✕</button></div>'+
       '<div class="cols"><div><label>Filas</label><div class="qty"><button onclick="setFilas('+i+','+(nf-1)+')">−</button><span>'+nf+'</span><button onclick="setFilas('+i+','+(nf+1)+')">+</button></div></div>'+
         '<div><label>Columnas (sillas)</label><div class="qty"><button onclick="setCols('+i+','+(nc-1)+')">−</button><span>'+nc+'</span><button onclick="setCols('+i+','+(nc+1)+')">+</button></div></div>'+
         '<div><label>Zona</label><select onchange="setB('+i+',\'zona\',this.value)">'+zonaOptions(b.zona)+'</select></div></div>'+
-      '<div class="cols4"><div><label>X</label><input type="number" value="'+(Number(b.x)||0)+'" oninput="setB('+i+',\'x\',this.value)"></div>'+
-        '<div><label>Y</label><input type="number" value="'+(Number(b.y)||0)+'" oninput="setB('+i+',\'y\',this.value)"></div>'+
-        '<div><label>Rotación</label><input type="number" value="'+(Number(b.rot)||0)+'" oninput="setB('+i+',\'rot\',this.value)"></div>'+
-        '<div><label>&nbsp;</label><button class="btn btn-del btn-sm" onclick="del(mapa.bloques,'+i+')">✕</button></div></div>'+
     '</div>';
   }).join('') || '<p class="hint">Sin bloques. Usa “+ Bloque de sillas”.</p>';
 
@@ -430,19 +428,15 @@ function renderEditors(){
       '<div><label>Sillas</label><input type="number" value="'+(Number(p.sillas)||0)+'" oninput="setP('+i+',\'sillas\',this.value)"></div>'+
       '<div><label>Zona</label><select onchange="setP('+i+',\'zona\',this.value)">'+zonaOptions(p.zona)+'</select></div>'+
       '<div><label>&nbsp;</label><button class="btn btn-del btn-sm" onclick="del(mapa.palcos,'+i+')">✕</button></div>'+
-    '</div><div class="cols"><div><label>X</label><input type="number" value="'+(Number(p.x)||0)+'" oninput="setP('+i+',\'x\',this.value)"></div>'+
-      '<div><label>Y</label><input type="number" value="'+(Number(p.y)||0)+'" oninput="setP('+i+',\'y\',this.value)"></div><div></div></div></div>';
+    '</div></div>';
   }).join('') || '<p class="hint">Sin palcos.</p>';
 
   // Áreas
   $('areasEd').innerHTML = mapa.areas.map(function(a,i){
-    return '<div class="r"><input value="'+esc(a.etiqueta)+'" oninput="setA('+i+',\'etiqueta\',this.value)" placeholder="ESCENARIO">'+
-      '<div class="cols4"><div><label>X</label><input type="number" value="'+(Number(a.x)||0)+'" oninput="setA('+i+',\'x\',this.value)"></div>'+
-      '<div><label>Y</label><input type="number" value="'+(Number(a.y)||0)+'" oninput="setA('+i+',\'y\',this.value)"></div>'+
-      '<div><label>Ancho</label><input type="number" value="'+(Number(a.w)||0)+'" oninput="setA('+i+',\'w\',this.value)"></div>'+
-      '<div><label>Alto</label><input type="number" value="'+(Number(a.h)||0)+'" oninput="setA('+i+',\'h\',this.value)"></div></div>'+
-      '<button class="btn btn-del btn-sm" onclick="del(mapa.areas,'+i+')">✕ Quitar</button></div>';
-  }).join('') || '<p class="hint">Sin áreas.</p>';
+    return '<div class="r"><div style="display:flex;gap:8px;align-items:center">'+
+      '<input style="flex:1" value="'+esc(a.etiqueta)+'" oninput="setA('+i+',\'etiqueta\',this.value)" placeholder="Escenario, Baños, Cabina…">'+
+      '<button class="btn btn-del btn-sm" onclick="del(mapa.areas,'+i+')">✕</button></div></div>';
+  }).join('') || '<p class="hint">Sin áreas ni servicios.</p>';
 }
 function setZ(i,k,v){ mapa.zonas[i][k]= k==='precio'?Number(v):v; if(k==='color'||k==='precio') renderPreview(); else renderPreview(); }
 function setB(i,k,v){ mapa.bloques[i][k]=(k==='x'||k==='y'||k==='rot'||k==='sillas')?Number(v):v; renderPreview(); }
@@ -492,6 +486,8 @@ function renderPreview(){
       g+='<text x="-8" y="'+(y+3)+'" style="font:500 8px sans-serif;fill:#888">'+esc(f)+'</text>';
       for(var c=1;c<=(Number(b.sillas)||0);c++){ g+='<circle class="seat" cx="'+((c-1)*SEP)+'" cy="'+y+'" r="'+R+'" fill="'+col+'" stroke="#00000022"/>'; }
     });
+    var topCx=(((Number(b.sillas)||1)-1)*SEP)/2;   // manija para rotar (arrástrala)
+    g+='<line class="rotln" x1="'+topCx+'" y1="-6" x2="'+topCx+'" y2="-26"/><circle class="roth" data-i="'+i+'" cx="'+topCx+'" cy="-30" r="6.5"/>';
     s+=g+'</g>';
   });
   s+='</svg>';
@@ -511,6 +507,8 @@ function habilitarArrastre(){
   var drag=null;
   function pt(e){ var r=svg.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*VB.w, y:(e.clientY-r.top)/r.height*VB.h }; }
   svg.addEventListener('pointerdown', function(e){
+    var roth=e.target.closest('.roth');
+    if(roth){ drag={modo:'rot',obj:mapa.bloques[+roth.dataset.i]}; svg.setPointerCapture(e.pointerId); return; }
     var rz=e.target.closest('.rz');
     if(rz){ drag={modo:'rz',obj:mapa.areas[+rz.dataset.i]}; svg.setPointerCapture(e.pointerId); return; }
     var g=e.target.closest('.g-el'); if(!g) return;
@@ -524,6 +522,11 @@ function habilitarArrastre(){
     if(drag.modo==='rz'){
       drag.obj.w=Math.max(24,Math.round(2*(p.x-drag.obj.x)));
       drag.obj.h=Math.max(16,Math.round(p.y-drag.obj.y));
+    } else if(drag.modo==='rot'){
+      var b=drag.obj, cols=Number(b.sillas)||1, topCx=((cols-1)*SEP)/2;
+      var ang0=Math.atan2(-30, topCx||0.001);
+      var ang=Math.atan2(p.y-(Number(b.y)||0), p.x-(Number(b.x)||0));
+      b.rot=Math.round((ang-ang0)*180/Math.PI);
     } else {
       drag.obj.x=Math.round(p.x-drag.ox); drag.obj.y=Math.round(p.y-drag.oy);
     }
