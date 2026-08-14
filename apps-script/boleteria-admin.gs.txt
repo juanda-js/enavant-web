@@ -1,0 +1,114 @@
+/*  ============================================================
+    EN AVANT — Boletería · AÑADIDOS PARA EL PANEL DE ADMINISTRACIÓN
+    ------------------------------------------------------------
+    Estas funciones se AGREGAN al Código.gs de la boletería que ya
+    tienes. No reemplazan nada; solo añaden la capacidad de crear y
+    editar eventos y mapas desde admin-boleteria.html.
+
+    CÓMO INSTALAR (3 pasos):
+
+    1) Cerca del inicio, junto a  "var HOLD_MIN = 20;", agrega:
+
+         var CLAVE_ADMIN = 'AdminEA2026';   // cámbiala por la que quieras
+
+    2) En la función doPost, ANTES de la línea
+         return json({ ok: false, error: 'acción desconocida' });
+       agrega estas cuatro líneas:
+
+         if (a === 'admindatos')    return json(adminDatos(body));
+         if (a === 'guardarevento') return json(guardarEvento(body));
+         if (a === 'borrarevento')  return json(borrarEvento(body));
+         if (a === 'guardarmapa')   return json(guardarMapa(body));
+
+    3) Pega TODO el bloque de abajo (desde "// ==== ADMIN ====")
+       al FINAL del archivo.
+
+    Luego: Implementar → Gestionar implementaciones → ✏️ → Nueva versión.
+    ============================================================ */
+
+// ==== ADMIN ====
+
+function adminOK(b) { return String((b && b.clave) || '') === CLAVE_ADMIN; }
+
+/* Devuelve todo lo que el panel necesita: eventos (incluidos los
+   inactivos) y la lista de recintos existentes. Los mapas se piden
+   uno por uno con action=mapa. */
+function adminDatos(b) {
+  if (!adminOK(b)) return { ok: false, error: 'Clave incorrecta' };
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), tz = ss.getSpreadsheetTimeZone();
+  var eventos = tabla(ss, 'Eventos').map(function (r) {
+    return {
+      id: r.id, nombre: r.nombre, fecha: textoFecha(r.fecha, tz), hora: textoHora(r.hora, tz),
+      lugar: r.lugar, imagen: r.imagen, recinto: r.recinto || 'vermont', activo: esActivo(r)
+    };
+  });
+  var set = {};
+  ['Zonas', 'Palcos', 'Bloques', 'Areas'].forEach(function (n) {
+    tabla(ss, n).forEach(function (r) { if (r.recinto) set[r.recinto] = 1; });
+  });
+  return { ok: true, eventos: eventos, recintos: Object.keys(set) };
+}
+
+/* Crea o actualiza un evento (upsert por id). */
+function guardarEvento(b) {
+  if (!adminOK(b)) return { ok: false, error: 'Clave incorrecta' };
+  var ev = b.evento || {};
+  if (!ev.id) return { ok: false, error: 'Falta el identificador del evento.' };
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName('Eventos');
+  var fila = [ev.id, ev.nombre || '', ev.fecha || '', ev.hora || '', ev.lugar || '',
+              ev.imagen || '', ev.recinto || 'vermont', ev.activo !== false];
+  var v = sh.getDataRange().getValues();
+  for (var i = 1; i < v.length; i++) {
+    if (String(v[i][0]) === String(ev.id)) {
+      sh.getRange(i + 1, 1, 1, fila.length).setValues([fila]);
+      return { ok: true, accion: 'actualizado' };
+    }
+  }
+  sh.appendRow(fila);
+  return { ok: true, accion: 'creado' };
+}
+
+function borrarEvento(b) {
+  if (!adminOK(b)) return { ok: false, error: 'Clave incorrecta' };
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), sh = ss.getSheetByName('Eventos');
+  var v = sh.getDataRange().getValues();
+  for (var i = v.length - 1; i >= 1; i--) if (String(v[i][0]) === String(b.id)) sh.deleteRow(i + 1);
+  return { ok: true };
+}
+
+/* Guarda el mapa completo de un recinto: reescribe SOLO las filas de
+   ese recinto en Zonas/Palcos/Bloques/Bloqueadas/Areas, sin tocar los
+   demás recintos. */
+function guardarMapa(b) {
+  if (!adminOK(b)) return { ok: false, error: 'Clave incorrecta' };
+  var R = String(b.recinto || '').trim();
+  if (!R) return { ok: false, error: 'Falta el nombre del recinto.' };
+  var m = b.mapa || {};
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  reemplazarRecinto(ss, 'Zonas', R, (m.zonas || []).map(function (z) {
+    return [R, z.id, z.nombre, Number(z.precio) || 0, z.color || '#cccccc'];
+  }));
+  reemplazarRecinto(ss, 'Palcos', R, (m.palcos || []).map(function (p) {
+    return [R, p.palco, p.zona, Number(p.sillas) || 0, Number(p.x) || 0, Number(p.y) || 0];
+  }));
+  reemplazarRecinto(ss, 'Bloques', R, (m.bloques || []).map(function (x) {
+    return [R, x.id, x.zona, x.nombre, x.filas, Number(x.sillas) || 0, Number(x.x) || 0, Number(x.y) || 0, Number(x.rot) || 0];
+  }));
+  reemplazarRecinto(ss, 'Bloqueadas', R, (m.bloqueadas || []).map(function (x) {
+    return [R, x.id, x.motivo || ''];
+  }));
+  reemplazarRecinto(ss, 'Areas', R, (m.areas || []).map(function (a) {
+    return [R, a.etiqueta, Number(a.x) || 0, Number(a.y) || 0, Number(a.w) || 0, Number(a.h) || 0, Number(a.rot) || 0];
+  }));
+  return { ok: true };
+}
+
+/* Borra las filas cuyo recinto (columna A) sea R y agrega las nuevas.
+   Crea la hoja si no existe (con encabezados vacíos mínimos). */
+function reemplazarRecinto(ss, name, R, filas) {
+  var sh = ss.getSheetByName(name);
+  if (!sh) return; // las hojas ya existen tras setupVermont()
+  var v = sh.getDataRange().getValues();
+  for (var i = v.length - 1; i >= 1; i--) if (String(v[i][0]) === String(R)) sh.deleteRow(i + 1);
+  if (filas.length) sh.getRange(sh.getLastRow() + 1, 1, filas.length, filas[0].length).setValues(filas);
+}

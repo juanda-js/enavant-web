@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Administración de Boletería | En Avant</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#121014">
+<link rel="icon" href="img/logo-en-avant.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#121014;--paper:#FAF9F7;--accent:#A40FC4;--teal:#037070;--ok:#2E8B2E;--err:#C0322B;--warn:#D98218;
+  --line:rgba(255,255,255,.14);--fld:rgba(0,0,0,.28);
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans',Helvetica,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--ink);color:#fff;min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none}
+input,select{font-family:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 18px}
+header img{height:34px;filter:brightness(0) invert(1)}
+header .tag{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-bottom:4px}
+.sub{color:rgba(255,255,255,.55);font-size:.9rem;margin-bottom:22px}
+.card{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:20px}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.field label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:600}
+.field input,.field select{background:var(--fld);border:1px solid var(--line);color:#fff;padding:12px 13px;border-radius:9px;font-size:1rem;width:100%}
+.field select option{background:#1c1a20}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{padding:13px 20px;border-radius:9px;background:#fff;color:var(--ink);font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;transition:opacity .2s}
+.btn:active{opacity:.8}.btn:disabled{opacity:.45}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.75);border:1px solid var(--line)}
+.btn-sm{padding:8px 12px;font-size:.72rem}
+.btn-del{background:transparent;color:#FF9C93;border:1px solid rgba(255,156,147,.4)}
+.err{color:#FF9C93;font-size:.85rem;margin-top:8px;min-height:1em}
+.ok-msg{color:#8BE28B;font-size:.85rem;margin-top:8px;min-height:1em}
+/* Tabs */
+#panel{display:none}
+.tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.tab{background:none;color:rgba(255,255,255,.55);padding:12px 16px;font-weight:600;font-size:.82rem;letter-spacing:.04em;border-bottom:2px solid transparent}
+.tab.active{color:#fff;border-bottom-color:var(--accent)}
+.view{display:none}.view.active{display:block}
+/* Listas */
+.list{display:grid;gap:8px;margin-bottom:16px}
+.item{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.item img{width:54px;height:40px;object-fit:cover;border-radius:6px;background:#000;flex-shrink:0}
+.item .meta{flex:1;min-width:0}
+.item .meta b{display:block;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .meta span{font-size:.78rem;color:rgba(255,255,255,.5)}
+.item .pill{font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:100px}
+.pill.on{background:rgba(46,139,46,.25);color:#8BE28B}.pill.off{background:rgba(192,50,43,.2);color:#FF9C93}
+.imgprev{width:100%;height:120px;object-fit:cover;border-radius:9px;background:#000;margin-top:6px;display:none}
+.hint{font-size:.76rem;color:rgba(255,255,255,.45);margin-top:4px}
+/* Editor de mapa */
+.mapgrid{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:860px){.mapgrid{grid-template-columns:minmax(0,1fr) 380px}}
+.preview{background:#fff;border-radius:12px;overflow:hidden;position:relative}
+#pvSvg{width:100%;height:auto;display:block;touch-action:none}
+#pvSvg .g-el{cursor:grab}#pvSvg .g-el:active{cursor:grabbing}
+#pvSvg .seat{}
+#pvSvg .stage{fill:#E0362B}#pvSvg .stage-t{fill:#fff;font:600 20px sans-serif;letter-spacing:6px;text-anchor:middle}
+#pvSvg .area{fill:none;stroke:#9a95a3;stroke-width:1.4;stroke-dasharray:4 4}
+#pvSvg .area-t{fill:#7a7580;font:500 12px sans-serif;text-anchor:middle}
+#pvSvg .sel{outline:2px dashed var(--accent)}
+.subcard{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.subcard h4{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.mini{display:grid;gap:6px}
+.mini .r{display:grid;gap:6px;background:rgba(0,0,0,.22);border-radius:8px;padding:8px}
+.mini input,.mini select{background:var(--fld);border:1px solid var(--line);color:#fff;padding:8px;border-radius:7px;font-size:.85rem;width:100%}
+.mini .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mini .cols4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.mini label{font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.swatch{width:34px;height:34px;border-radius:7px;border:1px solid var(--line);padding:0;background:none}
+.foot{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="img/logo-en-avant.png" alt="En Avant">
+    <span class="tag">Administración · Boletería</span>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="loginView">
+    <h1>Panel de boletería</h1>
+    <p class="sub">Crea eventos y diseña el mapa de cada teatro. Solo para el equipo de En Avant.</p>
+    <div class="card" style="max-width:420px">
+      <div class="field">
+        <label for="clave">Clave de administración</label>
+        <input id="clave" type="password" autocomplete="off" placeholder="••••••">
+      </div>
+      <button class="btn" id="entrarBtn">Entrar</button>
+      <p class="err" id="loginErr"></p>
+    </div>
+  </section>
+
+  <!-- PANEL -->
+  <section id="panel">
+    <div class="tabs">
+      <button class="tab active" data-tab="eventos">Eventos</button>
+      <button class="tab" data-tab="mapas">Mapas de teatros</button>
+    </div>
+
+    <!-- ===== EVENTOS ===== -->
+    <div class="view active" id="view-eventos">
+      <div class="list" id="evList"></div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:500;margin-bottom:14px" id="evFormTitle">Nuevo evento</h3>
+        <div class="row2">
+          <div class="field"><label>Identificador (sin espacios)</label><input id="ev_id" placeholder="reyleon"></div>
+          <div class="field"><label>Recinto / teatro</label><select id="ev_recinto"></select></div>
+        </div>
+        <div class="field"><label>Nombre del evento</label><input id="ev_nombre" placeholder="El Rey León — Gala de fin de año"></div>
+        <div class="row3">
+          <div class="field"><label>Fecha (texto)</label><input id="ev_fecha" placeholder="Sábado 6 de diciembre, 2025"></div>
+          <div class="field"><label>Hora (texto)</label><input id="ev_hora" placeholder="4:00 p.m."></div>
+          <div class="field"><label>Activo</label><select id="ev_activo"><option value="si">Sí (visible)</option><option value="no">No (oculto)</option></select></div>
+        </div>
+        <div class="field"><label>Lugar</label><input id="ev_lugar" placeholder="Teatro del Gimnasio Vermont"></div>
+        <div class="field">
+          <label>Foto (enlace de imagen o de Google Drive)</label>
+          <input id="ev_imagen" placeholder="https://drive.google.com/file/d/…/view  o  https://…/foto.jpg" oninput="prevImg()">
+          <div class="hint">Si pegas un enlace de Google Drive lo convertimos solo. La imagen debe ser pública ("Cualquiera con el enlace").</div>
+          <img class="imgprev" id="ev_imgprev" alt="">
+        </div>
+        <div class="foot">
+          <button class="btn btn-accent" id="ev_guardar">Guardar evento</button>
+          <button class="btn btn-ghost" id="ev_nuevo">Limpiar / nuevo</button>
+          <button class="btn btn-del" id="ev_borrar" style="display:none">Borrar</button>
+        </div>
+        <p class="ok-msg" id="ev_msg"></p>
+      </div>
+    </div>
+
+    <!-- ===== MAPAS ===== -->
+    <div class="view" id="view-mapas">
+      <div class="card" style="margin-bottom:16px">
+        <div class="row2">
+          <div class="field"><label>Teatro / recinto</label><select id="mapRecinto"></select></div>
+          <div class="field"><label>… o crea uno nuevo</label>
+            <div style="display:flex;gap:8px">
+              <input id="mapNuevo" placeholder="p. ej. teatro-colon">
+              <button class="btn btn-ghost btn-sm" id="crearRecinto">Crear</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint">El mapa usa un lienzo de 1400 × 920. Arrastra los bloques, palcos y áreas en la vista previa para ubicarlos “a tu antojo”.</p>
+      </div>
+
+      <div class="mapgrid">
+        <div class="preview"><div id="pvBox"></div></div>
+
+        <div>
+          <!-- Zonas -->
+          <div class="subcard">
+            <h4>Zonas (precio y color) <button class="btn btn-ghost btn-sm" onclick="addZona()">+ Zona</button></h4>
+            <div class="mini" id="zonasEd"></div>
+          </div>
+          <!-- Bloques -->
+          <div class="subcard">
+            <h4>Bloques de sillas <button class="btn btn-ghost btn-sm" onclick="addBloque()">+ Bloque</button></h4>
+            <div class="mini" id="bloquesEd"></div>
+          </div>
+          <!-- Palcos -->
+          <div class="subcard">
+            <h4>Palcos <button class="btn btn-ghost btn-sm" onclick="addPalco()">+ Palco</button></h4>
+            <div class="mini" id="palcosEd"></div>
+          </div>
+          <!-- Áreas -->
+          <div class="subcard">
+            <h4>Áreas (escenario, etc.) <button class="btn btn-ghost btn-sm" onclick="addArea()">+ Área</button></h4>
+            <div class="mini" id="areasEd"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <button class="btn btn-accent" id="map_guardar">Guardar mapa</button>
+        <button class="btn btn-ghost" id="map_recargar">Descartar cambios</button>
+        <span id="map_conteo" class="hint" style="align-self:center"></span>
+      </div>
+      <p class="ok-msg" id="map_msg"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+var API='https://script.google.com/macros/s/AKfycbzxQtuagUbRwzr5EmxJrW20mzwnduak6FZXxmrrcutPFXj6PfU1lMS8HOI43lgIkcs/exec';
+function apiGet(p){ return fetch(API+'?'+p).then(function(r){return r.json();}); }
+function apiPost(b){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();}); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function $(id){ return document.getElementById(id); }
+
+var clave='', eventos=[], recintos=[], editId=null;
+var mapa={zonas:[],palcos:[],bloques:[],bloqueadas:[],areas:[]};
+var VB={w:1400,h:920}, SEP=13, R=5.2;
+
+/* ---------- Convertir enlaces de Drive a imagen directa ---------- */
+function normalizarImagen(u){
+  u=String(u||'').trim(); if(!u) return '';
+  var m=u.match(/drive\.google\.com\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
+  if(m) return 'https://drive.google.com/uc?id='+m[1];
+  return u;
+}
+function prevImg(){
+  var raw=$('ev_imagen').value, url=normalizarImagen(raw), img=$('ev_imgprev');
+  if(url){ img.src=url; img.style.display='block'; img.onerror=function(){img.style.display='none';}; }
+  else img.style.display='none';
+}
+
+/* ---------- Login ---------- */
+$('entrarBtn').addEventListener('click', entrar);
+$('clave').addEventListener('keydown', function(e){ if(e.key==='Enter') entrar(); });
+var guardada=localStorage.getItem('eav_admin_clave'); if(guardada) $('clave').value=guardada;
+
+function entrar(){
+  var err=$('loginErr'); err.textContent='';
+  clave=$('clave').value.trim();
+  if(!clave){ err.textContent='Escribe la clave.'; return; }
+  var b=$('entrarBtn'); b.disabled=true; b.textContent='Verificando…';
+  apiPost({action:'admindatos', clave:clave}).then(function(r){
+    b.disabled=false; b.textContent='Entrar';
+    if(!r.ok){ err.textContent=r.error||'No pudimos entrar.'; return; }
+    localStorage.setItem('eav_admin_clave', clave);
+    eventos=r.eventos||[]; recintos=r.recintos||[];
+    $('loginView').style.display='none'; $('panel').style.display='block';
+    llenarRecintos(); renderEventos();
+    if(recintos.length) cargarMapa(recintos[0]);
+  }).catch(function(){ b.disabled=false; b.textContent='Entrar'; err.textContent='Error de conexión.'; });
+}
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+    t.classList.add('active');
+    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
+    $('view-'+t.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+function llenarRecintos(){
+  var s1=$('ev_recinto'), s2=$('mapRecinto');
+  s1.innerHTML=''; s2.innerHTML='';
+  recintos.forEach(function(r){
+    s1.appendChild(new Option(r,r)); s2.appendChild(new Option(r,r));
+  });
+}
+function renderEventos(){
+  var box=$('evList'); box.innerHTML='';
+  if(!eventos.length){ box.innerHTML='<p class="hint">Aún no hay eventos. Crea el primero abajo.</p>'; return; }
+  eventos.forEach(function(e){
+    var d=document.createElement('div'); d.className='item';
+    var img=normalizarImagen(e.imagen)||'img/temporadas/el-rey-leon-2025-00.jpg';
+    d.innerHTML='<img src="'+esc(img)+'" alt="" onerror="this.style.visibility=\'hidden\'">'+
+      '<div class="meta"><b>'+esc(e.nombre||e.id)+'</b><span>'+esc(e.fecha||'')+' · '+esc(e.recinto||'')+'</span></div>'+
+      '<span class="pill '+(e.activo?'on':'off')+'">'+(e.activo?'Visible':'Oculto')+'</span>'+
+      '<button class="btn btn-ghost btn-sm">Editar</button>';
+    d.querySelector('button').addEventListener('click', function(){ editarEvento(e); });
+    box.appendChild(d);
+  });
+}
+function editarEvento(e){
+  editId=e.id;
+  $('evFormTitle').textContent='Editar: '+(e.nombre||e.id);
+  $('ev_id').value=e.id; $('ev_id').disabled=true;
+  $('ev_nombre').value=e.nombre||''; $('ev_fecha').value=e.fecha||''; $('ev_hora').value=e.hora||'';
+  $('ev_lugar').value=e.lugar||''; $('ev_imagen').value=e.imagen||'';
+  $('ev_recinto').value=e.recinto||recintos[0]||'';
+  $('ev_activo').value=e.activo?'si':'no';
+  $('ev_borrar').style.display='inline-block';
+  prevImg(); window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+$('ev_nuevo').addEventListener('click', limpiarEvento);
+function limpiarEvento(){
+  editId=null; $('evFormTitle').textContent='Nuevo evento';
+  ['ev_id','ev_nombre','ev_fecha','ev_hora','ev_lugar','ev_imagen'].forEach(function(id){$(id).value='';});
+  $('ev_id').disabled=false; $('ev_activo').value='si'; $('ev_borrar').style.display='none';
+  $('ev_imgprev').style.display='none'; $('ev_msg').textContent='';
+}
+$('ev_guardar').addEventListener('click', function(){
+  var ev={
+    id:$('ev_id').value.trim().toLowerCase().replace(/\s+/g,'-'),
+    nombre:$('ev_nombre').value.trim(), fecha:$('ev_fecha').value.trim(), hora:$('ev_hora').value.trim(),
+    lugar:$('ev_lugar').value.trim(), imagen:$('ev_imagen').value.trim(),
+    recinto:$('ev_recinto').value, activo: $('ev_activo').value==='si'
+  };
+  if(!ev.id||!ev.nombre){ $('ev_msg').style.color='#FF9C93'; $('ev_msg').textContent='El identificador y el nombre son obligatorios.'; return; }
+  var btn=$('ev_guardar'); btn.disabled=true; btn.textContent='Guardando…';
+  apiPost({action:'guardarevento', clave:clave, evento:ev}).then(function(r){
+    btn.disabled=false; btn.textContent='Guardar evento';
+    if(!r.ok){ $('ev_msg').style.color='#FF9C93'; $('ev_msg').textContent=r.error||'No se pudo guardar.'; return; }
+    $('ev_msg').style.color='#8BE28B'; $('ev_msg').textContent='Evento '+r.accion+'. ✔';
+    var i=eventos.findIndex(function(x){return x.id===ev.id;});
+    if(i>=0) eventos[i]=ev; else eventos.push(ev);
+    renderEventos();
+  }).catch(function(){ btn.disabled=false; btn.textContent='Guardar evento'; $('ev_msg').style.color='#FF9C93'; $('ev_msg').textContent='Error de conexión.'; });
+});
+$('ev_borrar').addEventListener('click', function(){
+  if(!editId) return;
+  if(!confirm('¿Borrar el evento "'+editId+'"? Esto no borra las ventas ya hechas.')) return;
+  apiPost({action:'borrarevento', clave:clave, id:editId}).then(function(r){
+    if(!r.ok){ alert(r.error||'No se pudo borrar.'); return; }
+    eventos=eventos.filter(function(x){return x.id!==editId;});
+    renderEventos(); limpiarEvento();
+  });
+});
+
+/* ============================================================
+   MAPAS
+   ============================================================ */
+$('mapRecinto').addEventListener('change', function(){ cargarMapa(this.value); });
+$('map_recargar').addEventListener('click', function(){ cargarMapa($('mapRecinto').value); });
+$('crearRecinto').addEventListener('click', function(){
+  var r=$('mapNuevo').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!r) return;
+  if(recintos.indexOf(r)<0){ recintos.push(r); llenarRecintos(); }
+  $('mapRecinto').value=r; $('mapNuevo').value='';
+  mapa={zonas:[],palcos:[],bloques:[],bloqueadas:[],
+    areas:[{etiqueta:'ESCENARIO',x:700,y:50,w:320,h:70,rot:0}]};
+  renderTodo();
+});
+
+function cargarMapa(recinto){
+  $('mapRecinto').value=recinto;
+  $('map_msg').textContent='';
+  apiGet('action=mapa&recinto='+encodeURIComponent(recinto)).then(function(r){
+    var m=(r&&r.mapa)||{};
+    mapa={
+      zonas:m.zonas||[], palcos:m.palcos||[], bloques:m.bloques||[],
+      bloqueadas:m.bloqueadas||[], areas:m.areas||[]
+    };
+    renderTodo();
+  });
+}
+
+/* ---- Editores (tablas dinámicas) ---- */
+function addZona(){ mapa.zonas.push({id:'Z'+(mapa.zonas.length+1),nombre:'Nueva zona',precio:0,color:'#7FBF3F'}); renderTodo(); }
+function addBloque(){ mapa.bloques.push({id:'B'+(mapa.bloques.length+1),zona:(mapa.zonas[0]||{}).id||'',nombre:'Bloque',filas:'A-E',sillas:10,x:600,y:500,rot:0}); renderTodo(); }
+function addPalco(){ mapa.palcos.push({palco:(mapa.palcos.length+1),zona:(mapa.zonas[0]||{}).id||'',sillas:5,x:500,y:200}); renderTodo(); }
+function addArea(){ mapa.areas.push({etiqueta:'Área',x:700,y:800,w:160,h:24,rot:0}); renderTodo(); }
+function del(arr,i){ arr.splice(i,1); renderTodo(); }
+
+function zonaOptions(sel){
+  return mapa.zonas.map(function(z){ return '<option value="'+esc(z.id)+'"'+(z.id===sel?' selected':'')+'>'+esc(z.nombre)+'</option>'; }).join('');
+}
+
+function renderEditors(){
+  // Zonas
+  $('zonasEd').innerHTML = mapa.zonas.map(function(z,i){
+    return '<div class="r"><div class="cols4" style="grid-template-columns:auto 1fr 1fr auto;align-items:end">'+
+      '<div><label>Color</label><input type="color" class="swatch" value="'+esc(z.color||'#7FBF3F')+'" oninput="setZ('+i+',\'color\',this.value)"></div>'+
+      '<div><label>Nombre</label><input value="'+esc(z.nombre)+'" oninput="setZ('+i+',\'nombre\',this.value)"></div>'+
+      '<div><label>Precio</label><input type="number" value="'+(Number(z.precio)||0)+'" oninput="setZ('+i+',\'precio\',this.value)"></div>'+
+      '<div><button class="btn btn-del btn-sm" onclick="del(mapa.zonas,'+i+')">✕</button></div>'+
+    '</div><label style="opacity:.5">id: '+esc(z.id)+'</label></div>';
+  }).join('') || '<p class="hint">Agrega al menos una zona.</p>';
+
+  // Bloques
+  $('bloquesEd').innerHTML = mapa.bloques.map(function(b,i){
+    return '<div class="r">'+
+      '<input value="'+esc(b.nombre)+'" oninput="setB('+i+',\'nombre\',this.value)" placeholder="Nombre del bloque">'+
+      '<div class="cols"><div><label>Filas</label><input value="'+esc(b.filas)+'" oninput="setB('+i+',\'filas\',this.value)" placeholder="A-E"></div>'+
+        '<div><label>Sillas/fila</label><input type="number" value="'+(Number(b.sillas)||0)+'" oninput="setB('+i+',\'sillas\',this.value)"></div>'+
+        '<div><label>Zona</label><select onchange="setB('+i+',\'zona\',this.value)">'+zonaOptions(b.zona)+'</select></div></div>'+
+      '<div class="cols4"><div><label>X</label><input type="number" value="'+(Number(b.x)||0)+'" oninput="setB('+i+',\'x\',this.value)"></div>'+
+        '<div><label>Y</label><input type="number" value="'+(Number(b.y)||0)+'" oninput="setB('+i+',\'y\',this.value)"></div>'+
+        '<div><label>Rotación</label><input type="number" value="'+(Number(b.rot)||0)+'" oninput="setB('+i+',\'rot\',this.value)"></div>'+
+        '<div><label>&nbsp;</label><button class="btn btn-del btn-sm" onclick="del(mapa.bloques,'+i+')">✕</button></div></div>'+
+    '</div>';
+  }).join('') || '<p class="hint">Sin bloques.</p>';
+
+  // Palcos
+  $('palcosEd').innerHTML = mapa.palcos.map(function(p,i){
+    return '<div class="r"><div class="cols4" style="grid-template-columns:1fr 1fr 1fr auto">'+
+      '<div><label>Palco #</label><input value="'+esc(p.palco)+'" oninput="setP('+i+',\'palco\',this.value)"></div>'+
+      '<div><label>Sillas</label><input type="number" value="'+(Number(p.sillas)||0)+'" oninput="setP('+i+',\'sillas\',this.value)"></div>'+
+      '<div><label>Zona</label><select onchange="setP('+i+',\'zona\',this.value)">'+zonaOptions(p.zona)+'</select></div>'+
+      '<div><label>&nbsp;</label><button class="btn btn-del btn-sm" onclick="del(mapa.palcos,'+i+')">✕</button></div>'+
+    '</div><div class="cols"><div><label>X</label><input type="number" value="'+(Number(p.x)||0)+'" oninput="setP('+i+',\'x\',this.value)"></div>'+
+      '<div><label>Y</label><input type="number" value="'+(Number(p.y)||0)+'" oninput="setP('+i+',\'y\',this.value)"></div><div></div></div></div>';
+  }).join('') || '<p class="hint">Sin palcos.</p>';
+
+  // Áreas
+  $('areasEd').innerHTML = mapa.areas.map(function(a,i){
+    return '<div class="r"><input value="'+esc(a.etiqueta)+'" oninput="setA('+i+',\'etiqueta\',this.value)" placeholder="ESCENARIO">'+
+      '<div class="cols4"><div><label>X</label><input type="number" value="'+(Number(a.x)||0)+'" oninput="setA('+i+',\'x\',this.value)"></div>'+
+      '<div><label>Y</label><input type="number" value="'+(Number(a.y)||0)+'" oninput="setA('+i+',\'y\',this.value)"></div>'+
+      '<div><label>Ancho</label><input type="number" value="'+(Number(a.w)||0)+'" oninput="setA('+i+',\'w\',this.value)"></div>'+
+      '<div><label>Alto</label><input type="number" value="'+(Number(a.h)||0)+'" oninput="setA('+i+',\'h\',this.value)"></div></div>'+
+      '<button class="btn btn-del btn-sm" onclick="del(mapa.areas,'+i+')">✕ Quitar</button></div>';
+  }).join('') || '<p class="hint">Sin áreas.</p>';
+}
+function setZ(i,k,v){ mapa.zonas[i][k]= k==='precio'?Number(v):v; if(k==='color'||k==='precio') renderPreview(); else renderPreview(); }
+function setB(i,k,v){ mapa.bloques[i][k]=(k==='x'||k==='y'||k==='rot'||k==='sillas')?Number(v):v; renderPreview(); }
+function setP(i,k,v){ mapa.palcos[i][k]=(k==='x'||k==='y'||k==='sillas')?Number(v):v; renderPreview(); }
+function setA(i,k,v){ mapa.areas[i][k]=(k==='x'||k==='y'||k==='w'||k==='h')?Number(v):v; renderPreview(); }
+
+/* ---- Vista previa SVG (misma geometría que la boletería) ---- */
+function expandirFilas(txt){
+  txt=String(txt||'').trim();
+  if(txt.indexOf(',')>=0) return txt.split(',').map(function(s){return s.trim();}).filter(Boolean);
+  var m=txt.match(/^([A-Z])\s*-\s*([A-Z])$/i);
+  if(m){ var out=[],a=m[1].toUpperCase().charCodeAt(0),b=m[2].toUpperCase().charCodeAt(0); for(var i=a;i<=b;i++) out.push(String.fromCharCode(i)); return out; }
+  return txt?[txt]:[];
+}
+function colorDe(zid){ var z=mapa.zonas.find(function(z){return z.id===zid;}); return z?z.color:'#bbb'; }
+
+function renderPreview(){
+  var s='<svg id="pvSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
+  // Áreas
+  mapa.areas.forEach(function(a,i){
+    if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
+      s+='<g class="g-el" data-kind="area" data-i="'+i+'">'+
+         '<rect class="stage" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/>'+
+         '<text class="stage-t" x="'+a.x+'" y="'+(a.y+a.h/2+7)+'">ESCENARIO</text></g>';
+    } else {
+      s+='<g class="g-el" data-kind="area" data-i="'+i+'">'+
+         '<rect class="area" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="4"/>'+
+         '<text class="area-t" x="'+a.x+'" y="'+(a.y+a.h+13)+'">'+esc(a.etiqueta)+'</text></g>';
+    }
+  });
+  // Palcos
+  mapa.palcos.forEach(function(p,i){
+    var r=(p.sillas>=10?24:16), col=colorDe(p.zona);
+    var g='<g class="g-el" data-kind="palco" data-i="'+i+'">'+
+      '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(r-7)+'" fill="#fff" stroke="#ddd"/>'+
+      '<text x="'+p.x+'" y="'+(p.y+4)+'" font="600 11px sans-serif" text-anchor="middle" style="font:600 11px sans-serif;text-anchor:middle">'+esc(p.palco)+'</text>';
+    for(var k=0;k<p.sillas;k++){ var ang=(k/p.sillas)*2*Math.PI-Math.PI/2, cx=p.x+r*Math.cos(ang), cy=p.y+r*Math.sin(ang);
+      g+='<circle class="seat" cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="'+col+'" stroke="#00000022"/>'; }
+    s+=g+'</g>';
+  });
+  // Bloques
+  mapa.bloques.forEach(function(b,i){
+    var filas=expandirFilas(b.filas), col=colorDe(b.zona);
+    var g='<g class="g-el" data-kind="bloque" data-i="'+i+'" transform="translate('+b.x+','+b.y+') rotate('+(Number(b.rot)||0)+')">';
+    filas.forEach(function(f,fi){ var y=fi*SEP;
+      g+='<text x="-8" y="'+(y+3)+'" style="font:500 8px sans-serif;fill:#888">'+esc(f)+'</text>';
+      for(var c=1;c<=(Number(b.sillas)||0);c++){ g+='<circle class="seat" cx="'+((c-1)*SEP)+'" cy="'+y+'" r="'+R+'" fill="'+col+'" stroke="#00000022"/>'; }
+    });
+    s+=g+'</g>';
+  });
+  s+='</svg>';
+  $('pvBox').innerHTML=s;
+  habilitarArrastre();
+  var totalSillas=0;
+  mapa.bloques.forEach(function(b){ totalSillas+=expandirFilas(b.filas).length*(Number(b.sillas)||0); });
+  mapa.palcos.forEach(function(p){ totalSillas+=Number(p.sillas)||0; });
+  $('map_conteo').textContent='≈ '+totalSillas+' sillas · '+mapa.bloques.length+' bloques · '+mapa.palcos.length+' palcos';
+}
+
+function renderTodo(){ renderEditors(); renderPreview(); }
+
+/* ---- Arrastre en la vista previa ---- */
+function habilitarArrastre(){
+  var svg=$('pvSvg'); if(!svg) return;
+  var drag=null;
+  function pt(e){ var r=svg.getBoundingClientRect(); return { x:(e.clientX-r.left)/r.width*VB.w, y:(e.clientY-r.top)/r.height*VB.h }; }
+  svg.addEventListener('pointerdown', function(e){
+    var g=e.target.closest('.g-el'); if(!g) return;
+    var kind=g.dataset.kind, i=+g.dataset.i, p=pt(e), obj=(kind==='bloque'?mapa.bloques:kind==='palco'?mapa.palcos:mapa.areas)[i];
+    drag={kind:kind,i:i,obj:obj,ox:p.x-(Number(obj.x)||0),oy:p.y-(Number(obj.y)||0)};
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    var p=pt(e);
+    drag.obj.x=Math.round(p.x-drag.ox); drag.obj.y=Math.round(p.y-drag.oy);
+    renderPreview();
+  });
+  svg.addEventListener('pointerup', function(){ if(drag){ drag=null; renderEditors(); } });
+}
+
+/* ---- Guardar mapa ---- */
+$('map_guardar').addEventListener('click', function(){
+  var recinto=$('mapRecinto').value;
+  if(!recinto){ alert('Elige o crea un recinto.'); return; }
+  var btn=$('map_guardar'); btn.disabled=true; btn.textContent='Guardando…';
+  apiPost({action:'guardarmapa', clave:clave, recinto:recinto, mapa:mapa}).then(function(r){
+    btn.disabled=false; btn.textContent='Guardar mapa';
+    var m=$('map_msg');
+    if(!r.ok){ m.style.color='#FF9C93'; m.textContent=r.error||'No se pudo guardar.'; return; }
+    m.style.color='#8BE28B'; m.textContent='Mapa de "'+recinto+'" guardado. ✔';
+  }).catch(function(){ btn.disabled=false; btn.textContent='Guardar mapa'; var m=$('map_msg'); m.style.color='#FF9C93'; m.textContent='Error de conexión.'; });
+});
+</script>
+</body>
+</html>

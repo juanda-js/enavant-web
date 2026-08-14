@@ -5,6 +5,7 @@ Allow: /
 Disallow: /boleteria.html
 Disallow: /escaner.html
 Disallow: /maestros.html
+Disallow: /admin-boleteria.html
 Disallow: /backend/
 
 Sitemap: https://www.enavantescuela.com/sitemap.xml
