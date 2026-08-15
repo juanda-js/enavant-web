@@ -1,3 +1,8 @@
 .agents/
 .claude/
 skills-lock.json
+
+# Copias locales del código del servidor (Apps Script).
+# NO se publican: contienen claves y no son parte del sitio web.
+apps-script/
+backend/
