@@ -775,7 +775,10 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   .stats .wrap{grid-template-columns:repeat(2,1fr)}
   .stat:nth-child(3)::before{display:none}
 }
-@media (max-width:720px){
+/* El menú pasa a hamburguesa antes que el resto del layout: con 7 enlaces
+   más el botón, por debajo de 900px se apretaba y partía el texto del CTA
+   (se notaba sobre todo en tablets verticales de 768px). */
+@media (max-width:900px){
   .nav-links{
     position:fixed;inset:0;background:var(--paper);
     flex-direction:column;justify-content:center;gap:32px;
@@ -786,6 +789,8 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
   .nav-links .nav-cta{border-color:var(--ink)}
   .burger{display:flex}
   nav:not(.scrolled) .burger.open span{background:var(--ink)}
+}
+@media (max-width:720px){
   .disc-grid{grid-template-columns:1fr 1fr}
   .disc,.disc:nth-child(4),.disc:nth-child(5){grid-column:span 1}
   .disc:nth-child(5){grid-column:span 2;aspect-ratio:16/10}
@@ -847,10 +852,11 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
 <!-- ================= HERO ================= -->
 <header class="hero" id="inicio">
   <div class="hero-slides" id="heroSlides">
+    <!-- Solo la primera se carga de entrada; las demás esperan a que la página esté lista -->
     <div class="hero-slide active" style="background-image:url('img/hero-1.jpg')"></div>
-    <div class="hero-slide" style="background-image:url('img/hero-2.jpg')"></div>
-    <div class="hero-slide" style="background-image:url('img/hero-3.jpg')"></div>
-    <div class="hero-slide" style="background-image:url('img/hero-4.jpg')"></div>
+    <div class="hero-slide" data-bg="img/hero-2.jpg"></div>
+    <div class="hero-slide" data-bg="img/hero-3.jpg"></div>
+    <div class="hero-slide" data-bg="img/hero-4.jpg"></div>
   </div>
   <div class="hero-content">
     <span class="hero-eyebrow">Escuela de Danza, Música y Arte · Bogotá y Chía</span>
@@ -1717,11 +1723,18 @@ slides.forEach((_,i)=>{
 });
 const heroDots=[...dotsWrap.children];
 let hi=0,heroTimer;
+/* Carga diferida del hero: la 1ª imagen viene en el HTML y las otras 3 se
+   piden cuando la página ya cargó, para no competir con lo que se ve. */
+function cargarSlide(s){ if(s&&s.dataset.bg){ s.style.backgroundImage=`url('${s.dataset.bg}')`; delete s.dataset.bg; } }
 function showSlide(i){
   hi=(i+slides.length)%slides.length;
+  cargarSlide(slides[hi]); cargarSlide(slides[(hi+1)%slides.length]);   // la actual y la siguiente
   slides.forEach((s,j)=>s.classList.toggle('active',j===hi));
   heroDots.forEach((d,j)=>d.classList.toggle('active',j===hi));
 }
+function precargarResto(){ slides.forEach(cargarSlide); }
+if(document.readyState==='complete') setTimeout(precargarResto,600);
+else addEventListener('load',()=>setTimeout(precargarResto,600));
 function autoHero(){if(REDUCE)return;clearInterval(heroTimer);heroTimer=setInterval(()=>showSlide(hi+1),7000)}
 autoHero();
 pausable(document.querySelector('.hero'),()=>clearInterval(heroTimer),autoHero);
