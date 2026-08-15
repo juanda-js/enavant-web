@@ -6,10 +6,9 @@ Disallow: /boleteria.html
 Disallow: /escaner.html
 Disallow: /maestros.html
 Disallow: /admin-boleteria.html
+
+# Código del servidor (ya no se publica, se deja por si quedó en caché)
+Disallow: /apps-script/
 Disallow: /backend/
 
 Sitemap: https://www.enavantescuela.com/sitemap.xml
-
-# Copia de los archivos del Apps Script (no es parte del sitio)
-Disallow: /apps-script/
-Disallow: /backend/
