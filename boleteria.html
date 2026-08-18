@@ -616,16 +616,22 @@ function apartarYSeguir(btn){
   var ids=Object.keys(state.sel); if(!ids.length) return;
   var txt=btn.textContent; btn.disabled=true; btn.textContent='Apartando…';
   state.token=state.token||nuevoToken();
+  function seguirSinApartado(){   // el servidor aún no tiene el apartado: la venta NO se bloquea
+    limpiarHold(); goStep(3);
+  }
   apiPost({action:'apartar', evento:state.event.id, token:state.token, sillas:ids}).then(function(r){
     btn.disabled=false; btn.textContent=txt;
     if(!r||!r.ok){
-      if(r&&r.sillas){ r.sillas.forEach(function(id){ delete state.sel[id]; state.occ[id]=1; }); renderMapa(); renderCart(); }
-      toast((r&&r.error)||'No pudimos apartar las sillas.');
+      // Si el backend todavía no conoce la acción, seguimos sin temporizador
+      // antes que impedir la compra. La orden se valida igual al reservar.
+      if(!r || /acci[oó]n desconocida/i.test(r.error||'')){ seguirSinApartado(); return; }
+      if(r.sillas){ r.sillas.forEach(function(id){ delete state.sel[id]; state.occ[id]=1; }); renderMapa(); renderCart(); }
+      toast(r.error||'No pudimos apartar las sillas.');
       return;
     }
     iniciarHold(r.expira||(Date.now()+(r.segundos||480)*1000));
     goStep(3);
-  }).catch(function(){ btn.disabled=false; btn.textContent=txt; toast('Error de conexión.'); });
+  }).catch(function(){ btn.disabled=false; btn.textContent=txt; seguirSinApartado(); });
 }
 
 /* Tooltip de silla */
