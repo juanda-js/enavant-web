@@ -83,7 +83,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 #seatSvg text{user-select:none}
 .seat{transition:opacity .2s,transform .12s}
 .seat.pick{cursor:pointer}
-.seat.pick:hover{transform:scale(1.35)}
+.seat.pick:hover{transform:scale(1.35);transform-box:fill-box;transform-origin:center}
 .seat.occ{opacity:.35;cursor:not-allowed}
 .seat.sel{stroke:#fff;stroke-width:2}
 .sect-hit{cursor:pointer}
@@ -417,6 +417,7 @@ function abrirEvento(ev){
     state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
     state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=1; });
+    vbNow=bboxContenido();          // encuadra el teatro ya con el mapa en mano
     renderMapa(); renderLegend(); renderCart();
   }).catch(function(){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">Error de conexión.</p>'; });
 }
@@ -529,6 +530,35 @@ function renderMapa(){
   $('mapHint').textContent = vistaSeccion ? 'Toca las sillas para elegirlas.' : 'Elige una zona para acercarte.';
 }
 
+/* Recuadro que abarca TODO el contenido del mapa (sillas y áreas).
+   Los mapas se guardan con las coordenadas que tenía el editor cuando se
+   crearon, que no siempre coinciden con el lienzo actual; encuadrando el
+   contenido el teatro llena la vista en lugar de quedar chico y descentrado. */
+function bboxContenido(){
+  var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9, hay=false;
+  function ver(x,y){ hay=true; if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y; }
+  secciones().forEach(function(sec){
+    var rad=(sec.rot||0)*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
+    sillasDe(sec).forEach(function(p){ ver(sec.x+p.lx*cos-p.ly*sin, sec.y+p.lx*sin+p.ly*cos); });
+  });
+  ((state.mapa&&state.mapa.areas)||[]).forEach(function(a){
+    var w=Number(a.w)||0, h=Number(a.h)||0;
+    ver((Number(a.x)||0)-w/2, Number(a.y)||0); ver((Number(a.x)||0)+w/2, (Number(a.y)||0)+h+18); // +18: cabe la etiqueta
+  });
+  if(!hay) return [0,0,VB.w,VB.h];
+  var padX=34, padY=30;
+  return conAspecto([minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2]);
+}
+
+/* Crece el recuadro hasta la proporción del lienzo, manteniendo el centro.
+   Así lo que se ve es exactamente lo previsto y nada queda a medias. */
+function conAspecto(r){
+  var agrandar=VB.w/VB.h, x=r[0], y=r[1], w=r[2], h=r[3];
+  if(w/h < agrandar){ var w2=h*agrandar; x-=(w2-w)/2; w=w2; }
+  else { var h2=w/agrandar; y-=(h2-h)/2; h=h2; }
+  return [x,y,w,h];
+}
+
 function bboxSeccion(si){
   var sec=secciones()[si], sillas=sillasDe(sec);
   // transformar coords locales a globales con rotación
@@ -537,21 +567,26 @@ function bboxSeccion(si){
   sillas.forEach(function(p){ xs.push(sec.x+p.lx*cos-p.ly*sin); ys.push(sec.y+p.lx*sin+p.ly*cos); });
   var minx=Math.min.apply(null,xs),maxx=Math.max.apply(null,xs),miny=Math.min.apply(null,ys),maxy=Math.max.apply(null,ys);
   var padX=(maxx-minx)*.18+40, padY=(maxy-miny)*.18+40;
-  return [minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2];
+  return conAspecto([minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2]);
 }
 // anima el viewBox
 var vbNow=[0,0,VB.w,VB.h], vbRaf=null;
+var vbFin=null;
 function setViewBox(target, animar){
   var svg=$('seatSvg'); if(!svg) return;
-  if(RM||!animar){ vbNow=target.slice(); svg.setAttribute('viewBox',target.join(' ')); return; }
-  var from=vbNow.slice(), t0=performance.now(), dur=520;
-  cancelAnimationFrame(vbRaf);
+  function fijar(){ vbNow=target.slice(); var el=$('seatSvg'); if(el) el.setAttribute('viewBox',target.join(' ')); }
+  if(RM||!animar){ fijar(); return; }
+  var from=vbNow.slice(), t0=performance.now(), dur=520, listo=false;
+  cancelAnimationFrame(vbRaf); clearTimeout(vbFin);
   (function step(t){
     var k=Math.min((t-t0)/dur,1), e=1-Math.pow(1-k,4);
     var cur=from.map(function(f,i){ return f+(target[i]-f)*e; });
     svg.setAttribute('viewBox',cur.join(' ')); vbNow=cur;
-    if(k<1) vbRaf=requestAnimationFrame(step);
+    if(k<1) vbRaf=requestAnimationFrame(step); else listo=true;
   })(t0);
+  // Red de seguridad: si requestAnimationFrame se congela (pestaña en segundo
+  // plano, ahorro de batería, cambio de app), el encuadre final se aplica igual.
+  vbFin=setTimeout(function(){ if(!listo) fijar(); }, dur+90);
 }
 
 function onMapClick(e){
@@ -565,7 +600,7 @@ function entrarSeccion(si){
   setViewBox(bboxSeccion(si), true);
   // re-render dibuja vb sin animar; forzamos animación desde vista general
 }
-$('verTodo').addEventListener('click', function(){ state.seccion=null; renderMapa(); setViewBox([0,0,VB.w,VB.h], true); });
+$('verTodo').addEventListener('click', function(){ state.seccion=null; renderMapa(); setViewBox(bboxContenido(), true); });
 
 function seatData(id){
   var found=null;
