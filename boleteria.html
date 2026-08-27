@@ -342,6 +342,26 @@ body.paso-mapa .wrap{max-width:1560px}
 @media(max-width:899px){
   .canvas{aspect-ratio:4/3}        /* en vertical conviene más alto que ancho */
 }
+
+/* ==========================================================
+   AVISOS — antes reusaban el tooltip y pasaban desapercibidos.
+   Ahora aparecen centrados arriba, con icono y color según el caso.
+   ========================================================== */
+.aviso{position:fixed;top:18px;left:50%;transform:translate(-50%,-14px);z-index:var(--z-toast);
+  display:none;align-items:center;gap:10px;max-width:min(92vw,460px);
+  padding:13px 17px;border-radius:12px;font-size:.92rem;font-weight:500;line-height:1.35;
+  background:#1f2b1f;border:1px solid rgba(120,220,120,.45);color:#eafaea;
+  box-shadow:0 16px 40px -12px rgba(0,0,0,.75);opacity:0;transition:opacity .2s var(--e-out),transform .2s var(--e-out)}
+.aviso.show{display:flex;opacity:1;transform:translate(-50%,0)}
+.aviso svg{width:19px;height:19px;flex-shrink:0;color:#7FD87F}
+.aviso.alerta{background:#33231a;border-color:rgba(240,170,90,.55);color:#FFEBD6}
+.aviso.alerta svg{color:#F2A65A}
+@media (prefers-reduced-motion:reduce){ .aviso{transition:none} }
+/* el tooltip del palco necesita dos líneas */
+.tip{white-space:normal;max-width:250px}
+.tip small{display:block;margin-top:3px;color:rgba(255,255,255,.65);font-size:.74rem}
+.tip .no{color:#FF9C93}
+.tip .si{color:#9be29b}
 </style>
 </head>
 <body>
@@ -435,6 +455,7 @@ body.paso-mapa .wrap{max-width:1560px}
 </div>
 
 <div class="tip" id="tip"></div>
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
 <div class="cartbar" id="cartbar">
   <div><b id="barTot">$0</b><small id="barCnt">0 sillas</small></div>
   <button class="btn" id="barCont">Continuar</button>
@@ -450,7 +471,7 @@ function $(id){ return document.getElementById(id); }
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 var VB={w:1800,h:900}, SEP=13, RS=5.6;
-var MAX_SILLAS=12;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
+var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0 };   // token = identificador de esta sesión de compra; expira = fin del apartado
 
@@ -702,7 +723,8 @@ function renderMapa(){
       var xs=sillas.map(function(p){return p.lx;}), ys=sillas.map(function(p){return p.ly;});
       var minx=Math.min.apply(null,xs)-10,maxx=Math.max.apply(null,xs)+10,miny=Math.min.apply(null,ys)-10,maxy=Math.max.apply(null,ys)+10;
       var cx=(minx+maxx)/2, cy=(miny+maxy)/2;
-      s+='<g class="sect-hit" data-sec="'+si+'" transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')">'+
+      var esPalco = sec.tipo==='palco';
+      s+='<g class="sect-hit'+(esPalco?' es-palco':'')+'" data-sec="'+si+'" data-tipo="'+sec.tipo+'" transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')">'+
         '<rect class="sect-fill" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="8" fill="'+(z.color||'#888')+'" opacity="0.32"/>'+
         '</g>';
     });
@@ -786,7 +808,16 @@ function setViewBox(target, animar){
 
 function onMapClick(e){
   var hit=e.target.closest('.sect-hit');
-  if(hit){ entrarSeccion(+hit.dataset.sec); return; }
+  if(hit){
+    // Los palcos se venden completos: no tiene sentido ampliarlos para elegir
+    // sillas una por una, así que se toman (o se sueltan) de una vez.
+    if(hit.dataset.tipo==='palco'){
+      var sec=secciones()[+hit.dataset.sec], sl=sillasDe(sec);
+      if(sl.length) toggleSeat(sl[0].id);
+      return;
+    }
+    entrarSeccion(+hit.dataset.sec); return;
+  }
   var seat=e.target.closest('.seat.pick');
   if(seat) toggleSeat(seat.dataset.id);
 }
@@ -823,10 +854,10 @@ function toggleSeat(id){
     if(yaEsta){ grupo.forEach(function(st){ delete state.sel[st.id]; }); }
     else {
       var noDisponible=grupo.filter(function(st){ return state.occ[st.id]||state.blq[st.id]; });
-      if(noDisponible.length){ toast('Este palco ya no está disponible completo.'); return; }
+      if(noDisponible.length){ toast('Este palco ya tiene sillas vendidas y se compra completo.','alerta'); return; }
       var nuevas=grupo.filter(function(st){ return !state.sel[st.id]; }).length;
       if(Object.keys(state.sel).length+nuevas>MAX_SILLAS){
-        toast('El palco tiene '+grupo.length+' sillas y superarías el máximo de '+MAX_SILLAS+'.'); return;
+        toast('Este palco tiene '+grupo.length+' sillas y superarías el máximo de '+MAX_SILLAS+' por compra.','alerta'); return;
       }
       grupo.forEach(function(st){
         var z=state.zonas[st.zona]||{};
@@ -837,7 +868,7 @@ function toggleSeat(id){
   } else {                                      // ---- silla suelta ----
     if(state.sel[id]){ delete state.sel[id]; }
     else {
-      if(Object.keys(state.sel).length>=MAX_SILLAS){ toast('Máximo '+MAX_SILLAS+' sillas por compra.'); return; }
+      if(Object.keys(state.sel).length>=MAX_SILLAS){ toast('Ya tienes el máximo de '+MAX_SILLAS+' sillas por compra.','alerta'); return; }
       var st2=seatData(id), z2=state.zonas[st2.zona]||{};
       state.sel[id]={id:id, zona:st2.zona, etiqueta:st2.etiqueta, precio:Number(z2.precio)||0};
     }
@@ -898,14 +929,41 @@ function apartarYSeguir(btn){
 
 /* Tooltip de silla */
 function onMapHover(e){
-  var seat=e.target.closest('.seat.pick'); var tip=$('tip');
+  var tip=$('tip');
+  // Palco: se muestra el número, cuántas sillas trae y el total, porque se
+  // compra completo y ese es el dato que importa antes de tocarlo.
+  var palco=e.target.closest('.sect-hit.es-palco');
+  if(palco){
+    var sec=secciones()[+palco.dataset.sec], sl=sillasDe(sec);
+    var z=state.zonas[sec.zona]||{}, precio=Number(z.precio)||0;
+    var vendidas=sl.filter(function(x){ return state.occ[x.id]||state.blq[x.id]; }).length;
+    var elegido=sl.length && sl.every(function(x){ return state.sel[x.id]; });
+    var estado = vendidas ? '<span class="no">No disponible</span>'
+               : elegido  ? '<span class="si">Elegido — toca para quitar</span>'
+                          : '<span class="p">'+pesos(precio*sl.length)+'</span>';
+    tip.innerHTML='<b>Palco '+esc(sec.data.palco)+'</b> · '+sl.length+' sillas · '+estado+
+                  '<br><small>'+esc(z.nombre||'')+' · '+pesos(precio)+' c/u</small>';
+    tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px';
+    tip.classList.add('show'); return;
+  }
+  var seat=e.target.closest('.seat.pick');
   if(!seat){ tip.classList.remove('show'); return; }
-  var st=seatData(seat.dataset.id), z=state.zonas[st.zona]||{};
-  tip.innerHTML='<b>'+esc(st.etiqueta)+'</b> · <span class="p">'+pesos(z.precio)+'</span>';
+  var st=seatData(seat.dataset.id), z2=state.zonas[st.zona]||{};
+  tip.innerHTML='<b>'+esc(st.etiqueta)+'</b> · <span class="p">'+pesos(z2.precio)+'</span>';
   tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px';
   tip.classList.add('show');
 }
-function toast(m){ var t=$('tip'); t.innerHTML=esc(m); t.style.left='50%'; t.style.top='80px'; t.style.transform='translateX(-50%)'; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');t.style.transform='';},1600); }
+var avisoTimer=null;
+function toast(m, tipo){
+  var t=$('aviso');
+  t.className='aviso'+(tipo==='alerta'?' alerta':'')+' show';
+  t.innerHTML=(tipo==='alerta'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>')
+    +'<span>'+esc(m)+'</span>';
+  clearTimeout(avisoTimer);
+  avisoTimer=setTimeout(function(){ t.classList.remove('show'); }, tipo==='alerta'?4200:2200);
+}
 
 /* ============================================================
    PASO 3 — Datos → reservar
