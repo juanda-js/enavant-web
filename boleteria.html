@@ -37,12 +37,12 @@ a{color:inherit}
 .top .back{font-size:.82rem;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:7px;transition:color .2s}
 .top .back:hover{color:var(--ink)}
 /* Pasos */
-.steps{display:flex;gap:6px;align-items:center;max-width:1180px;margin:0 auto;padding:10px clamp(14px,3vw,28px) 0;flex-wrap:wrap}
-.step{display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--muted-2)}
-.step .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:transparent;border:1.5px solid var(--line);font-size:.72rem;transition:all .25s}
+.steps{display:flex;gap:9px;align-items:center;max-width:1180px;margin:0 auto;padding:14px clamp(14px,3vw,28px) 2px;flex-wrap:wrap}
+.step{display:inline-flex;align-items:center;gap:10px;font-size:.95rem;font-weight:600;color:var(--muted-2)}
+.step .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:transparent;border:1.5px solid var(--line);font-size:.85rem;transition:all .25s}
 .step.active{color:var(--ink)} .step.active .n{background:var(--accent);border-color:var(--accent);color:#fff}
 .step.done .n{background:var(--ink);border-color:var(--ink);color:#fff}
-.step .sep{width:16px;height:1px;background:var(--line)}
+.step .sep{width:22px;height:1px;background:var(--line)}
 @media(max-width:640px){ .step .lbl{display:none} .step.active .lbl{display:inline} }
 
 .wrap{max-width:1180px;margin:0 auto;padding:clamp(16px,3vw,28px)}
@@ -172,6 +172,161 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 
 .spin{width:34px;height:34px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:40px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* ==========================================================
+   TEMA OSCURO — fondo degradado en negros y grises.
+   Todo está en este bloque: para volver al tema claro basta
+   con borrarlo entero, sin tocar nada más.
+   ========================================================== */
+:root{
+  --paper:#0f0f12;                 /* fondo base */
+  --surface:#17171b;               /* tarjetas y paneles */
+  --line:rgba(255,255,255,.13);
+  --line-2:rgba(255,255,255,.07);
+  --muted:rgba(255,255,255,.62);
+  --muted-2:rgba(255,255,255,.56);   /* .42 no llegaba a 4.5:1 en los pasos inactivos */
+  --accent-ink:#D98BEA;            /* el morado oscuro no se lee sobre negro */
+  --canvas:#0b0b0e;
+}
+body{
+  color:rgba(255,255,255,.93);
+  background:#0f0f12;
+  background-image:linear-gradient(168deg,#08080a 0%,#1c1c21 48%,#0d0d10 100%);
+  background-attachment:fixed;
+}
+h1.title,.done h2,.cart .tot b,.cartbar b{color:#fff}
+
+/* Barra superior y pasos */
+.top{background:rgba(12,12,15,.82);border-bottom:1px solid var(--line)}
+.top img{filter:brightness(0) invert(1)}   /* el logo es oscuro: se invierte a blanco */
+.step.active{color:#fff}
+.step.done .n{background:#fff;border-color:#fff;color:#0f0f12}
+
+/* Botones: en oscuro el primario se invierte a blanco */
+.btn{background:#fff;color:#0f0f12}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.88)}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.82);border:1px solid var(--line)}
+.btn-ghost:hover:not(:disabled){background:#fff;color:#0f0f12;border-color:#fff}
+.ev .go{background:#fff;color:#0f0f12}
+.ev:hover .go{background:var(--accent);color:#fff}
+.btn-back-map{color:#fff;border-color:var(--line)}
+
+/* Tarjetas de evento */
+.ev{background:var(--surface)}
+.ev:hover{box-shadow:0 22px 48px -22px rgba(0,0,0,.85)}
+
+/* Mapa */
+.canvas{border:1px solid var(--line)}
+
+/* Formulario */
+.f input{background:rgba(255,255,255,.05);border-color:var(--line);color:#fff}
+.f input::placeholder{color:rgba(255,255,255,.35)}
+.f input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(164,15,196,.28)}
+
+/* Carrito */
+.cart li .x{background:rgba(255,255,255,.09);color:rgba(255,255,255,.7)}
+.cartbar{background:rgba(18,18,22,.97);border-top:1px solid var(--line)}
+
+/* Avisos */
+.testbanner b{color:#F0B860}
+.holdbar{background:rgba(3,112,112,.18);border-color:rgba(64,196,196,.42);color:rgba(255,255,255,.92)}
+.holdbar svg{color:#5FD4D4}
+.holdbar.warn{background:rgba(217,130,24,.2);border-color:rgba(240,184,96,.5)}
+.holdbar.warn svg{color:#F0B860}
+
+/* Boletas */
+.ticket{background:var(--surface)}
+.ticket .stub{background:#000}
+/* --ink sirve de fondo oscuro Y de color de texto; como texto queda invisible
+   sobre el tema oscuro, así que estos dos casos se invierten. */
+.ticket .info .row b{color:#fff}
+.top .back:hover{color:#fff}
+
+/* ==========================================================
+   PULIDO — escala tipográfica, estados y tratamiento de fotos.
+   Registro: producto (el usuario está comprando, no leyendo).
+   ========================================================== */
+:root{
+  --t-xs:.75rem;    /* 12 · metadatos */
+  --t-sm:.875rem;   /* 14 · secundario */
+  --t-base:1rem;    /* 16 · cuerpo */
+  --t-lg:1.25rem;   /* 20 · títulos de tarjeta */
+  --t-xl:1.5rem;    /* 24 */
+  --t-2xl:2rem;     /* 32 · título de página */
+}
+
+/* Logo más grande, como pediste */
+.top img{height:42px}
+.top-in{padding:14px clamp(14px,3vw,28px)}
+.top .back{font-size:var(--t-sm)}
+
+/* Títulos: el serif se queda solo en los títulos, nunca en botones ni datos */
+h1.title{font-size:var(--t-2xl);line-height:1.12;letter-spacing:-.02em}
+.evsub{font-size:var(--t-base);margin-top:6px}
+.ev h3{font-size:var(--t-lg);line-height:1.25;text-wrap:balance}
+.ev .meta{font-size:var(--t-sm);gap:6px}
+.done h2{font-size:var(--t-xl)}
+@media(max-width:640px){ h1.title{font-size:1.6rem} }
+
+/* Datos y controles: sans, sin versalitas diminutas */
+.mapbar .hint,.legend{font-size:var(--t-sm)}
+.cart h3{font-size:var(--t-xs);letter-spacing:.12em}
+.f label{font-size:var(--t-sm)}
+.btn{font-size:var(--t-sm);letter-spacing:.01em}
+.ev .go{font-size:var(--t-xs);letter-spacing:.09em}
+
+/* Fotos: el afiche se ve completo sobre una copia desenfocada de sí mismo,
+   así conviven las verticales y las horizontales sin recortes feos. */
+.ev .ph{aspect-ratio:3/2;background:#000}
+.ev .ph img{position:absolute;inset:0;width:100%;height:100%}
+.ev .ph .ph-bg{object-fit:cover;filter:blur(22px) saturate(.7) brightness(.5);transform:scale(1.15);}
+.ev .ph .ph-fg{object-fit:contain;transition:transform .25s var(--e-out)}
+.ev:hover .ph .ph-fg{transform:scale(1.04)}
+.ev:hover .ph img{transform:none}
+.ev:hover .ph .ph-bg{transform:scale(1.15)}
+
+/* La etiqueta se apoyaba en un fondo oscuro sobre otro fondo oscuro: se perdía */
+.ev .tag{background:rgba(0,0,0,.66);border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(6px);font-size:.68rem;letter-spacing:.12em;z-index:2}
+
+/* Tarjeta: elevación en hover sin el borde+sombra difusa a la vez */
+.ev{transition:transform .2s var(--e-out),border-color .2s,box-shadow .2s}
+.ev:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.28);box-shadow:0 10px 26px -12px rgba(0,0,0,.9)}
+
+/* Foco visible en todo lo interactivo (faltaba por completo) */
+.ev:focus-visible,.btn:focus-visible,.btn-ghost:focus-visible,.btn-back-map:focus-visible,
+.cart li .x:focus-visible,.step:focus-visible,.top .back:focus-visible{
+  outline:2px solid var(--accent);outline-offset:3px;border-radius:11px;
+}
+.f input:focus-visible{outline:none}
+#seatSvg .seat.pick:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* Estados de los botones */
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+@media (prefers-reduced-motion:reduce){
+  .ev,.ev:hover,.ev .ph .ph-fg,.ev:hover .ph .ph-fg{transition:none;transform:none}
+}
+
+/* ==========================================================
+   IMPRESIÓN — el navegador descarta los fondos al imprimir, así que
+   sin esto la boleta saldría en texto blanco sobre papel blanco.
+   Para el papel se vuelve al tema claro.
+   ========================================================== */
+@media print{
+  .top,.steps,.done .actions,.btn-row,.cartbar,.holdbar{display:none!important}
+  body{background:#fff!important;background-image:none!important;color:#000!important}
+  .done h2,h1.title{color:#000!important}
+  .done p{color:#333!important}
+  .tickets{gap:10px}
+  .ticket{background:#fff!important;border:1px solid #999!important;break-inside:avoid;page-break-inside:avoid}
+  .ticket .info .row b,.ticket .info .ev{color:#000!important}
+  .ticket .info .row{color:#444!important}
+  .ticket .stub{background:#fff!important;border-right:1px dashed #999}
+  .ticket .stub img{background:#fff!important}
+  .ticket .stub small{color:#444!important}
+}
 </style>
 </head>
 <body>
@@ -388,7 +543,10 @@ apiGet('action=eventos').then(function(r){
     ev.img=ev.imagen||IMG_FALLBACK[ev.id]||'img/temporadas/el-rey-leon-2025-00.jpg';
     if(/drive\.google\.com\/file\/d\//.test(ev.img)){ var m=ev.img.match(/\/d\/([^/]+)/); if(m) ev.img='https://drive.google.com/uc?id='+m[1]; }
     var el=document.createElement('button'); el.className='ev';
-    el.innerHTML='<div class="ph"><span class="tag">Fin de año</span><img src="'+esc(ev.img)+'" alt="'+esc(ev.nombre)+'" loading="lazy" onerror="this.style.opacity=0"></div>'+
+    var chip = Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+'</span>' : '';
+    el.innerHTML='<div class="ph">'+chip+
+        '<img class="ph-bg" src="'+esc(ev.img)+'" alt="" aria-hidden="true" loading="lazy">'+
+        '<img class="ph-fg" src="'+esc(ev.img)+'" alt="'+esc(ev.nombre)+'" loading="lazy" onerror="this.style.opacity=0"></div>'+
       '<div class="body"><h3>'+esc(ev.nombre)+'</h3>'+
       '<div class="meta"><span>'+ICO.cal+esc(ev.fecha)+'</span><span>'+ICO.clock+esc(ev.hora)+'</span><span>'+ICO.pin+esc(ev.lugar)+'</span></div>'+
       '<span class="go">Elegir sillas →</span></div>';
