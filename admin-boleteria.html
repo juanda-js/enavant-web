@@ -276,7 +276,7 @@ function clampN(v,a,b){ return Math.max(a,Math.min(b,v)); }
 function normalizarImagen(u){
   u=String(u||'').trim(); if(!u) return '';
   var m=u.match(/drive\.google\.com\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
-  if(m) return 'https://drive.google.com/uc?id='+m[1];
+  if(m) return 'https://lh3.googleusercontent.com/d/'+m[1]+'=w1200';   // "uc?id=" ya no carga en navegador
   return u;
 }
 function prevImg(){

@@ -354,6 +354,7 @@ h1.title{font-size:var(--t-2xl);line-height:1.12;letter-spacing:-.02em}
     <div class="stage">
       <div class="mapcol">
         <div class="mapbar">
+          <button class="btn-back-map show" id="volverEventos" title="Elegir otro evento"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Otros eventos</button>
           <button class="btn-back-map" id="verTodo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg> Ver todo el teatro</button>
           <span class="hint" id="mapHint">Elige una zona para acercarte.</span>
         </div>
@@ -541,7 +542,12 @@ apiGet('action=eventos').then(function(r){
   g.innerHTML='';
   r.eventos.forEach(function(ev){
     ev.img=ev.imagen||IMG_FALLBACK[ev.id]||'img/temporadas/el-rey-leon-2025-00.jpg';
-    if(/drive\.google\.com\/file\/d\//.test(ev.img)){ var m=ev.img.match(/\/d\/([^/]+)/); if(m) ev.img='https://drive.google.com/uc?id='+m[1]; }
+    // Google descontinuó "uc?id=" para enlazar imágenes: en el navegador falla
+    // aunque el archivo sea público. lh3 sí sirve y además permite pedir tamaño.
+    if(/drive\.google\.com/.test(ev.img)){
+      var m=ev.img.match(/\/d\/([^/?&]+)/) || ev.img.match(/[?&]id=([^&]+)/);
+      if(m) ev.img='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200';
+    }
     var el=document.createElement('button'); el.className='ev';
     var chip = Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+'</span>' : '';
     el.innerHTML='<div class="ph">'+chip+
@@ -758,6 +764,11 @@ function entrarSeccion(si){
   setViewBox(bboxSeccion(si), true);
   // re-render dibuja vb sin animar; forzamos animación desde vista general
 }
+$('volverEventos').addEventListener('click', function(){
+  if(state.expira) soltarHold();          // no dejar sillas apartadas al salir
+  state.sel={}; state.seccion=null; renderCart();
+  goStep(1);
+});
 $('verTodo').addEventListener('click', function(){ state.seccion=null; renderMapa(); setViewBox(bboxContenido(), true); });
 
 function seatData(id){
