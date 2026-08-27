@@ -884,16 +884,93 @@ function renderResumen(){
    PASO 4 — Pago (demo) → confirmar
    ============================================================ */
 $('payBtn').addEventListener('click', function(){
-  var btn=this; btn.disabled=true; btn.textContent='Procesando…';
-  apiPost({action:'confirmar', orden:state.orden, ref:'DEMO'}).then(function(res){
-    btn.disabled=false; btn.innerHTML='Confirmar orden <span id="payAmount">'+pesos(state.total)+'</span>';
-    if(!res.ok){ alert(res.error||'No pudimos confirmar la orden.'); return; }
-    limpiarHold(); state.orden=null;   // ya está pagada: el temporizador no aplica
-    emitirBoletas(res.boletas);
-    if(res.aviso){ var w=$('avisoCorreo'); w.textContent='⚠ Tus boletas están listas aquí, pero el correo no se pudo enviar ('+res.aviso+'). Descárgalas con el botón de abajo.'; w.style.display='block'; }
-    goStep(5);
-  }).catch(function(){ btn.disabled=false; btn.innerHTML='Confirmar orden <span id="payAmount">'+pesos(state.total)+'</span>'; alert('Error de conexión.'); });
+  var btn=this, original='Confirmar orden <span id="payAmount">'+pesos(state.total)+'</span>';
+  function restaurar(){ btn.disabled=false; btn.innerHTML=original; }
+  btn.disabled=true; btn.textContent='Conectando con la pasarela…';
+
+  apiPost({action:'pagowompi', orden:state.orden}).then(function(r){
+    // Si la pasarela no está configurada, o el servidor todavía no conoce la
+    // acción (backend sin actualizar), se sigue en modo de prueba en vez de
+    // dejar al cliente sin poder pagar.
+    var sinPasarela = !r || (!r.ok && /no est[áa] configurada|acci[oó]n desconocida/i.test(r.error||''));
+    if(sinPasarela) return pagoDemo(btn, original);
+    if(!r || !r.ok){ restaurar(); alert((r&&r.error)||'No pudimos iniciar el pago.'); return; }
+
+    // Guardamos la compra para poder retomarla cuando el cliente vuelva de Wompi.
+    try{ localStorage.setItem('ea_pago', JSON.stringify({
+      orden:state.orden, total:state.total, token:state.token,
+      evento:state.event, sel:state.sel, t:Date.now() })); }catch(e){}
+
+    btn.textContent='Abriendo pago seguro…';
+    var f=document.createElement('form');
+    f.method='GET'; f.action=r.url;
+    var campos={ 'public-key':r.publica, 'currency':r.moneda, 'amount-in-cents':r.centavos,
+                 'reference':r.referencia, 'signature:integrity':r.firma };
+    if(r.retorno) campos['redirect-url']=r.retorno;
+    if(r.correo)  campos['customer-data:email']=r.correo;
+    if(r.nombre)  campos['customer-data:full-name']=r.nombre;
+    if(r.telefono)campos['customer-data:phone-number']=r.telefono;
+    Object.keys(campos).forEach(function(k){
+      var i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=campos[k]; f.appendChild(i);
+    });
+    document.body.appendChild(f); f.submit();
+  }).catch(function(){ restaurar(); alert('Error de conexión.'); });
 });
+
+/* Modo de prueba: solo mientras la pasarela no esté configurada. */
+function pagoDemo(btn, original){
+  btn.textContent='Procesando…';
+  apiPost({action:'confirmar', orden:state.orden, ref:'DEMO'}).then(function(res){
+    btn.disabled=false; btn.innerHTML=original;
+    if(!res.ok){ alert(res.error||'No pudimos confirmar la orden.'); return; }
+    limpiarHold(); state.orden=null;
+    emitirBoletas(res.boletas); avisoCorreoSi(res.aviso); goStep(5);
+  }).catch(function(){ btn.disabled=false; btn.innerHTML=original; alert('Error de conexión.'); });
+}
+
+function avisoCorreoSi(aviso){
+  if(!aviso) return;
+  var w=$('avisoCorreo');
+  w.textContent='⚠ Tus boletas están listas aquí, pero el correo no se pudo enviar ('+aviso+'). Descárgalas con el botón de abajo.';
+  w.style.display='block';
+}
+
+/* ============================================================
+   REGRESO DESDE WOMPI
+   Wompi devuelve al cliente con ?id=<transacción>. El pago se confirma
+   consultando la API de Wompi desde el servidor, nunca creyendo lo que
+   diga la URL.
+   ============================================================ */
+(function retornoDeWompi(){
+  var qs=new URLSearchParams(location.search);
+  var tx=qs.get('id'); if(!tx) return;
+  var guardado=null;
+  try{ guardado=JSON.parse(localStorage.getItem('ea_pago')||'null'); }catch(e){}
+  history.replaceState(null,'',location.pathname);   // limpia la URL
+
+  if(guardado && guardado.evento){ state.event=guardado.evento; state.sel=guardado.sel||{};
+                                   state.total=guardado.total||0; state.token=guardado.token||null; }
+  goStep(4);
+  var caja=$('resumenPago');
+  if(caja) caja.innerHTML='<div class="r"><span>Verificando tu pago…</span></div>';
+
+  apiPost({action:'verificarpago', orden:(guardado&&guardado.orden)||'', transaccion:tx}).then(function(r){
+    if(r && r.ok){
+      try{ localStorage.removeItem('ea_pago'); }catch(e){}
+      limpiarHold(); state.orden=null;
+      emitirBoletas(r.boletas); avisoCorreoSi(r.aviso); goStep(5);
+      return;
+    }
+    if(r && r.pendiente){
+      if(caja) caja.innerHTML='<div class="r"><span>Tu pago está en proceso. Si pagaste por PSE puede tardar unos minutos; '+
+        'te enviaremos las boletas por correo apenas se confirme.</span></div>';
+      return;
+    }
+    if(caja) caja.innerHTML='<div class="r"><span>'+esc((r&&r.error)||'No pudimos confirmar el pago.')+'</span></div>';
+  }).catch(function(){
+    if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. Escríbenos y lo revisamos.</span></div>';
+  });
+})();
 
 /* ============================================================
    PASO 5 — Boletas con QR (con respaldo si el QR externo falla)
