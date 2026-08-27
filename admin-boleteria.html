@@ -178,6 +178,11 @@ h1{font-family:var(--font-display);font-weight:400;font-size:1.7rem;margin-botto
           <div class="field"><label>Activo</label><select id="ev_activo"><option value="si">Sí (visible)</option><option value="no">No (oculto)</option></select></div>
         </div>
         <div class="field"><label>Lugar</label><input id="ev_lugar" placeholder="Teatro del Gimnasio Vermont"></div>
+        <div class="row2">
+          <div class="field"><label>La venta abre</label><input id="ev_abre" type="datetime-local"></div>
+          <div class="field"><label>La venta cierra</label><input id="ev_cierra" type="datetime-local"></div>
+        </div>
+        <p class="hint" style="margin-top:-8px">Hora de Colombia. Si dejas <b>abre</b> vacío, la venta está abierta desde ya; si dejas <b>cierra</b> vacío, no se cierra sola. Antes de abrir, la página muestra una cuenta regresiva.</p>
         <div class="field">
           <label>Foto (enlace de imagen o de Google Drive)</label>
           <input id="ev_imagen" placeholder="https://drive.google.com/file/d/…/view  o  https://…/foto.jpg" oninput="prevImg()">
@@ -279,6 +284,16 @@ function normalizarImagen(u){
   if(m) return 'https://lh3.googleusercontent.com/d/'+m[1]+'=w1200';   // "uc?id=" ya no carga en navegador
   return u;
 }
+/* Convierte lo que venga (ISO o "2026-12-01T09:00") al formato que espera
+   el campo datetime-local, en hora de Colombia. */
+function paraInput(v){
+  v=String(v||'').trim(); if(!v) return '';
+  if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v)) return v;
+  var d=new Date(v); if(isNaN(d.getTime())) return '';
+  var col=new Date(d.getTime()-5*3600000);         // UTC → Colombia
+  return col.toISOString().slice(0,16);
+}
+
 function prevImg(){
   var raw=$('ev_imagen').value, url=normalizarImagen(raw), img=$('ev_imgprev');
   if(url){ img.src=url; img.style.display='block'; img.onerror=function(){img.style.display='none';}; }
@@ -346,6 +361,8 @@ function editarEvento(e){
   $('ev_id').value=e.id; $('ev_id').disabled=true;
   $('ev_nombre').value=e.nombre||''; $('ev_fecha').value=e.fecha||''; $('ev_hora').value=e.hora||'';
   $('ev_lugar').value=e.lugar||''; $('ev_imagen').value=e.imagen||'';
+  $('ev_abre').value=paraInput(e.venta_abre||e.abreISO||'');
+  $('ev_cierra').value=paraInput(e.venta_cierra||e.cierraISO||'');
   $('ev_recinto').value=e.recinto||recintos[0]||'';
   $('ev_activo').value=e.activo?'si':'no';
   $('ev_borrar').style.display='inline-block';
@@ -354,7 +371,7 @@ function editarEvento(e){
 $('ev_nuevo').addEventListener('click', limpiarEvento);
 function limpiarEvento(){
   editId=null; $('evFormTitle').textContent='Nuevo evento';
-  ['ev_id','ev_nombre','ev_fecha','ev_hora','ev_lugar','ev_imagen'].forEach(function(id){$(id).value='';});
+  ['ev_id','ev_nombre','ev_fecha','ev_hora','ev_lugar','ev_imagen','ev_abre','ev_cierra'].forEach(function(id){$(id).value='';});
   $('ev_id').disabled=false; $('ev_activo').value='si'; $('ev_borrar').style.display='none';
   $('ev_imgprev').style.display='none'; $('ev_msg').textContent='';
 }
@@ -363,8 +380,13 @@ $('ev_guardar').addEventListener('click', function(){
     id:$('ev_id').value.trim().toLowerCase().replace(/\s+/g,'-'),
     nombre:$('ev_nombre').value.trim(), fecha:$('ev_fecha').value.trim(), hora:$('ev_hora').value.trim(),
     lugar:$('ev_lugar').value.trim(), imagen:$('ev_imagen').value.trim(),
-    recinto:$('ev_recinto').value, activo: $('ev_activo').value==='si'
+    recinto:$('ev_recinto').value, activo: $('ev_activo').value==='si',
+    venta_abre:$('ev_abre').value.trim(), venta_cierra:$('ev_cierra').value.trim()
   };
+  if(ev.venta_abre && ev.venta_cierra && ev.venta_abre>=ev.venta_cierra){
+    $('ev_msg').style.color='#FF9C93';
+    $('ev_msg').textContent='La venta no puede cerrar antes de abrir.'; return;
+  }
   if(!ev.id||!ev.nombre){ $('ev_msg').style.color='#FF9C93'; $('ev_msg').textContent='El identificador y el nombre son obligatorios.'; return; }
   var btn=$('ev_guardar'); btn.disabled=true; btn.textContent='Guardando…';
   apiPost({action:'guardarevento', clave:clave, evento:ev}).then(function(r){

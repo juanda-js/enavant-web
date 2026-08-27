@@ -362,6 +362,24 @@ body.paso-mapa .wrap{max-width:1560px}
 .tip small{display:block;margin-top:3px;color:rgba(255,255,255,.65);font-size:.74rem}
 .tip .no{color:#FF9C93}
 .tip .si{color:#9be29b}
+
+/* ==========================================================
+   ESTADO DE LA VENTA — cuenta regresiva y eventos cerrados
+   ========================================================== */
+.ev.no-disponible{cursor:default}
+.ev.no-disponible:hover{transform:none;border-color:var(--line);box-shadow:none}
+.ev.no-disponible .ph-fg,.ev.no-disponible .ph-bg{filter:grayscale(.75) brightness(.62)}
+.ev .tag.proxima{background:rgba(164,15,196,.92);border-color:rgba(216,140,236,.6)}
+.ev .tag.cerrada{background:rgba(0,0,0,.8);border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.75)}
+
+.ev .cuenta{margin-top:auto;display:flex;flex-direction:column;gap:3px;
+  padding:11px 15px;border-radius:11px;background:rgba(164,15,196,.14);
+  border:1px solid rgba(164,15,196,.42)}
+.ev .cuenta .lbl{font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.66)}
+.ev .cuenta .reloj{font-size:1.16rem;font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
+
+.ev .cerrado{margin-top:auto;padding:11px 15px;border-radius:11px;font-size:.85rem;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);color:rgba(255,255,255,.6)}
 </style>
 </head>
 <body>
@@ -574,7 +592,8 @@ var ICO={cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
   pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'};
 var IMG_FALLBACK={reyleon:'img/temporadas/el-rey-leon-2025-00.jpg',concierto:'img/temporadas/rockola-2025-00.jpg'};
 
-apiGet('action=eventos').then(function(r){
+function cargarEventos(){
+ return apiGet('action=eventos').then(function(r){
   var g=$('evGrid');
   if(!r.ok||!r.eventos.length){ g.innerHTML='<p class="evsub">Por ahora no hay eventos disponibles.</p>'; return; }
   g.innerHTML='';
@@ -587,17 +606,61 @@ apiGet('action=eventos').then(function(r){
       if(m) ev.img='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200';
     }
     var el=document.createElement('button'); el.className='ev';
-    var chip = Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+'</span>' : '';
+    var estado = ev.venta || 'abierta';
+    var chip = estado==='cerrada' ? '<span class="tag cerrada">Venta cerrada</span>'
+             : estado==='proxima' ? '<span class="tag proxima">Próximamente</span>'
+             : (Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+'</span>' : '');
     el.innerHTML='<div class="ph">'+chip+
         '<img class="ph-bg" src="'+esc(ev.img)+'" alt="" aria-hidden="true" loading="lazy">'+
         '<img class="ph-fg" src="'+esc(ev.img)+'" alt="'+esc(ev.nombre)+'" loading="lazy" onerror="this.style.opacity=0"></div>'+
       '<div class="body"><h3>'+esc(ev.nombre)+'</h3>'+
       '<div class="meta"><span>'+ICO.cal+esc(ev.fecha)+'</span><span>'+ICO.clock+esc(ev.hora)+'</span><span>'+ICO.pin+esc(ev.lugar)+'</span></div>'+
-      '<span class="go">Elegir sillas →</span></div>';
-    el.addEventListener('click', function(){ abrirEvento(ev); });
+      (estado==='abierta'
+        ? '<span class="go">Elegir sillas →</span>'
+        : estado==='proxima'
+          ? '<div class="cuenta" data-abre="'+esc(ev.abreISO||'')+'"><span class="lbl">La venta abre en</span><b class="reloj">—</b></div>'
+          : '<div class="cerrado">La venta de este evento ya cerró</div>')+
+      '</div>';
+    if(estado==='abierta') el.addEventListener('click', function(){ abrirEvento(ev); });
+    else { el.classList.add('no-disponible'); el.disabled=true; }
     g.appendChild(el);
   });
-}).catch(function(){ $('evGrid').innerHTML='<p class="evsub">Error de conexión. Intenta de nuevo.</p>'; });
+  arrancarCuentas();
+ }).catch(function(){ $('evGrid').innerHTML='<p class="evsub">Error de conexión. Intenta de nuevo.</p>'; });
+}
+cargarEventos();
+
+/* ============================================================
+   CUENTA REGRESIVA PARA LA APERTURA DE VENTA
+   El servidor manda la fecha en UTC, así que el conteo no depende del
+   reloj del visitante. Al llegar a cero se recarga la lista sola.
+   ============================================================ */
+var relojTimer=null;
+function partesRestantes(ms){
+  var t=Math.max(0,Math.floor(ms/1000));
+  return { d:Math.floor(t/86400), h:Math.floor(t%86400/3600), m:Math.floor(t%3600/60), s:t%60 };
+}
+function textoCuenta(ms){
+  var p=partesRestantes(ms), dd=function(n){ return String(n).padStart(2,'0'); };
+  return (p.d>0 ? p.d+(p.d===1?' día ':' días ') : '') + dd(p.h)+':'+dd(p.m)+':'+dd(p.s);
+}
+function arrancarCuentas(){
+  clearInterval(relojTimer);
+  var cajas=[].slice.call(document.querySelectorAll('#evGrid .cuenta'));
+  if(!cajas.length) return;
+  function tic(){
+    var alguienAbrio=false;
+    cajas.forEach(function(c){
+      var abre=new Date(c.dataset.abre).getTime();
+      if(isNaN(abre)){ c.querySelector('.reloj').textContent='—'; return; }
+      var falta=abre-Date.now();
+      if(falta<=0){ alguienAbrio=true; c.querySelector('.reloj').textContent='¡Ya abrió!'; return; }
+      c.querySelector('.reloj').textContent=textoCuenta(falta);
+    });
+    if(alguienAbrio){ clearInterval(relojTimer); setTimeout(cargarEventos,1500); }
+  }
+  tic(); relojTimer=setInterval(tic,1000);
+}
 
 /* ============================================================
    PASO 2 — Mapa (zona → zoom → silla) + carrito
