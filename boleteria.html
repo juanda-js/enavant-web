@@ -162,7 +162,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .tickets{display:grid;gap:14px;margin-top:24px}
 .ticket{display:flex;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
 .ticket .stub{background:var(--ink);padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;width:160px;flex-shrink:0}
-.ticket .stub img{width:120px;height:120px;background:#fff;border-radius:8px;padding:5px}
+.ticket .stub img,.ticket .stub svg{width:120px;height:120px;background:#fff;border-radius:8px;padding:5px;display:block}
 .ticket .stub small{color:rgba(255,255,255,.6);font-size:.66rem;letter-spacing:.06em}
 .ticket .info{padding:16px;display:flex;flex-direction:column;gap:3px;justify-content:center;font-size:.9rem}
 .ticket .info .ev{font-family:var(--display);font-size:1.15rem;margin-bottom:4px}
@@ -1157,11 +1157,15 @@ function avisoCorreoSi(aviso){
 function emitirBoletas(boletas){
   var box=$('tickets'); box.innerHTML='';
   (boletas||[]).forEach(function(b){
-    var qr='https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+encodeURIComponent(b.token);
+    // QR generado aquí mismo: sin depender de ningún servicio externo, que
+    // podría estar caído justo el día de la función.
+    var qrSvg='';
+    try{ qrSvg=QREncoder.svg(b.token,{tam:180}); }catch(e){ qrSvg=''; }
     var el=document.createElement('div'); el.className='ticket';
     el.innerHTML='<div class="stub">'+
-        '<img src="'+esc(qr)+'" alt="QR '+esc(b.id)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';">'+
-        '<div style="display:none;font-family:monospace;font-size:.62rem;color:#fff;word-break:break-all;text-align:center">'+esc(b.token)+'</div>'+
+        (qrSvg
+          ? qrSvg
+          : '<div style="font-family:monospace;font-size:.62rem;color:#fff;word-break:break-all;text-align:center">'+esc(b.token)+'</div>')+
         '<small>'+esc(b.id)+'</small></div>'+
       '<div class="info"><div class="ev">'+esc(state.event.nombre)+'</div>'+
         '<div class="row"><span>Fecha</span><b>'+esc(state.event.fecha)+'</b></div>'+
@@ -1177,5 +1181,6 @@ function emitirBoletas(boletas){
 
 renderSteps();
 </script>
+<script src="vendor/qr-encoder.js"></script>
 </body>
 </html>
