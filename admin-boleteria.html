@@ -611,12 +611,20 @@ function renderPreview(){
   });
   // Palcos
   mapa.palcos.forEach(function(p,i){
-    var r=(p.sillas>=10?24:16), col=colorDe(p.zona);
+    // Palco rectangular de dos filas, igual que lo ve el cliente:
+    // la de atrás lleva una silla más si el número es impar.
+    var col=colorDe(p.zona), n=Number(p.sillas)||0;
+    var atras=Math.ceil(n/2), adelante=n-atras;
+    var anchoMax=(Math.max(atras,adelante)-1)*SEP;
     var g='<g class="g-el" data-kind="palco" data-i="'+i+'">'+
-      '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(r-7)+'" fill="#fff" stroke="#ddd"/>'+
-      '<text x="'+p.x+'" y="'+(p.y+4)+'" font="600 11px sans-serif" text-anchor="middle" style="font:600 11px sans-serif;text-anchor:middle">'+esc(p.palco)+'</text>';
-    for(var k=0;k<p.sillas;k++){ var ang=(k/p.sillas)*2*Math.PI-Math.PI/2, cx=p.x+r*Math.cos(ang), cy=p.y+r*Math.sin(ang);
-      g+='<circle class="seat" cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="'+col+'" stroke="#00000022"/>'; }
+      '<rect x="'+(p.x-anchoMax/2-9)+'" y="'+(p.y-SEP/2-9)+'" width="'+(anchoMax+18)+'" height="'+(SEP+18)+'" rx="4" fill="#fff" stroke="#ddd"/>'+
+      '<text x="'+p.x+'" y="'+(p.y-SEP/2-13)+'" style="font:600 9px sans-serif;text-anchor:middle;fill:#666">'+esc(p.palco)+'</text>';
+    [[atras,-SEP/2],[adelante,SEP/2]].forEach(function(f){
+      var ancho=(f[0]-1)*SEP;
+      for(var c=0;c<f[0];c++){
+        g+='<circle class="seat" cx="'+(p.x+c*SEP-ancho/2)+'" cy="'+(p.y+f[1])+'" r="'+R+'" fill="'+col+'" stroke="#00000022"/>';
+      }
+    });
     s+=g+'</g>';
   });
   // Bloques

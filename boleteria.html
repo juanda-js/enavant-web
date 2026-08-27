@@ -327,6 +327,21 @@ h1.title{font-size:var(--t-2xl);line-height:1.12;letter-spacing:-.02em}
   .ticket .stub img{background:#fff!important}
   .ticket .stub small{color:#444!important}
 }
+
+/* ==========================================================
+   PASO 2 — el mapa manda: más ancho en escritorio y más alto
+   en el celular, para que las sillas se puedan tocar bien.
+   ========================================================== */
+body.paso-mapa .wrap{max-width:1560px}
+.canvas{aspect-ratio:2/1}
+@media(min-width:900px){
+  .stage{grid-template-columns:minmax(0,1fr) 320px;gap:22px}
+  .canvas{aspect-ratio:16/9}
+}
+@media(min-width:1400px){ .canvas{aspect-ratio:2/1} }
+@media(max-width:899px){
+  .canvas{aspect-ratio:4/3}        /* en vertical conviene más alto que ancho */
+}
 </style>
 </head>
 <body>
@@ -434,7 +449,8 @@ function pesos(n){ return '$'+Number(n||0).toLocaleString('es-CO'); }
 function $(id){ return document.getElementById(id); }
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-var VB={w:1800,h:900}, SEP=13, RS=5.6;   // debe coincidir con admin-boleteria.html
+var VB={w:1800,h:900}, SEP=13, RS=5.6;
+var MAX_SILLAS=12;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0 };   // token = identificador de esta sesión de compra; expira = fin del apartado
 
@@ -523,6 +539,7 @@ function renderSteps(){
 }
 function goStep(n){
   pasoActual=n; renderSteps();
+  document.body.classList.toggle('paso-mapa', n===2);
   ['p1','p2','p3','p4','p5'].forEach(function(id,i){ $(id).classList.toggle('active', i+1===n); });
   window.scrollTo({top:0,behavior:RM?'auto':'smooth'});
   $('cartbar').classList.toggle('show', n===2 && Object.keys(state.sel).length>0);
@@ -602,10 +619,19 @@ function sillasDe(sec){
       out.push({id:b.id+'-'+f+c, zona:b.zona, etiqueta:b.nombre+' · Fila '+f+' · Silla '+c, lx:(c-1)*SEP, ly:fi*SEP});
     }});
   } else {
-    var p=sec.data, r=(p.sillas>=10?24:16);
-    for(var i=0;i<p.sillas;i++){ var ang=(i/p.sillas)*2*Math.PI-Math.PI/2;
-      out.push({id:'P'+p.palco+'-'+(i+1), zona:p.zona, etiqueta:'Palco '+p.palco+' · Silla '+(i+1), lx:r*Math.cos(ang), ly:r*Math.sin(ang)});
-    }
+    // Palco rectangular de dos filas: la de atrás lleva una silla más cuando
+    // el número es impar (5 → 3 atrás y 2 adelante; 10 → 5 y 5).
+    var p=sec.data, n=Number(p.sillas)||0;
+    var atras=Math.ceil(n/2), adelante=n-atras, i=0;
+    [{cant:atras, fila:'atrás', ly:-SEP/2}, {cant:adelante, fila:'adelante', ly:SEP/2}].forEach(function(f){
+      var ancho=(f.cant-1)*SEP;
+      for(var c=0;c<f.cant;c++){
+        i++;
+        out.push({id:'P'+p.palco+'-'+i, zona:p.zona, palco:String(p.palco),
+                  etiqueta:'Palco '+p.palco+' · Silla '+i,
+                  lx:c*SEP-ancho/2, ly:f.ly});
+      }
+    });
   }
   return out;
 }
@@ -716,8 +742,13 @@ function bboxContenido(){
 
 /* Crece el recuadro hasta la proporción del lienzo, manteniendo el centro.
    Así lo que se ve es exactamente lo previsto y nada queda a medias. */
+function aspectoLienzo(){
+  var c=document.querySelector('.canvas');
+  if(c){ var b=c.getBoundingClientRect(); if(b.width>0&&b.height>0) return b.width/b.height; }
+  return VB.w/VB.h;
+}
 function conAspecto(r){
-  var agrandar=VB.w/VB.h, x=r[0], y=r[1], w=r[2], h=r[3];
+  var agrandar=aspectoLienzo(), x=r[0], y=r[1], w=r[2], h=r[3];
   if(w/h < agrandar){ var w2=h*agrandar; x-=(w2-w)/2; w=w2; }
   else { var h2=w/agrandar; y-=(h2-h)/2; h=h2; }
   return [x,y,w,h];
@@ -776,13 +807,40 @@ function seatData(id){
   secciones().forEach(function(sec){ sillasDe(sec).forEach(function(st){ if(st.id===id) found=st; }); });
   return found;
 }
+/* Los palcos se venden completos: al tocar una silla se toman todas las del
+   palco, y al quitar una se sueltan todas. */
+function sillasDelPalco(id){
+  var m=String(id).match(/^P([^-]+)-/); if(!m) return null;
+  var sec=null; secciones().forEach(function(s){ if(s.tipo==='palco' && String(s.data.palco)===m[1]) sec=s; });
+  return sec ? sillasDe(sec) : null;
+}
 function toggleSeat(id){
   if(state.occ[id]||state.blq[id]) return;
-  if(state.sel[id]){ delete state.sel[id]; }
-  else {
-    if(Object.keys(state.sel).length>=12){ toast('Máximo 12 sillas por compra.'); return; }
-    var st=seatData(id), z=state.zonas[st.zona]||{};
-    state.sel[id]={id:id, zona:st.zona, etiqueta:st.etiqueta, precio:Number(z.precio)||0};
+  var grupo=sillasDelPalco(id);
+
+  if(grupo){                                    // ---- palco completo ----
+    var yaEsta=!!state.sel[id];
+    if(yaEsta){ grupo.forEach(function(st){ delete state.sel[st.id]; }); }
+    else {
+      var noDisponible=grupo.filter(function(st){ return state.occ[st.id]||state.blq[st.id]; });
+      if(noDisponible.length){ toast('Este palco ya no está disponible completo.'); return; }
+      var nuevas=grupo.filter(function(st){ return !state.sel[st.id]; }).length;
+      if(Object.keys(state.sel).length+nuevas>MAX_SILLAS){
+        toast('El palco tiene '+grupo.length+' sillas y superarías el máximo de '+MAX_SILLAS+'.'); return;
+      }
+      grupo.forEach(function(st){
+        var z=state.zonas[st.zona]||{};
+        state.sel[st.id]={id:st.id, zona:st.zona, etiqueta:st.etiqueta, precio:Number(z.precio)||0};
+      });
+      toast('Palco completo: '+grupo.length+' sillas.');
+    }
+  } else {                                      // ---- silla suelta ----
+    if(state.sel[id]){ delete state.sel[id]; }
+    else {
+      if(Object.keys(state.sel).length>=MAX_SILLAS){ toast('Máximo '+MAX_SILLAS+' sillas por compra.'); return; }
+      var st2=seatData(id), z2=state.zonas[st2.zona]||{};
+      state.sel[id]={id:id, zona:st2.zona, etiqueta:st2.etiqueta, precio:Number(z2.precio)||0};
+    }
   }
   renderMapa(); renderCart();
 }
