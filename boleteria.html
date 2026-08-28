@@ -522,7 +522,7 @@ var VB={w:1800,h:900}, SEP=13, RS=5.6;
 var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0,
-            cupon:null, descuento:0, subtotal:0 };   // token = sesión de compra; cupon = descuento aplicado
+            cupon:null, descuento:0, subtotal:0, enPasarela:false };   // token = sesión de compra; cupon = descuento aplicado
 
 /* ============================================================
    APARTADO TEMPORAL + TEMPORIZADOR
@@ -566,6 +566,7 @@ function soltarHold(){
   return apiPost(o?{action:'cancelar',orden:o,token:t}:{action:'soltar',token:t}).catch(function(){});
 }
 function vencerHold(){
+  if(state.enPasarela) return;   // hay un pago en curso: no se suelta nada
   var t=state.token, o=state.orden;
   limpiarHold(); state.orden=null; state.sel={};
   if(t) apiPost(o?{action:'cancelar',orden:o,token:t}:{action:'soltar',token:t}).catch(function(){});
@@ -576,6 +577,9 @@ function vencerHold(){
 }
 // Si el cliente cierra la pestaña, avisamos al servidor para no dejar sillas bloqueadas
 window.addEventListener('pagehide', function(){
+  // Si el cliente salió hacia la pasarela, sus sillas NO se sueltan: está
+  // pagando. Soltarlas aquí era lo que permitía que otro se las llevara.
+  if(state.enPasarela) return;
   if(!state.token || !state.expira) return;
   var body=JSON.stringify(state.orden?{action:'cancelar',orden:state.orden,token:state.token}
                                      :{action:'soltar',token:state.token});
@@ -1177,6 +1181,8 @@ $('payBtn').addEventListener('click', function(){
       evento:state.event, sel:state.sel, t:Date.now() })); }catch(e){}
 
     btn.textContent='Abriendo pago seguro…';
+    state.enPasarela=true;      // desde aquí las sillas quedan retenidas
+    limpiarHold();              // el contador ya no aplica: está pagando
     var f=document.createElement('form');
     f.method='GET'; f.action=r.url;
     var campos={ 'public-key':r.publica, 'currency':r.moneda, 'amount-in-cents':r.centavos,
@@ -1223,6 +1229,7 @@ function avisoCorreoSi(aviso){
   try{ guardado=JSON.parse(localStorage.getItem('ea_pago')||'null'); }catch(e){}
   history.replaceState(null,'',location.pathname);   // limpia la URL
 
+  state.enPasarela=false;
   if(guardado && guardado.evento){ state.event=guardado.evento; state.sel=guardado.sel||{};
                                    state.total=guardado.total||0; state.token=guardado.token||null; }
   goStep(4);
@@ -1241,7 +1248,9 @@ function avisoCorreoSi(aviso){
         'te enviaremos las boletas por correo apenas se confirme.</span></div>';
       return;
     }
-    if(caja) caja.innerHTML='<div class="r"><span>'+esc((r&&r.error)||'No pudimos confirmar el pago.')+'</span></div>';
+    var msg=(r&&r.error)||'No pudimos confirmar el pago.';
+    if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+'</span></div>'+
+      '<div class="r"><span><button class="btn btn-ghost" onclick="volverAlMapa()" style="width:auto;padding:9px 16px">Elegir sillas otra vez</button></span></div>';
   }).catch(function(){
     if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. Escríbenos y lo revisamos.</span></div>';
   });
