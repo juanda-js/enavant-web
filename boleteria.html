@@ -523,7 +523,7 @@ var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0,
             cupon:null, descuento:0, subtotal:0, enPasarela:false,
-            servicio:0, servicioCfg:{pct:0,fijo:0} };   // token = sesión de compra; cupon = descuento aplicado
+            servicio:0, servicioCfg:{pct:0,fijo:0,base:'original'} };   // token = sesión de compra; cupon = descuento aplicado
 
 /* ============================================================
    APARTADO TEMPORAL + TEMPORIZADOR
@@ -984,10 +984,11 @@ function renderLegend(){
 
 /* Mismo cálculo que hace el servidor; aquí solo sirve para mostrarlo.
    El valor que se cobra siempre lo recalcula el servidor. */
-function cargoServicio(base){
-  var c=state.servicioCfg||{pct:0,fijo:0};
-  if(base<=0 || (!c.pct && !c.fijo)) return 0;
-  return Math.round(base*c.pct/100)+(c.fijo||0);
+function cargoServicio(cobrado, lista){
+  var c=state.servicioCfg||{pct:0,fijo:0,base:'original'};
+  if(cobrado<=0 || (!c.pct && !c.fijo)) return 0;
+  var sobre = (c.base==='descuento') ? cobrado : Math.max(Number(lista)||cobrado, cobrado);
+  return Math.round(sobre*c.pct/100)+(c.fijo||0);
 }
 function renderCart(){
   var ids=Object.keys(state.sel), inner=$('cartInner');
@@ -995,7 +996,7 @@ function renderCart(){
   // Si cambian las sillas, el descuento anterior deja de ser válido.
   if(state.cupon && state.cupon.sillas!==ids.length){ state.cupon=null; state.descuento=0; }
   var trasDesc=Math.max(0, state.subtotal-(state.descuento||0));
-  state.servicio=cargoServicio(trasDesc);
+  state.servicio=cargoServicio(trasDesc, state.subtotal);
   state.total=trasDesc+state.servicio;
   if(!ids.length){
     inner.innerHTML='<p class="empty">Aún no has elegido sillas. Toca una zona en el mapa y luego tus asientos.</p>';
