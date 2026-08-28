@@ -1050,6 +1050,27 @@ function aplicarCupon(){
   });
 }
 
+/* Cuando el servidor avisa que unas sillas ya son de otra persona:
+   se marcan como no disponibles y se quitan de la selección. Si la silla
+   pertenece a un palco, se retira el palco entero, porque se vende completo. */
+function perderSillas(ids, mensaje){
+  ids=(ids||[]).filter(Boolean);
+  var quitadas=[];
+  ids.forEach(function(id){
+    state.occ[id]=1;
+    var grupo=sillasDelPalco(id);
+    var afectadas = grupo ? grupo.map(function(x){return x.id;}) : [id];
+    afectadas.forEach(function(x){
+      state.occ[x]=1;
+      if(state.sel[x]){ quitadas.push(state.sel[x].etiqueta||x); delete state.sel[x]; }
+    });
+  });
+  state.cupon=null; state.descuento=0;     // el descuento ya no corresponde
+  renderMapa(); renderCart();
+  toast(mensaje || 'Estas sillas ya fueron reservadas por otra persona. Selecciona otra.','alerta');
+  return quitadas;
+}
+
 /* Paso 2 → 3: aquí sí se apartan las sillas en el servidor */
 function apartarYSeguir(btn){
   var ids=Object.keys(state.sel); if(!ids.length) return;
@@ -1127,8 +1148,13 @@ $('toPago').addEventListener('click', function(){
   }).then(function(res){
     btn.disabled=false; btn.textContent='Continuar al pago';
     if(!res.ok){
+      if(res.sillas && res.sillas.length){
+        perderSillas(res.sillas, res.error);
+        err.textContent='';
+        volverAlMapa();          // vuelve al mapa para que elija otras
+        return;
+      }
       err.textContent=res.error||'No pudimos apartar las sillas.';
-      if(res.sillas){ res.sillas.forEach(function(id){ delete state.sel[id]; state.occ[id]=1; }); renderCart(); }
       return;
     }
     state.orden=res.orden; state.total=res.total;
@@ -1173,7 +1199,18 @@ $('payBtn').addEventListener('click', function(){
     }
     var sinPasarela = !r || (!r.ok && /no est[áa] configurada|acci[oó]n desconocida/i.test(r.error||''));
     if(sinPasarela) return pagoDemo(btn, original);
-    if(!r || !r.ok){ restaurar(); alert((r&&r.error)||'No pudimos iniciar el pago.'); return; }
+    if(!r || !r.ok){
+      restaurar();
+      if(r && r.sillasPerdidas && r.sillasPerdidas.length){
+        // Se perdieron mientras terminaba: se le quitan y vuelve al mapa.
+        state.orden=null; limpiarHold();
+        perderSillas(r.sillasPerdidas, r.error);
+        goStep(2);
+        return;
+      }
+      alert((r&&r.error)||'No pudimos iniciar el pago.');
+      return;
+    }
 
     // Guardamos la compra para poder retomarla cuando el cliente vuelva de Wompi.
     try{ localStorage.setItem('ea_pago', JSON.stringify({
