@@ -160,7 +160,7 @@ document.getElementById('entrarBtn').addEventListener('click', function(){
   apiPost({action:'validar', token:'__prueba__', clave:clave}).then(function(res){
     self.disabled=false; self.textContent='Entrar';
     if(res.mensaje && res.mensaje.indexOf('incorrecta')>=0){ err.textContent='Clave incorrecta.'; return; }
-    if(res.mensaje && res.mensaje.indexOf('configurar')>=0){ err.textContent='Falta configurar la clave en la hoja (menú En Avant → Configurar clave del escáner).'; return; }
+    if(res.mensaje && res.mensaje.indexOf('configurar')>=0){ err.textContent='Falta configurar la clave del escáner: en Apps Script, ejecuta configurarClaveEscaner() y vuelve a implementar.'; return; }
     localStorage.setItem('eav_clave_escaner', clave);
     document.getElementById('loginView').style.display='none';
     document.getElementById('scanView').style.display='block';
