@@ -380,6 +380,36 @@ body.paso-mapa .wrap{max-width:1560px}
 
 .ev .cerrado{margin-top:auto;padding:11px 15px;border-radius:11px;font-size:.85rem;
   background:rgba(255,255,255,.05);border:1px solid var(--line);color:rgba(255,255,255,.6)}
+
+/* ==========================================================
+   CUPONES — campo en el carrito y desglose del descuento
+   ========================================================== */
+.cart .lin{display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);padding:3px 0}
+.cart .lin.desc{color:var(--teal);font-weight:600}
+.cupon{display:flex;gap:7px;margin:12px 0 0}
+.cupon input{
+  flex:1;min-width:0;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  border-radius:9px;padding:11px 12px;color:#fff;font-size:.9rem;text-transform:uppercase;
+}
+.cupon input::placeholder{color:rgba(255,255,255,.38);text-transform:none}
+.cupon input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(164,15,196,.25)}
+.cupon button{
+  padding:0 15px;border-radius:9px;border:1px solid var(--line);
+  background:transparent;color:rgba(255,255,255,.85);font-size:.85rem;font-weight:600;
+  transition:background .2s,color .2s;
+}
+.cupon button:hover{background:#fff;color:#0f0f12;border-color:#fff}
+.cupon button:disabled{opacity:.5}
+.cupon.puesto{
+  align-items:center;justify-content:space-between;
+  background:rgba(3,112,112,.16);border:1px solid rgba(95,212,212,.42);
+  border-radius:9px;padding:9px 12px;
+}
+.cupon.puesto .cod{font-weight:700;letter-spacing:.05em;font-size:.88rem}
+.cupon.puesto .quitar{border:none;background:none;color:rgba(255,255,255,.6);font-size:.82rem;padding:0;text-decoration:underline}
+.cupon.puesto .quitar:hover{color:#fff;background:none}
+.cupon-msg{font-size:.82rem;margin:7px 0 0;min-height:1em;color:var(--muted)}
+.cupon-msg.mal{color:#FF9C93}
 </style>
 </head>
 <body>
@@ -491,7 +521,8 @@ var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var VB={w:1800,h:900}, SEP=13, RS=5.6;
 var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
-            token:null, expira:0 };   // token = identificador de esta sesión de compra; expira = fin del apartado
+            token:null, expira:0,
+            cupon:null, descuento:0, subtotal:0 };   // token = sesión de compra; cupon = descuento aplicado
 
 /* ============================================================
    APARTADO TEMPORAL + TEMPORIZADOR
@@ -947,17 +978,40 @@ function renderLegend(){
 
 function renderCart(){
   var ids=Object.keys(state.sel), inner=$('cartInner');
-  state.total=ids.reduce(function(a,id){ return a+state.sel[id].precio; },0);
+  state.subtotal=ids.reduce(function(a,id){ return a+state.sel[id].precio; },0);
+  // Si cambian las sillas, el descuento anterior deja de ser válido.
+  if(state.cupon && state.cupon.sillas!==ids.length){ state.cupon=null; state.descuento=0; }
+  state.total=Math.max(0, state.subtotal-(state.descuento||0));
   if(!ids.length){
     inner.innerHTML='<p class="empty">Aún no has elegido sillas. Toca una zona en el mapa y luego tus asientos.</p>';
   } else {
     var ul=ids.map(function(id){ var s=state.sel[id];
       return '<li><button class="x" data-id="'+esc(id)+'" aria-label="Quitar">×</button><span class="lbl">'+esc(s.etiqueta)+'</span><span class="pr">'+pesos(s.precio)+'</span></li>';
     }).join('');
-    inner.innerHTML='<ul>'+ul+'</ul>'+
+    var resumen='';
+    if(state.cupon && state.descuento>0){
+      resumen='<div class="lin"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>'+
+              '<div class="lin desc"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+    }
+    var cuponUI = state.cupon
+      ? '<div class="cupon puesto"><span class="cod">'+esc(state.cupon.codigo)+'</span>'+
+        '<button type="button" class="quitar" id="quitarCupon">Quitar</button></div>'
+      : '<div class="cupon"><input id="codCupon" placeholder="¿Tienes un cupón?" autocomplete="off" maxlength="24">'+
+        '<button type="button" id="aplicarCupon">Aplicar</button></div>'+
+        '<p class="cupon-msg" id="cuponMsg"></p>';
+
+    inner.innerHTML='<ul>'+ul+'</ul>'+resumen+
       '<div class="tot"><span>'+ids.length+' silla'+(ids.length>1?'s':'')+'</span><b>'+pesos(state.total)+'</b></div>'+
-      '<button class="btn" id="toDatos">Continuar</button>';
+      cuponUI+
+      '<button class="btn" id="toDatos">'+(state.total===0?'Continuar (sin costo)':'Continuar')+'</button>';
     $('toDatos').addEventListener('click', function(){ apartarYSeguir(this); });
+    if($('aplicarCupon')){
+      $('aplicarCupon').addEventListener('click', aplicarCupon);
+      $('codCupon').addEventListener('keydown', function(e){ if(e.key==='Enter') aplicarCupon(); });
+    }
+    if($('quitarCupon')) $('quitarCupon').addEventListener('click', function(){
+      state.cupon=null; state.descuento=0; renderCart();
+    });
     inner.querySelectorAll('.x').forEach(function(b){ b.addEventListener('click', function(){ toggleSeat(b.dataset.id); }); });
   }
   // barra móvil
@@ -966,6 +1020,31 @@ function renderCart(){
   $('cartbar').classList.toggle('show', pasoActual===2 && ids.length>0);
 }
 $('barCont').addEventListener('click', function(){ if(Object.keys(state.sel).length) apartarYSeguir(this); });
+
+/* El descuento lo calcula el servidor; aquí solo se muestra. */
+function aplicarCupon(){
+  var inp=$('codCupon'), msg=$('cuponMsg'), btn=$('aplicarCupon');
+  if(!inp) return;
+  var cod=inp.value.trim();
+  if(!cod){ msg.textContent='Escribe el código.'; msg.className='cupon-msg mal'; return; }
+  btn.disabled=true; btn.textContent='…'; msg.textContent=''; msg.className='cupon-msg';
+  apiPost({action:'probarcupon', codigo:cod, evento:state.event.id,
+    sillas:Object.keys(state.sel).map(function(id){ return {id:id, zona:state.sel[id].zona}; })
+  }).then(function(r){
+    btn.disabled=false; btn.textContent='Aplicar';
+    if(!r || !r.ok){
+      msg.textContent=(r&&r.error)||'No pudimos aplicar el cupón.';
+      msg.className='cupon-msg mal'; return;
+    }
+    state.cupon={codigo:r.codigo, detalle:r.detalle, sillas:Object.keys(state.sel).length};
+    state.descuento=Number(r.descuento)||0;
+    renderCart();
+    toast(r.detalle+' aplicado.');
+  }).catch(function(){
+    btn.disabled=false; btn.textContent='Aplicar';
+    msg.textContent='Error de conexión.'; msg.className='cupon-msg mal';
+  });
+}
 
 /* Paso 2 → 3: aquí sí se apartan las sillas en el servidor */
 function apartarYSeguir(btn){
@@ -1038,7 +1117,8 @@ $('toPago').addEventListener('click', function(){
   if(!tel){ err.textContent='Escribe un teléfono de contacto.'; return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cor)){ err.textContent='Escribe un correo válido.'; return; }
   var btn=this; btn.disabled=true; btn.textContent='Apartando sillas…';
-  apiPost({action:'reservar', evento:state.event.id, token:state.token, cliente:cli, estudiante:$('f-est').value.trim(), telefono:tel, correo:cor,
+  apiPost({action:'reservar', evento:state.event.id, token:state.token, cupon:(state.cupon&&state.cupon.codigo)||'',
+    cliente:cli, estudiante:$('f-est').value.trim(), telefono:tel, correo:cor,
     sillas:Object.keys(state.sel).map(function(id){ var s=state.sel[id]; return {id:id, zona:s.zona, etiqueta:s.etiqueta}; })
   }).then(function(res){
     btn.disabled=false; btn.textContent='Continuar al pago';
@@ -1055,8 +1135,14 @@ $('toPago').addEventListener('click', function(){
 function renderResumen(){
   var ids=Object.keys(state.sel);
   var rows=ids.map(function(id){ var s=state.sel[id]; return '<div class="r"><span>'+esc(s.etiqueta)+'</span><span>'+pesos(s.precio)+'</span></div>'; }).join('');
+  if(state.cupon && state.descuento>0){
+    rows+='<div class="r"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>'+
+          '<div class="r" style="color:var(--teal)"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+  }
   $('resumenPago').innerHTML=rows+'<div class="r tot"><span>Total</span><span>'+pesos(state.total)+'</span></div>';
-  $('payAmount').textContent=pesos(state.total);
+  var btn=$('payBtn');
+  if(state.total===0){ btn.innerHTML='Recibir mis boletas'; }
+  else { btn.innerHTML='Confirmar orden <span id="payAmount">'+pesos(state.total)+'</span>'; }
 }
 
 /* ============================================================
@@ -1071,6 +1157,16 @@ $('payBtn').addEventListener('click', function(){
     // Si la pasarela no está configurada, o el servidor todavía no conoce la
     // acción (backend sin actualizar), se sigue en modo de prueba en vez de
     // dejar al cliente sin poder pagar.
+    // Cortesía o cupón que cubre todo: no hay nada que cobrar.
+    if(r && r.ok && r.gratis){
+      btn.textContent='Emitiendo boletas…';
+      return apiPost({action:'confirmargratis', orden:state.orden}).then(function(g){
+        restaurar();
+        if(!g || !g.ok){ alert((g&&g.error)||'No pudimos emitir las boletas.'); return; }
+        limpiarHold(); state.orden=null;
+        emitirBoletas(g.boletas); avisoCorreoSi(g.aviso); goStep(5);
+      });
+    }
     var sinPasarela = !r || (!r.ok && /no est[áa] configurada|acci[oó]n desconocida/i.test(r.error||''));
     if(sinPasarela) return pagoDemo(btn, original);
     if(!r || !r.ok){ restaurar(); alert((r&&r.error)||'No pudimos iniciar el pago.'); return; }
