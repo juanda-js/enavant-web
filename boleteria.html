@@ -108,6 +108,8 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:.8rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.nota-serv{margin-top:10px;font-size:.82rem;color:var(--muted);line-height:1.45}
+.nota-serv b{color:var(--muted);font-weight:700;margin-right:2px}
 /* tooltip */
 .tip{position:fixed;z-index:var(--z-tip);background:var(--ink);color:#fff;padding:8px 11px;border-radius:8px;font-size:.8rem;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .15s;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
 .tip.show{opacity:1;transform:none}
@@ -427,6 +429,7 @@ body.paso-mapa .wrap{max-width:1560px}
   <section class="panel active" id="p1">
     <h1 class="title">Compra tus boletas</h1>
     <p class="evsub">Elige el evento al que quieres asistir.</p>
+    <p class="nota-serv" id="notaServEv" hidden></p>
     <div class="ev-grid" id="evGrid"><div class="spin"></div></div>
   </section>
 
@@ -443,6 +446,7 @@ body.paso-mapa .wrap{max-width:1560px}
         </div>
         <div class="canvas"><div id="seatBox"><div class="spin"></div></div></div>
         <div class="legend" id="legend"></div>
+        <p class="nota-serv" id="notaServMapa" hidden></p>
       </div>
       <aside class="cart">
         <h3>Tu selección</h3>
@@ -631,6 +635,7 @@ var IMG_FALLBACK={reyleon:'img/temporadas/el-rey-leon-2025-00.jpg',concierto:'im
 function cargarEventos(){
  return apiGet('action=eventos').then(function(r){
   if(r && r.servicio) state.servicioCfg=r.servicio;
+  pintarAvisoServicio();
   var g=$('evGrid');
   if(!r.ok||!r.eventos.length){ g.innerHTML='<p class="evsub">Por ahora no hay eventos disponibles.</p>'; return; }
   g.innerHTML='';
@@ -646,7 +651,7 @@ function cargarEventos(){
     var estado = ev.venta || 'abierta';
     var chip = estado==='cerrada' ? '<span class="tag cerrada">Venta cerrada</span>'
              : estado==='proxima' ? '<span class="tag proxima">Próximamente</span>'
-             : (Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+'</span>' : '');
+             : (Number(ev.desde)>0 ? '<span class="tag">desde '+pesos(ev.desde)+(textoServicio()?'*':'')+'</span>' : '');
     el.innerHTML='<div class="ph">'+chip+
         '<img class="ph-bg" src="'+esc(ev.img)+'" alt="" aria-hidden="true" loading="lazy">'+
         '<img class="ph-fg" src="'+esc(ev.img)+'" alt="'+esc(ev.nombre)+'" loading="lazy" onerror="this.style.opacity=0"></div>'+
@@ -980,6 +985,32 @@ function renderLegend(){
   var lg=(state.mapa.zonas||[]).map(function(z){ return '<span><i style="background:'+z.color+'"></i>'+esc(z.nombre)+' · '+pesos(z.precio)+'</span>'; }).join('');
   lg+='<span><i style="background:#4E9A23"></i>Elegida</span><span><i style="background:#CFCAD6"></i>No disponible</span>';
   $('legend').innerHTML=lg;
+  pintarAvisoServicio();
+}
+
+/* Cómo se le explica el cargo al cliente. Devuelve '' cuando no hay
+   cargo: en ese caso no se anuncia nada, porque no habría nada que
+   anunciar y el aviso seria falso. */
+function textoServicio(){
+  var c=state.servicioCfg||{pct:0,fijo:0};
+  if(!c.pct && !c.fijo) return '';
+  var pct=String(c.pct).replace('.',',')+' %';
+  if(c.pct && c.fijo) return pct+' + '+pesos(c.fijo)+' por compra';
+  return c.pct ? pct : pesos(c.fijo)+' por compra';
+}
+
+/* El cliente tiene que saber ANTES de elegir que el precio de la boleta
+   no es lo ultimo que va a pagar. Se avisa en la lista de eventos y otra
+   vez sobre el mapa, que es donde esta mirando precios. */
+function pintarAvisoServicio(){
+  var t=textoServicio();
+  ['notaServEv','notaServMapa'].forEach(function(id){
+    var el=$(id); if(!el) return;
+    if(!t){ el.hidden=true; el.innerHTML=''; return; }
+    el.hidden=false;
+    el.innerHTML='<b>*</b> Los precios de las boletas no incluyen el cargo por '+
+      'servicio ('+t+'), que se suma al total antes de pagar.';
+  });
 }
 
 /* Mismo cálculo que hace el servidor; aquí solo sirve para mostrarlo.
