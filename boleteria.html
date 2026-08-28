@@ -516,7 +516,51 @@ body.paso-mapa .wrap{max-width:1560px}
 <script>
 var API='https://script.google.com/macros/s/AKfycbzxQtuagUbRwzr5EmxJrW20mzwnduak6FZXxmrrcutPFXj6PfU1lMS8HOI43lgIkcs/exec';
 function apiGet(p){ return fetch(API+'?'+p).then(function(r){return r.json();}); }
-function apiPost(b){ return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)}).then(function(r){return r.json();}); }
+
+/* El cliente no tiene por qué enterarse de que el servidor está congestionado.
+   Si la respuesta dice que está ocupado, o si la red falla, se reintenta solo
+   con esperas cada vez más largas. Solo si después de varios intentos sigue
+   sin poder, se le dice algo.
+
+   Ojo con qué se reintenta: una petición que YA se ejecutó no se puede
+   repetir a ciegas (podría cobrar dos veces). Por eso solo se reintenta
+   cuando el servidor dice explícitamente que no hizo nada — "ocupado" —
+   o cuando la petición ni siquiera llegó. */
+var ESPERAS=[400,900,1800,3000,5000];
+
+/* "ocupado" quiere decir que el servidor NO hizo nada: no consiguió el
+   candado y se dio la vuelta. Repetir eso siempre es seguro. */
+function ocupado(r){
+  return r && r.ok===false && (r.reintentar===true || /sistema est[áa] ocupado/i.test(r.error||''));
+}
+
+/* Un fallo de red es distinto: puede que la petición nunca llegara, pero
+   también puede que el servidor la ejecutara y se perdiera la respuesta.
+   Repetir a ciegas un "reservar" crearía una segunda orden y gastaría el
+   cupón dos veces. Así que ahí solo se repiten las acciones que, hechas
+   dos veces, dan el mismo resultado que hechas una. */
+var REPETIBLES={apartar:1, soltar:1, cancelar:1, probarcupon:1};
+function esRepetible(b){ return !!REPETIBLES[String((b&&b.action)||'').toLowerCase()]; }
+
+function espera(ms){ return new Promise(function(res){ setTimeout(res,ms); }); }
+
+function apiPost(b, intento){
+  intento=intento||0;
+  return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)})
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      if(ocupado(r) && intento<ESPERAS.length){
+        return espera(ESPERAS[intento]).then(function(){ return apiPost(b,intento+1); });
+      }
+      return r;
+    })
+    .catch(function(e){
+      if(esRepetible(b) && intento<ESPERAS.length){
+        return espera(ESPERAS[intento]).then(function(){ return apiPost(b,intento+1); });
+      }
+      throw e;
+    });
+}
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function pesos(n){ return '$'+Number(n||0).toLocaleString('es-CO'); }
 function $(id){ return document.getElementById(id); }
