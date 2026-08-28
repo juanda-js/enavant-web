@@ -522,7 +522,8 @@ var VB={w:1800,h:900}, SEP=13, RS=5.6;
 var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0,
-            cupon:null, descuento:0, subtotal:0, enPasarela:false };   // token = sesión de compra; cupon = descuento aplicado
+            cupon:null, descuento:0, subtotal:0, enPasarela:false,
+            servicio:0, servicioCfg:{pct:0,fijo:0} };   // token = sesión de compra; cupon = descuento aplicado
 
 /* ============================================================
    APARTADO TEMPORAL + TEMPORIZADOR
@@ -629,6 +630,7 @@ var IMG_FALLBACK={reyleon:'img/temporadas/el-rey-leon-2025-00.jpg',concierto:'im
 
 function cargarEventos(){
  return apiGet('action=eventos').then(function(r){
+  if(r && r.servicio) state.servicioCfg=r.servicio;
   var g=$('evGrid');
   if(!r.ok||!r.eventos.length){ g.innerHTML='<p class="evsub">Por ahora no hay eventos disponibles.</p>'; return; }
   g.innerHTML='';
@@ -980,12 +982,21 @@ function renderLegend(){
   $('legend').innerHTML=lg;
 }
 
+/* Mismo cálculo que hace el servidor; aquí solo sirve para mostrarlo.
+   El valor que se cobra siempre lo recalcula el servidor. */
+function cargoServicio(base){
+  var c=state.servicioCfg||{pct:0,fijo:0};
+  if(base<=0 || (!c.pct && !c.fijo)) return 0;
+  return Math.round(base*c.pct/100)+(c.fijo||0);
+}
 function renderCart(){
   var ids=Object.keys(state.sel), inner=$('cartInner');
   state.subtotal=ids.reduce(function(a,id){ return a+state.sel[id].precio; },0);
   // Si cambian las sillas, el descuento anterior deja de ser válido.
   if(state.cupon && state.cupon.sillas!==ids.length){ state.cupon=null; state.descuento=0; }
-  state.total=Math.max(0, state.subtotal-(state.descuento||0));
+  var trasDesc=Math.max(0, state.subtotal-(state.descuento||0));
+  state.servicio=cargoServicio(trasDesc);
+  state.total=trasDesc+state.servicio;
   if(!ids.length){
     inner.innerHTML='<p class="empty">Aún no has elegido sillas. Toca una zona en el mapa y luego tus asientos.</p>';
   } else {
@@ -993,9 +1004,12 @@ function renderCart(){
       return '<li><button class="x" data-id="'+esc(id)+'" aria-label="Quitar">×</button><span class="lbl">'+esc(s.etiqueta)+'</span><span class="pr">'+pesos(s.precio)+'</span></li>';
     }).join('');
     var resumen='';
-    if(state.cupon && state.descuento>0){
-      resumen='<div class="lin"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>'+
-              '<div class="lin desc"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+    if((state.cupon && state.descuento>0) || state.servicio>0){
+      resumen='<div class="lin"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>';
+      if(state.cupon && state.descuento>0)
+        resumen+='<div class="lin desc"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+      if(state.servicio>0)
+        resumen+='<div class="lin"><span>Cargo por servicio</span><span>'+pesos(state.servicio)+'</span></div>';
     }
     var cuponUI = state.cupon
       ? '<div class="cupon puesto"><span class="cod">'+esc(state.cupon.codigo)+'</span>'+
@@ -1042,6 +1056,7 @@ function aplicarCupon(){
     }
     state.cupon={codigo:r.codigo, detalle:r.detalle, sillas:Object.keys(state.sel).length};
     state.descuento=Number(r.descuento)||0;
+    if(r.servicio!=null) state.servicio=Number(r.servicio)||0;
     renderCart();
     toast(r.detalle+' aplicado.');
   }).catch(function(){
@@ -1165,9 +1180,12 @@ $('toPago').addEventListener('click', function(){
 function renderResumen(){
   var ids=Object.keys(state.sel);
   var rows=ids.map(function(id){ var s=state.sel[id]; return '<div class="r"><span>'+esc(s.etiqueta)+'</span><span>'+pesos(s.precio)+'</span></div>'; }).join('');
-  if(state.cupon && state.descuento>0){
-    rows+='<div class="r"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>'+
-          '<div class="r" style="color:var(--teal)"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+  if((state.cupon && state.descuento>0) || state.servicio>0){
+    rows+='<div class="r"><span>Subtotal</span><span>'+pesos(state.subtotal)+'</span></div>';
+    if(state.cupon && state.descuento>0)
+      rows+='<div class="r" style="color:var(--teal)"><span>'+esc(state.cupon.detalle||'Descuento')+'</span><span>−'+pesos(state.descuento)+'</span></div>';
+    if(state.servicio>0)
+      rows+='<div class="r"><span>Cargo por servicio</span><span>'+pesos(state.servicio)+'</span></div>';
   }
   $('resumenPago').innerHTML=rows+'<div class="r tot"><span>Total</span><span>'+pesos(state.total)+'</span></div>';
   var btn=$('payBtn');
