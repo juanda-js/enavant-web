@@ -1380,12 +1380,42 @@ function avisoCorreoSi(aviso){
       return;
     }
     var msg=(r&&r.error)||'No pudimos confirmar el pago.';
+    /* Un pago rechazado ya NO le quita las sillas al cliente: quedan
+       apartadas a su nombre. Así que no se le ofrece "elegir sillas otra
+       vez" (perdería las suyas), sino volver a intentar el pago. */
+    if(r && r.sillasGuardadas){
+      if(caja) caja.innerHTML=
+        '<div class="r"><span>'+esc(msg)+'</span></div>'+
+        '<div class="r"><span><b>Tus sillas siguen apartadas a tu nombre.</b></span></div>'+
+        '<div class="r"><span><button class="btn" onclick="reintentarPago()" style="width:auto;padding:9px 16px">Intentar el pago otra vez</button></span></div>'+
+        '<div class="r"><span>Si prefieres, escríbenos y lo resolvemos contigo. '+
+        'No sueltes esta pantalla sin anotar tu número de compra: '+esc((guardado&&guardado.orden)||'')+'</span></div>';
+      return;
+    }
     if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+'</span></div>'+
       '<div class="r"><span><button class="btn btn-ghost" onclick="volverAlMapa()" style="width:auto;padding:9px 16px">Elegir sillas otra vez</button></span></div>';
   }).catch(function(){
     if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. Escríbenos y lo revisamos.</span></div>';
   });
 })();
+
+/* Vuelve a mandar al cliente a la pasarela con la MISMA orden, que sigue
+   teniendo sus sillas apartadas. No se crea una orden nueva: eso gastaría
+   el cupón otra vez y le duplicaría la compra. */
+function reintentarPago(){
+  var g=null; try{ g=JSON.parse(localStorage.getItem('ea_pago')||'null'); }catch(e){}
+  var oid=(g&&g.orden)||state.orden;
+  if(!oid){ toast('No encontramos tu compra. Escríbenos y la resolvemos.'); return; }
+  var caja=$('resumenPago');
+  if(caja) caja.innerHTML='<div class="r"><span>Preparando el pago…</span></div>';
+  apiPost({action:'pagowompi', orden:oid}).then(function(r){
+    if(r && r.ok && r.url){ state.enPasarela=true; location.href=r.url; return; }
+    if(caja) caja.innerHTML='<div class="r"><span>'+esc((r&&r.error)||'No pudimos abrir la pasarela.')+
+      '</span></div><div class="r"><span>Escríbenos con tu número de compra '+esc(oid)+'.</span></div>';
+  }).catch(function(){
+    if(caja) caja.innerHTML='<div class="r"><span>No pudimos abrir la pasarela. Escríbenos con tu número de compra '+esc(oid)+'.</span></div>';
+  });
+}
 
 /* ============================================================
    PASO 5 — Boletas con QR (con respaldo si el QR externo falla)
