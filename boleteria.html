@@ -1318,6 +1318,11 @@ $('payBtn').addEventListener('click', function(){
     f.method='GET'; f.action=r.url;
     var campos={ 'public-key':r.publica, 'currency':r.moneda, 'amount-in-cents':r.centavos,
                  'reference':r.referencia, 'signature:integrity':r.firma };
+    /* La fecha de vencimiento la calcula el servidor y ya va dentro de la
+       firma. Wompi le muestra el reloj al cliente y, pasado ese momento,
+       no aprueba la transacción: así no puede cobrarle por unas sillas
+       que para entonces ya habríamos vuelto a poner a la venta. */
+    if(r.vence) campos['expiration-time']=r.vence;
     if(r.retorno) campos['redirect-url']=r.retorno;
     if(r.correo)  campos['customer-data:email']=r.correo;
     if(r.nombre)  campos['customer-data:full-name']=r.nombre;
