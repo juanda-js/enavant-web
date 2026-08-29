@@ -1380,28 +1380,22 @@ function avisoCorreoSi(aviso){
       return;
     }
     var msg=(r&&r.error)||'No pudimos confirmar el pago.';
-    /* Un pago rechazado ya NO le quita las sillas al cliente: quedan
-       apartadas a su nombre. Así que no se le ofrece "elegir sillas otra
-       vez" (perdería las suyas), sino volver a intentar el pago. */
-    if(r && r.sillasGuardadas){
-      if(caja) caja.innerHTML=
-        '<div class="r"><span>'+esc(msg)+'</span></div>'+
-        '<div class="r"><span><b>Tus sillas siguen apartadas a tu nombre.</b></span></div>'+
-        '<div class="r"><span><button class="btn" onclick="reintentarPago()" style="width:auto;padding:9px 16px">Intentar el pago otra vez</button></span></div>'+
-        '<div class="r"><span>Si prefieres, escríbenos y lo resolvemos contigo. '+
-        'No sueltes esta pantalla sin anotar tu número de compra: '+esc((guardado&&guardado.orden)||'')+'</span></div>';
-      return;
-    }
-    if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+'</span></div>'+
-      '<div class="r"><span><button class="btn btn-ghost" onclick="volverAlMapa()" style="width:auto;padding:9px 16px">Elegir sillas otra vez</button></span></div>';
+    /* Rechazada: no se le cobró nada y sus sillas volvieron a la venta.
+       Se le ofrecen las dos salidas — reintentar el pago (si sus sillas
+       siguen libres, la misma orden sirve) o elegir otras. */
+    if(caja) caja.innerHTML=
+      '<div class="r"><span>'+esc(msg)+'</span></div>'+
+      '<div class="r"><span><button class="btn" onclick="reintentarPago()" style="width:auto;padding:9px 16px">Intentar el pago otra vez</button></span></div>'+
+      '<div class="r"><span><button class="btn btn-ghost" onclick="volverAlMapa()" style="width:auto;padding:9px 16px">Elegir otras sillas</button></span></div>';
   }).catch(function(){
     if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. Escríbenos y lo revisamos.</span></div>';
   });
 })();
 
-/* Vuelve a mandar al cliente a la pasarela con la MISMA orden, que sigue
-   teniendo sus sillas apartadas. No se crea una orden nueva: eso gastaría
-   el cupón otra vez y le duplicaría la compra. */
+/* Vuelve a mandar al cliente a la pasarela con la MISMA orden. No se crea
+   una orden nueva: eso gastaría el cupón otra vez y le duplicaría la
+   compra. Si mientras tanto otra persona tomó sus sillas, el servidor lo
+   dice y el cliente elige otras. */
 function reintentarPago(){
   var g=null; try{ g=JSON.parse(localStorage.getItem('ea_pago')||'null'); }catch(e){}
   var oid=(g&&g.orden)||state.orden;
