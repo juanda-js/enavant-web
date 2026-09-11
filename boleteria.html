@@ -481,7 +481,7 @@ body.paso-mapa .wrap{max-width:1560px}
       <div class="resumen" id="resumenPago"></div>
       <div class="testbanner">
         <b>⚠ Modo de prueba — no se cobra dinero.</b><br>
-        Cuando el equipo apruebe la pasarela (Wompi), este botón abrirá el pago real (tarjeta, PSE, Nequi). Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
+        Cuando ePayco active la cuenta, este botón abrirá el pago real (tarjeta, PSE, Nequi). Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goStep(3)">Volver</button>
@@ -1277,7 +1277,7 @@ $('payBtn').addEventListener('click', function(){
   function restaurar(){ btn.disabled=false; btn.innerHTML=original; }
   btn.disabled=true; btn.textContent='Conectando con la pasarela…';
 
-  apiPost({action:'pagowompi', orden:state.orden}).then(function(r){
+  apiPost({action:'pagoepayco', orden:state.orden}).then(function(r){
     // Si la pasarela no está configurada, o el servidor todavía no conoce la
     // acción (backend sin actualizar), se sigue en modo de prueba en vez de
     // dejar al cliente sin poder pagar.
@@ -1306,7 +1306,7 @@ $('payBtn').addEventListener('click', function(){
       return;
     }
 
-    // Guardamos la compra para poder retomarla cuando el cliente vuelva de Wompi.
+    // Guardamos la compra para poder retomarla cuando el cliente vuelva de ePayco.
     try{ localStorage.setItem('ea_pago', JSON.stringify({
       orden:state.orden, total:state.total, token:state.token,
       evento:state.event, sel:state.sel, t:Date.now() })); }catch(e){}
@@ -1314,25 +1314,32 @@ $('payBtn').addEventListener('click', function(){
     btn.textContent='Abriendo pago seguro…';
     state.enPasarela=true;      // desde aquí las sillas quedan retenidas
     limpiarHold();              // el contador ya no aplica: está pagando
-    var f=document.createElement('form');
-    f.method='GET'; f.action=r.url;
-    var campos={ 'public-key':r.publica, 'currency':r.moneda, 'amount-in-cents':r.centavos,
-                 'reference':r.referencia, 'signature:integrity':r.firma };
-    /* La fecha de vencimiento la calcula el servidor y ya va dentro de la
-       firma. Wompi le muestra el reloj al cliente y, pasado ese momento,
-       no aprueba la transacción: así no puede cobrarle por unas sillas
-       que para entonces ya habríamos vuelto a poner a la venta. */
-    if(r.vence) campos['expiration-time']=r.vence;
-    if(r.retorno) campos['redirect-url']=r.retorno;
-    if(r.correo)  campos['customer-data:email']=r.correo;
-    if(r.nombre)  campos['customer-data:full-name']=r.nombre;
-    if(r.telefono)campos['customer-data:phone-number']=r.telefono;
-    Object.keys(campos).forEach(function(k){
-      var i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=campos[k]; f.appendChild(i);
-    });
-    document.body.appendChild(f); f.submit();
+    abrirEpayco(r, function(){ restaurar(); state.enPasarela=false; });
   }).catch(function(){ restaurar(); alert('Error de conexión.'); });
 });
+
+/* Abre el checkout de ePayco con la sesión que creó el servidor.
+   r.sesion   → la sesión (lleva el monto, fijado por el servidor)
+   r.pruebas  → true mientras la cuenta esté en modo de pruebas
+   Al terminar, ePayco manda al cliente a la URL de respuesta con
+   ?ref_payco=..., y de ahí sigue retornoDePasarela(). */
+function abrirEpayco(r, siFalla){
+  if(!window.ePayco || !ePayco.checkout){
+    // El script de ePayco no cargó (bloqueador, red). Sin él no hay cómo pagar.
+    alert('No pudimos cargar la pasarela de pagos. Revisa tu conexión o desactiva el bloqueador de anuncios e intenta de nuevo.');
+    siFalla(); return;
+  }
+  try{
+    var chk=ePayco.checkout.configure({ sessionId:r.sesion, type:'standard', test:!!r.pruebas });
+    chk.setHooks({
+      onErrors:function(e){ console.error('ePayco', e); alert('La pasarela devolvió un error. Intenta de nuevo.'); siFalla(); },
+      onClosed:function(){ /* si cerró sin pagar, la orden sigue en pago y la macro la cierra a los 20 min */ }
+    });
+    chk.open();
+  }catch(e){
+    console.error(e); alert('No pudimos abrir la pasarela de pagos.'); siFalla();
+  }
+}
 
 /* Modo de prueba: solo mientras la pasarela no esté configurada. */
 function pagoDemo(btn, original){
@@ -1353,14 +1360,14 @@ function avisoCorreoSi(aviso){
 }
 
 /* ============================================================
-   REGRESO DESDE WOMPI
-   Wompi devuelve al cliente con ?id=<transacción>. El pago se confirma
-   consultando la API de Wompi desde el servidor, nunca creyendo lo que
-   diga la URL.
+   REGRESO DESDE ePAYCO
+   ePayco devuelve al cliente con ?ref_payco=<referencia>. El pago se
+   confirma consultando a ePayco desde el servidor, nunca creyendo lo
+   que diga la URL.
    ============================================================ */
-(function retornoDeWompi(){
+(function retornoDePasarela(){
   var qs=new URLSearchParams(location.search);
-  var tx=qs.get('id'); if(!tx) return;
+  var tx=qs.get('ref_payco'); if(!tx) return;
   var guardado=null;
   try{ guardado=JSON.parse(localStorage.getItem('ea_pago')||'null'); }catch(e){}
   history.replaceState(null,'',location.pathname);   // limpia la URL
@@ -1407,8 +1414,12 @@ function reintentarPago(){
   if(!oid){ toast('No encontramos tu compra. Escríbenos y la resolvemos.'); return; }
   var caja=$('resumenPago');
   if(caja) caja.innerHTML='<div class="r"><span>Preparando el pago…</span></div>';
-  apiPost({action:'pagowompi', orden:oid}).then(function(r){
-    if(r && r.ok && r.url){ state.enPasarela=true; location.href=r.url; return; }
+  apiPost({action:'pagoepayco', orden:oid}).then(function(r){
+    if(r && r.ok && r.sesion){
+      state.enPasarela=true;
+      abrirEpayco(r, function(){ state.enPasarela=false; });
+      return;
+    }
     if(caja) caja.innerHTML='<div class="r"><span>'+esc((r&&r.error)||'No pudimos abrir la pasarela.')+
       '</span></div><div class="r"><span>Escríbenos con tu número de compra '+esc(oid)+'.</span></div>';
   }).catch(function(){
@@ -1447,5 +1458,8 @@ function emitirBoletas(boletas){
 renderSteps();
 </script>
 <script src="vendor/qr-encoder.js"></script>
+<!-- Checkout de ePayco. Se abre con una sesión creada por nuestro servidor:
+     el monto nunca viaja por aquí. -->
+<script src="https://checkout.epayco.co/checkout-v2.js" defer></script>
 </body>
 </html>
