@@ -172,7 +172,34 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .ticket .info .row b{color:var(--ink)}
 @media print{.top,.steps,.done .actions,.btn-row{display:none!important}}
 
+/* El atributo hidden pierde contra cualquier display: propio (.btn-row es
+   flex, por ejemplo). Esta regla lo hace ganar siempre. */
+[hidden]{display:none!important}
 .spin{width:34px;height:34px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:40px auto}
+/* Pantalla de verificación del pago: el momento más tenso de la compra.
+   Tiene que verse viva y decir en palabras qué está pasando. */
+.verificando{text-align:center;padding:38px 22px 30px}
+.verificando .anillo{position:relative;width:64px;height:64px;margin:0 auto 22px}
+.verificando .anillo::before,.verificando .anillo::after{content:"";position:absolute;inset:0;border-radius:50%;border:3px solid transparent}
+.verificando .anillo::before{border-top-color:var(--accent);border-right-color:var(--accent);animation:sp 1.1s cubic-bezier(.4,0,.2,1) infinite}
+.verificando .anillo::after{inset:10px;border-bottom-color:var(--accent);opacity:.45;animation:sp 1.6s linear infinite reverse}
+.verificando .anillo .ico{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.35rem;color:var(--accent)}
+.verificando h3{font-size:1.25rem;margin:0 0 8px;letter-spacing:-.01em}
+.verificando p{margin:0;color:var(--muted);font-size:.92rem;line-height:1.55;max-width:40ch;margin-inline:auto;transition:opacity .35s}
+.verificando p.cambia{opacity:0}
+.verificando .pasos{display:flex;justify-content:center;gap:8px;margin-top:22px}
+.verificando .pasos i{width:8px;height:8px;border-radius:50%;background:var(--line);animation:pulso 1.4s ease-in-out infinite}
+.verificando .pasos i:nth-child(2){animation-delay:.2s}
+.verificando .pasos i:nth-child(3){animation-delay:.4s}
+@keyframes pulso{0%,100%{background:var(--line);transform:scale(1)}50%{background:var(--accent);transform:scale(1.35)}}
+.verificando.listo .anillo::before,.verificando.listo .anillo::after{animation:none;border-color:#4E9A23;opacity:1}
+.verificando.listo .anillo::after{display:none}
+.verificando.listo .ico{color:#4E9A23}
+.verificando.listo .pasos i{animation:none;background:#4E9A23}
+@media (prefers-reduced-motion:reduce){
+  .verificando .anillo::before,.verificando .anillo::after,.verificando .pasos i{animation:none}
+  .verificando .anillo::before{border-color:var(--accent)}
+}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ==========================================================
@@ -475,7 +502,7 @@ body.paso-mapa .wrap{max-width:1560px}
   <!-- PASO 4 -->
   <section class="panel" id="p4">
     <h1 class="title">Pago</h1>
-    <p class="evsub">Revisa tu compra antes de confirmar.</p>
+    <p class="evsub" id="p4Sub">Revisa tu compra antes de confirmar.</p>
     <div class="holdbar" id="holdbar4"></div>
     <div class="form">
       <div class="resumen" id="resumenPago"></div>
@@ -634,6 +661,7 @@ window.addEventListener('pagehide', function(){
 // "Volver al mapa": libera lo apartado para no dejar sillas bloqueadas a los demás
 function mostrarFilaPagar(){
   state.retornoPasarela=false;
+  var p4s=$('p4Sub'); if(p4s) p4s.textContent='Revisa tu compra antes de confirmar.';
   var fp=$('filaPagar'); if(fp) fp.hidden=false;
   pintarAvisoModo(state.pasarela);
 }
@@ -1410,18 +1438,20 @@ function avisoCorreoSi(aviso){
                                    state.total=guardado.total||0; state.token=guardado.token||null; }
   goStep(4);
   var caja=$('resumenPago');
-  if(caja) caja.innerHTML='<div class="r"><span>Verificando tu pago…</span></div>';
   // La caja de resultado trae sus propias salidas; el botón "Confirmar
   // orden" y el aviso de modo confundirían aquí.
   state.retornoPasarela=true;
   var fp=$('filaPagar'); if(fp) fp.hidden=true;
   var am=$('avisoModo'); if(am) am.hidden=true;
+  var p4s=$('p4Sub'); if(p4s) p4s.textContent='Estamos terminando tu compra.';
+  var listo=pantallaVerificando(caja, 'Confirmando tu pago');
 
   apiPost({action:'verificarpago', orden:(guardado&&guardado.orden)||'', transaccion:tx}).then(function(r){
     if(r && r.ok){
       try{ localStorage.removeItem('ea_pago'); }catch(e){}
       limpiarHold(); state.orden=null;
-      emitirBoletas(r.boletas); avisoCorreoSi(r.aviso); goStep(5);
+      listo();                                   // un instante de "confirmado" antes de las boletas
+      setTimeout(function(){ emitirBoletas(r.boletas); avisoCorreoSi(r.aviso); goStep(5); }, 700);
       return;
     }
     if(r && r.pendiente){
@@ -1457,6 +1487,35 @@ function avisoCorreoSi(aviso){
   });
 })();
 
+/* La pantalla de "estamos confirmando tu pago". Devuelve una función para
+   pasarla a "listo" antes de mostrar las boletas.
+
+   Los mensajes cambian con el tiempo REAL transcurrido, no con pasos
+   inventados: a los 8 s reconoce que está tardando, a los 25 s aclara que
+   el pago está a salvo aunque la pantalla no termine. */
+function pantallaVerificando(caja, titulo){
+  if(!caja) return function(){};
+  caja.innerHTML=
+    '<div class="verificando" id="verif">'+
+      '<div class="anillo"><span class="ico">🔒</span></div>'+
+      '<h3>'+esc(titulo||'Confirmando tu pago')+'</h3>'+
+      '<p id="verifSub">Estamos comprobando con ePayco que todo quedó en orden. Tarda unos segundos.</p>'+
+      '<div class="pasos" aria-hidden="true"><i></i><i></i><i></i></div>'+
+    '</div>';
+  var sub=$('verifSub');
+  function decir(t){ if(!sub) return; sub.classList.add('cambia'); setTimeout(function(){ sub.textContent=t; sub.classList.remove('cambia'); },350); }
+  var t1=setTimeout(function(){ decir('Está tardando un poco más de lo normal. Seguimos intentando — no cierres esta página.'); }, 8000);
+  var t2=setTimeout(function(){ decir('Tu pago está a salvo: aunque esta pantalla no termine, las boletas te llegan al correo apenas se confirme.'); }, 25000);
+  return function listo(){
+    clearTimeout(t1); clearTimeout(t2);
+    var v=$('verif'); if(!v) return;
+    v.classList.add('listo');
+    var ico=v.querySelector('.ico'); if(ico) ico.textContent='✓';
+    var h=v.querySelector('h3'); if(h) h.textContent='Pago confirmado';
+    decir('Preparando tus boletas…');
+  };
+}
+
 /* Tras un rechazo: al mapa, con las sillas de antes y los datos llenos. */
 function volverTrasRechazo(guardado, msg){
   var sel=(guardado&&guardado.sel)||{}, datos=(guardado&&guardado.datos)||null;
@@ -1488,7 +1547,7 @@ function reintentarPago(){
   var oid=(g&&g.orden)||state.orden;
   if(!oid){ toast('No encontramos tu compra. Escríbenos y la resolvemos.'); return; }
   var caja=$('resumenPago');
-  if(caja) caja.innerHTML='<div class="r"><span>Preparando el pago…</span></div>';
+  pantallaVerificando(caja, 'Preparando el pago');
   apiPost({action:'pagoepayco', orden:oid}).then(function(r){
     if(r && r.ok && r.sesion){
       state.enPasarela=true;
