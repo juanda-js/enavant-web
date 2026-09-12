@@ -196,6 +196,9 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .verificando.listo .anillo::after{display:none}
 .verificando.listo .ico{color:#4E9A23}
 .verificando.listo .pasos i{animation:none;background:#4E9A23}
+.verificando.pendiente .anillo::before{animation:none;border-color:#D98218;opacity:.9}
+.verificando.pendiente .anillo::after{display:none}
+.verificando.pendiente .ico{color:#D98218}
 @media (prefers-reduced-motion:reduce){
   .verificando .anillo::before,.verificando .anillo::after,.verificando .pasos i{animation:none}
   .verificando .anillo::before{border-color:var(--accent)}
@@ -1445,25 +1448,31 @@ function avisoCorreoSi(aviso){
   var am=$('avisoModo'); if(am) am.hidden=true;
   var p4s=$('p4Sub'); if(p4s) p4s.textContent='Estamos terminando tu compra.';
   var listo=pantallaVerificando(caja, 'Confirmando tu pago');
+  comprobarPago(guardado, tx, listo);
+})();
 
-  apiPost({action:'verificarpago', orden:(guardado&&guardado.orden)||'', transaccion:tx}).then(function(r){
+/* Consulta el pago y decide qué pantalla sigue. Se usa al volver de la
+   pasarela y cada vez que un pago pendiente se vuelve a comprobar. */
+function comprobarPago(guardado, tx, listo){
+  var caja=$('resumenPago');
+  return apiPost({action:'verificarpago', orden:(guardado&&guardado.orden)||'', transaccion:tx}).then(function(r){
     if(r && r.ok){
       try{ localStorage.removeItem('ea_pago'); }catch(e){}
-      limpiarHold(); state.orden=null;
-      listo();                                   // un instante de "confirmado" antes de las boletas
-      setTimeout(function(){ emitirBoletas(r.boletas); avisoCorreoSi(r.aviso); goStep(5); }, 700);
-      return;
+      limpiarHold(); state.orden=null; detenerRecomprobar();
+      if(listo) listo(); else { listo=pantallaVerificando(caja,'Confirmando tu pago'); listo(); }
+      setTimeout(function(){ emitirBoletas(r.boletas, r.evento); avisoCorreoSi(r.aviso); goStep(5); }, 700);
+      return 'ok';
     }
     if(r && r.pendiente){
-      if(caja) caja.innerHTML='<div class="r"><span>Tu pago está en proceso. Si pagaste por PSE puede tardar unos minutos; '+
-        'te enviaremos las boletas por correo apenas se confirme.</span></div>';
-      return;
+      pantallaPendiente(caja, guardado, tx);
+      return 'pendiente';
     }
+    detenerRecomprobar();
     var msg=(r&&r.error)||'No pudimos confirmar el pago.';
     if(r && r.revisar){
       // Pago aprobado pero sin poder entregar: aquí sí hay que quedarse y explicar.
       if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+'</span></div>';
-      return;
+      return 'revisar';
     }
     /* Solo si el servidor dice explícitamente que la pasarela RECHAZÓ el
        pago (trae 'estado'). Si lo que falló fue la consulta a ePayco, la
@@ -1472,7 +1481,7 @@ function avisoCorreoSi(aviso){
     if(!(r && r.estado)){
       if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+' '+
         '<a href="#" onclick="location.reload();return false;" style="color:inherit">Vuelve a intentar</a>.</span></div>';
-      return;
+      return 'desconocido';
     }
     /* Rechazada o fallida: no se le cobró nada y sus sillas volvieron a la
        venta. Quedarse en una pantalla de pago muerta no tiene sentido: se
@@ -1481,11 +1490,56 @@ function avisoCorreoSi(aviso){
        en la pasarela. */
     try{ localStorage.removeItem('ea_pago'); }catch(e){}
     volverTrasRechazo(guardado, msg);
+    return 'rechazado';
   }).catch(function(){
     if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. '+
       '<a href="#" onclick="location.reload();return false;" style="color:inherit">Vuelve a intentar</a> o escríbenos y lo revisamos.</span></div>';
+    return 'error';
   });
-})();
+}
+
+/* Pago pendiente (PSE, o el banco que aún no contesta). No es un error y
+   no es un callejón sin salida: la página vuelve a comprobar sola cada
+   20 segundos durante unos minutos — un PSE suele confirmar en ese
+   rango — y le deja al cliente comprobar a mano o irse tranquilo, con su
+   número de orden a la vista. */
+var recomprobarTimer=null, recomprobarVeces=0;
+function detenerRecomprobar(){ if(recomprobarTimer){ clearTimeout(recomprobarTimer); recomprobarTimer=null; } }
+function pantallaPendiente(caja, guardado, tx){
+  if(!caja) return;
+  var oid=(guardado&&guardado.orden)||'';
+  var sigue = recomprobarVeces<9;                        // 9 × 20 s = 3 minutos
+  caja.innerHTML=
+    '<div class="verificando pendiente" id="verif">'+
+      '<div class="anillo"><span class="ico">⏳</span></div>'+
+      '<h3>Tu pago está en proceso</h3>'+
+      '<p id="verifSub">Si pagaste por PSE, el banco puede tardar unos minutos en confirmar. '+
+        (sigue?'Vamos a seguir comprobando por ti.':'Te enviaremos las boletas por correo apenas se confirme.')+'</p>'+
+      (oid?'<p style="margin-top:10px;font-family:monospace;font-size:.85rem;color:inherit;opacity:.9">Orden '+esc(oid)+'</p>':'')+
+      '<div class="acciones" style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'+
+        '<button class="btn" id="btnRecomprobar" style="width:auto;padding:9px 16px">Comprobar ahora</button>'+
+        '<a class="btn btn-ghost" href="boleteria.html" style="width:auto;padding:9px 16px;text-decoration:none">Ir al inicio</a>'+
+      '</div>'+
+      (sigue?'<p style="margin-top:12px;font-size:.8rem;color:var(--muted)" id="verifCuenta"></p>':'')+
+    '</div>';
+  var btn=$('btnRecomprobar');
+  if(btn) btn.onclick=function(){ detenerRecomprobar(); recomprobarAhora(guardado, tx); };
+  if(sigue){
+    var faltan=20, cuenta=$('verifCuenta');
+    detenerRecomprobar();
+    (function tic(){
+      if(cuenta) cuenta.textContent='Próxima comprobación en '+faltan+' s';
+      if(faltan<=0){ recomprobarAhora(guardado, tx); return; }
+      faltan--; recomprobarTimer=setTimeout(tic,1000);
+    })();
+  }
+}
+function recomprobarAhora(guardado, tx){
+  recomprobarVeces++;
+  var caja=$('resumenPago');
+  var listo=pantallaVerificando(caja, 'Comprobando otra vez');
+  comprobarPago(guardado, tx, listo);
+}
 
 /* La pantalla de "estamos confirmando tu pago". Devuelve una función para
    pasarla a "listo" antes de mostrar las boletas.
@@ -1564,8 +1618,14 @@ function reintentarPago(){
 /* ============================================================
    PASO 5 — Boletas con QR (con respaldo si el QR externo falla)
    ============================================================ */
-function emitirBoletas(boletas){
+function emitirBoletas(boletas, evento){
   var box=$('tickets'); box.innerHTML='';
+  /* Si el navegador perdió lo guardado (modo privado, datos borrados),
+     state.event puede venir vacío justo después de pagar. La boleta se
+     muestra igual, con lo que mande el servidor o con un texto genérico:
+     dejar al cliente colgado con el pago hecho sería mucho peor. */
+  if(evento && evento.nombre) state.event=Object.assign({}, state.event||{}, evento);
+  if(!state.event || !state.event.nombre) state.event=Object.assign({nombre:'Tu evento',fecha:'',hora:'',lugar:''}, state.event||{});
   (boletas||[]).forEach(function(b){
     // QR generado aquí mismo: sin depender de ningún servicio externo, que
     // podría estar caído justo el día de la función.
