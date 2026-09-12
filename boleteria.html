@@ -212,6 +212,12 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 }
 /* La barra del apartado vacía (al volver de la pasarela) no debe verse */
 .holdbar:empty{display:none}
+/* Al volver de la pasarela el paso 4 deja de ser un formulario y es un
+   momento: título, subtítulo y tarjeta centrados, como la pantalla de
+   boletas. Con el formulario normal todo vuelve a la izquierda. */
+#p4.retorno{text-align:center}
+#p4.retorno .form{margin-inline:auto}
+#p4.retorno .testbanner{text-align:left}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ==========================================================
@@ -674,6 +680,7 @@ window.addEventListener('pagehide', function(){
 // "Volver al mapa": libera lo apartado para no dejar sillas bloqueadas a los demás
 function mostrarFilaPagar(){
   state.retornoPasarela=false;
+  var p4=$('p4'); if(p4) p4.classList.remove('retorno');
   var p4s=$('p4Sub'); if(p4s) p4s.textContent='Revisa tu compra antes de confirmar.';
   var fp=$('filaPagar'); if(fp) fp.hidden=false;
   pintarAvisoModo(state.pasarela);
@@ -1454,6 +1461,7 @@ function avisoCorreoSi(aviso){
   // La caja de resultado trae sus propias salidas; el botón "Confirmar
   // orden" y el aviso de modo confundirían aquí.
   state.retornoPasarela=true;
+  var p4=$('p4'); if(p4) p4.classList.add('retorno');
   var fp=$('filaPagar'); if(fp) fp.hidden=true;
   var am=$('avisoModo'); if(am) am.hidden=true;
   var p4s=$('p4Sub'); if(p4s) p4s.textContent='Estamos terminando tu compra.';
