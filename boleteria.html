@@ -633,6 +633,7 @@ window.addEventListener('pagehide', function(){
 });
 // "Volver al mapa": libera lo apartado para no dejar sillas bloqueadas a los demás
 function mostrarFilaPagar(){
+  state.retornoPasarela=false;
   var fp=$('filaPagar'); if(fp) fp.hidden=false;
   pintarAvisoModo(state.pasarela);
 }
@@ -763,18 +764,19 @@ function abrirEvento(ev){
   $('p2Meta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
   goStep(2);
   $('seatBox').innerHTML='<div class="spin"></div>';
-  Promise.all([
+  return Promise.all([
     apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')),
     apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))
   ]).then(function(r){
-    if(!r[0].ok){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">No pudimos cargar el mapa.</p>'; return; }
+    if(!r[0].ok){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">No pudimos cargar el mapa.</p>'; return false; }
     state.mapa=r[0].mapa;
     state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
     state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=1; });
     vbNow=bboxContenido();          // encuadra el teatro ya con el mapa en mano
     renderMapa(); renderLegend(); renderCart();
-  }).catch(function(){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">Error de conexión.</p>'; });
+    return true;
+  }).catch(function(){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">Error de conexión.</p>'; return false; });
 }
 
 function expandirFilas(txt){
@@ -1044,6 +1046,9 @@ function renderLegend(){
                          que "no se cobra dinero"!) */
 function pintarAvisoModo(p){
   var el=$('avisoModo'); if(!el) return;
+  // Mientras se muestra el resultado de la pasarela, el aviso sobra aunque
+  // cargarEventos termine después e intente pintarlo.
+  if(state.retornoPasarela){ el.hidden=true; return; }
   p=p||{};
   if(!p.activa){
     el.hidden=false;
@@ -1335,7 +1340,9 @@ $('payBtn').addEventListener('click', function(){
     // Guardamos la compra para poder retomarla cuando el cliente vuelva de ePayco.
     try{ localStorage.setItem('ea_pago', JSON.stringify({
       orden:state.orden, total:state.total, token:state.token,
-      evento:state.event, sel:state.sel, t:Date.now() })); }catch(e){}
+      evento:state.event, sel:state.sel, t:Date.now(),
+      // para no hacerle escribir todo otra vez si el pago se rechaza
+      datos:{ cli:$('f-cli').value, est:$('f-est').value, tel:$('f-tel').value, cor:$('f-cor').value } })); }catch(e){}
 
     btn.textContent='Abriendo pago seguro…';
     state.enPasarela=true;      // desde aquí las sillas quedan retenidas
@@ -1406,6 +1413,7 @@ function avisoCorreoSi(aviso){
   if(caja) caja.innerHTML='<div class="r"><span>Verificando tu pago…</span></div>';
   // La caja de resultado trae sus propias salidas; el botón "Confirmar
   // orden" y el aviso de modo confundirían aquí.
+  state.retornoPasarela=true;
   var fp=$('filaPagar'); if(fp) fp.hidden=true;
   var am=$('avisoModo'); if(am) am.hidden=true;
 
@@ -1422,17 +1430,54 @@ function avisoCorreoSi(aviso){
       return;
     }
     var msg=(r&&r.error)||'No pudimos confirmar el pago.';
-    /* Rechazada: no se le cobró nada y sus sillas volvieron a la venta.
-       Se le ofrecen las dos salidas — reintentar el pago (si sus sillas
-       siguen libres, la misma orden sirve) o elegir otras. */
-    if(caja) caja.innerHTML=
-      '<div class="r"><span>'+esc(msg)+'</span></div>'+
-      '<div class="r"><span><button class="btn" onclick="reintentarPago()" style="width:auto;padding:9px 16px">Intentar el pago otra vez</button></span></div>'+
-      '<div class="r"><span><button class="btn btn-ghost" onclick="volverAlMapa()" style="width:auto;padding:9px 16px">Elegir otras sillas</button></span></div>';
+    if(r && r.revisar){
+      // Pago aprobado pero sin poder entregar: aquí sí hay que quedarse y explicar.
+      if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+'</span></div>';
+      return;
+    }
+    /* Solo si el servidor dice explícitamente que la pasarela RECHAZÓ el
+       pago (trae 'estado'). Si lo que falló fue la consulta a ePayco, la
+       orden sigue en pago con sus sillas: ahí no hay que mover al cliente,
+       solo dejarle reintentar la verificación. */
+    if(!(r && r.estado)){
+      if(caja) caja.innerHTML='<div class="r"><span>'+esc(msg)+' '+
+        '<a href="#" onclick="location.reload();return false;" style="color:inherit">Vuelve a intentar</a>.</span></div>';
+      return;
+    }
+    /* Rechazada o fallida: no se le cobró nada y sus sillas volvieron a la
+       venta. Quedarse en una pantalla de pago muerta no tiene sentido: se
+       vuelve al mapa con las mismas sillas re-seleccionadas (si siguen
+       libres) y los datos guardados, para que con un clic esté otra vez
+       en la pasarela. */
+    try{ localStorage.removeItem('ea_pago'); }catch(e){}
+    volverTrasRechazo(guardado, msg);
   }).catch(function(){
-    if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. Escríbenos y lo revisamos.</span></div>';
+    if(caja) caja.innerHTML='<div class="r"><span>No pudimos verificar el pago. '+
+      '<a href="#" onclick="location.reload();return false;" style="color:inherit">Vuelve a intentar</a> o escríbenos y lo revisamos.</span></div>';
   });
 })();
+
+/* Tras un rechazo: al mapa, con las sillas de antes y los datos llenos. */
+function volverTrasRechazo(guardado, msg){
+  var sel=(guardado&&guardado.sel)||{}, datos=(guardado&&guardado.datos)||null;
+  state.orden=null; state.enPasarela=false; limpiarHold(); mostrarFilaPagar();
+  if(datos){
+    try{ $('f-cli').value=datos.cli||''; $('f-est').value=datos.est||'';
+         $('f-tel').value=datos.tel||''; $('f-cor').value=datos.cor||''; }catch(e){}
+  }
+  if(!state.event){ goStep(1); toast(msg); return; }
+  abrirEvento(state.event).then(function(cargo){
+    if(!cargo) return;
+    // se vuelven a poner las mismas sillas; las que otro tomó mientras tanto se quitan con aviso
+    var perdidas=[];
+    Object.keys(sel).forEach(function(id){
+      if(state.occ[id]||state.blq[id]) perdidas.push(id); else state.sel[id]=sel[id];
+    });
+    renderMapa(); renderCart();
+    if(perdidas.length) perderSillas(perdidas, msg+' Además, algunas de tus sillas ya fueron tomadas por otra persona.');
+    else toast(msg+' Tus sillas siguen aquí: revisa y vuelve a continuar.');
+  });
+}
 
 /* Vuelve a mandar al cliente a la pasarela con la MISMA orden. No se crea
    una orden nueva: eso gastaría el cupón otra vez y le duplicaría la
