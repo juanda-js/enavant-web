@@ -176,6 +176,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
    flex, por ejemplo). Esta regla lo hace ganar siempre. */
 [hidden]{display:none!important}
 .spin{width:34px;height:34px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:40px auto}
+.canvas .spin{position:absolute;inset:0;margin:auto}   /* en el mapa, al centro del lienzo y no arriba */
 /* Pantalla de verificación del pago: el momento más tenso de la compra.
    Un solo trazo magenta que "busca" mientras se consulta a ePayco; cuando
    llega la respuesta, ese mismo trazo se cierra en un aro y dibuja el
@@ -373,7 +374,7 @@ h1.title{font-size:var(--t-2xl);line-height:1.12;letter-spacing:-.02em}
    PASO 2 — el mapa manda: más ancho en escritorio y más alto
    en el celular, para que las sillas se puedan tocar bien.
    ========================================================== */
-body.paso-mapa .wrap{max-width:1560px}
+body.paso-mapa .wrap,body.paso-mapa .top-in,body.paso-mapa .steps{max-width:1560px}   /* logo, pasos y título alineados */
 .canvas{aspect-ratio:2/1}
 @media(min-width:900px){
   .stage{grid-template-columns:minmax(0,1fr) 320px;gap:22px}
