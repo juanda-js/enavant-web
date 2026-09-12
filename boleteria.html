@@ -156,6 +156,35 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .testbanner{background:rgba(217,130,24,.1);border:1px solid rgba(217,130,24,.4);border-radius:12px;padding:14px 16px;font-size:.9rem;margin-top:6px}
 .testbanner b{color:#8A5A00}
 
+/* ==========================================================
+   EL AFICHE ES EL TEMA — cada evento viste la compra con su propio
+   afiche: marquesina en el mapa, franja en datos y pago, y la cara de
+   la boleta. El plano del teatro se queda limpio a propósito: ahí lo
+   que importa es leer libre / ocupada / tuya de un vistazo.
+   ========================================================== */
+body{overflow-x:clip}   /* la banda de la marquesina sale del contenedor */
+.marquesina{position:relative;display:flex;align-items:center;gap:22px;padding:10px 0 14px}
+.marquesina::before{content:"";position:absolute;z-index:-1;top:-80px;bottom:-40px;left:50%;width:100vw;transform:translateX(-50%);
+  background:var(--afiche) center 30%/cover no-repeat;filter:blur(38px) saturate(.85) brightness(.42);
+  mask-image:linear-gradient(#000 45%,transparent);-webkit-mask-image:linear-gradient(#000 45%,transparent);
+  opacity:0;transition:opacity .6s var(--e-out);pointer-events:none}
+.marquesina.con-afiche::before{opacity:1}
+.marquesina .afiche{width:92px;aspect-ratio:8/9;border-radius:10px;overflow:hidden;flex-shrink:0;background:#000;
+  box-shadow:0 18px 34px -16px rgba(0,0,0,.9);display:none}
+.marquesina.con-afiche .afiche{display:block}
+.marquesina .afiche img{width:100%;height:100%;object-fit:cover;display:block}
+.marquesina .texto{min-width:0}
+@media(max-width:640px){ .marquesina{gap:14px} .marquesina .afiche{width:64px} }
+
+/* Franja del evento en datos y pago: para que el cliente nunca pierda de
+   vista qué está comprando (el resumen dice "Palco 12", no "El Grinch"). */
+.evstrip{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:left}
+.evstrip:empty{display:none}
+.evstrip .mini{width:44px;height:50px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#000}
+.evstrip .mini img{width:100%;height:100%;object-fit:cover;display:block}
+.evstrip .nom{font-family:var(--display);font-size:1.05rem;line-height:1.2}
+.evstrip .met{font-size:.82rem;color:var(--muted);margin-top:2px}
+
 /* ---------- Paso 5: boletas ---------- */
 .done{text-align:center;max-width:560px;margin:26px auto 0}
 .done .check{width:64px;height:64px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;margin:0 auto 16px}
@@ -163,13 +192,21 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .done p{color:var(--muted);margin-top:6px}
 .tickets{display:grid;gap:14px;margin-top:24px}
 .ticket{display:flex;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
-.ticket .stub{background:var(--ink);padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;width:160px;flex-shrink:0}
+.ticket .arte{width:150px;flex-shrink:0;background:#000;display:none}
+.ticket.con-arte .arte{display:block}
+.ticket .arte img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+.ticket .stub{background:var(--ink);padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:172px;flex-shrink:0}
 .ticket .stub img,.ticket .stub svg{width:120px;height:120px;background:#fff;border-radius:8px;padding:5px;display:block}
-.ticket .stub small{color:rgba(255,255,255,.6);font-size:.66rem;letter-spacing:.06em}
+.ticket .stub small{color:rgba(255,255,255,.6);font-size:.62rem;letter-spacing:.02em;white-space:nowrap}
 .ticket .info{padding:16px;display:flex;flex-direction:column;gap:3px;justify-content:center;font-size:.9rem}
-.ticket .info .ev{font-family:var(--display);font-size:1.15rem;margin-bottom:4px}
+.ticket .info .nombre{font-family:var(--display);font-size:1.15rem;margin-bottom:4px}
 .ticket .info .row{display:flex;gap:8px;color:var(--muted)}
 .ticket .info .row b{color:var(--ink)}
+@media(max-width:600px){   /* en el celular la boleta se apila: cara, talón con QR, datos */
+  .ticket{flex-direction:column}
+  .ticket .arte{width:100%;height:120px}
+  .ticket .stub{width:100%}
+}
 @media print{.top,.steps,.done .actions,.btn-row{display:none!important}}
 
 /* El atributo hidden pierde contra cualquier display: propio (.btn-row es
@@ -369,11 +406,12 @@ h1.title{font-size:var(--t-2xl);line-height:1.12;letter-spacing:-.02em}
   .done p{color:#333!important}
   .tickets{gap:10px}
   .ticket{background:#fff!important;border:1px solid #999!important;break-inside:avoid;page-break-inside:avoid}
-  .ticket .info .row b,.ticket .info .ev{color:#000!important}
+  .ticket .info .row b,.ticket .info .nombre{color:#000!important}
   .ticket .info .row{color:#444!important}
   .ticket .stub{background:#fff!important;border-right:1px dashed #999}
   .ticket .stub img{background:#fff!important}
   .ticket .stub small{color:#444!important}
+  .ticket .arte{border-right:1px solid #999}
 }
 
 /* ==========================================================
@@ -481,8 +519,13 @@ body.paso-mapa .wrap,body.paso-mapa .top-in,body.paso-mapa .steps{max-width:1560
 
   <!-- PASO 2 -->
   <section class="panel" id="p2">
-    <h1 class="title" id="p2Nombre">—</h1>
-    <p class="evsub" id="p2Meta"></p>
+    <div class="marquesina" id="marquesina">
+      <div class="afiche" id="p2Afiche" aria-hidden="true"></div>
+      <div class="texto">
+        <h1 class="title" id="p2Nombre">—</h1>
+        <p class="evsub" id="p2Meta"></p>
+      </div>
+    </div>
     <div class="stage">
       <div class="mapcol">
         <div class="mapbar">
@@ -507,6 +550,7 @@ body.paso-mapa .wrap,body.paso-mapa .top-in,body.paso-mapa .steps{max-width:1560
     <p class="evsub">Enviaremos las boletas a tu correo.</p>
     <div class="holdbar" id="holdbar3"></div>
     <div class="form">
+      <div class="evstrip" id="evstrip3"></div>
       <div class="f"><label for="f-cli">Nombre de quien compra *</label><input id="f-cli" autocomplete="name"></div>
       <div class="f"><label for="f-est">Nombre del estudiante</label><input id="f-est"></div>
       <div class="f"><label for="f-tel">Teléfono / WhatsApp *</label><input id="f-tel" type="tel" inputmode="tel" placeholder="(57) 312 635 6696"></div>
@@ -524,6 +568,7 @@ body.paso-mapa .wrap,body.paso-mapa .top-in,body.paso-mapa .steps{max-width:1560
     <p class="evsub" id="p4Sub">Revisa tu compra antes de confirmar.</p>
     <div class="holdbar" id="holdbar4"></div>
     <div class="form">
+      <div class="evstrip" id="evstrip4"></div>
       <div class="resumen" id="resumenPago"></div>
       <div class="testbanner" id="avisoModo" hidden></div>
       <div class="btn-row" id="filaPagar">
@@ -726,6 +771,34 @@ var ICO={cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'};
 var IMG_FALLBACK={reyleon:'img/temporadas/el-rey-leon-2025-00.jpg',concierto:'img/temporadas/rockola-2025-00.jpg'};
+/* Google descontinuó "uc?id=" para enlazar imágenes: en el navegador falla
+   aunque el archivo sea público. lh3 sí sirve y además permite pedir el
+   tamaño, así la banda borrosa no descarga el afiche completo. */
+function urlAfiche(u, ancho){
+  u=String(u||''); if(!u) return '';
+  if(/drive\.google\.com/.test(u)){
+    var m=u.match(/\/d\/([^/?&]+)/) || u.match(/[?&]id=([^&]+)/);
+    if(m) return 'https://lh3.googleusercontent.com/d/'+m[1]+'=w'+(ancho||1200);
+  }
+  if(/lh3\.googleusercontent\.com/.test(u)) return u.replace(/=w\d+$/,'')+'=w'+(ancho||1200);
+  return u;
+}
+function aficheDe(ev){ return ev ? (ev.img || urlAfiche(ev.imagen, 1200)) : ''; }
+/* Viste el mapa y las franjas con el afiche del evento abierto. */
+function vestirEvento(ev){
+  var img=aficheDe(ev), mq=$('marquesina'), af=$('p2Afiche');
+  if(mq){
+    mq.classList.toggle('con-afiche', !!img);
+    mq.style.setProperty('--afiche', img ? 'url("'+urlAfiche(img,320).replace(/"/g,'')+'")' : 'none');
+  }
+  if(af) af.innerHTML = img ? '<img src="'+esc(img)+'" alt="">' : '';
+  var meta=ev ? [ev.fecha, ev.hora, ev.lugar].filter(Boolean).join(' · ') : '';
+  ['evstrip3','evstrip4'].forEach(function(id){
+    var el=$(id); if(!el) return;
+    el.innerHTML = ev ? (img?'<div class="mini"><img src="'+esc(urlAfiche(img,160))+'" alt=""></div>':'')+
+      '<div><div class="nom">'+esc(ev.nombre||'')+'</div><div class="met">'+esc(meta)+'</div></div>' : '';
+  });
+}
 
 function cargarEventos(){
  return apiGet('action=eventos').then(function(r){
@@ -737,13 +810,7 @@ function cargarEventos(){
   if(!r.ok||!r.eventos.length){ g.innerHTML='<p class="evsub">Por ahora no hay eventos disponibles.</p>'; return; }
   g.innerHTML='';
   r.eventos.forEach(function(ev){
-    ev.img=ev.imagen||IMG_FALLBACK[ev.id]||'img/temporadas/el-rey-leon-2025-00.jpg';
-    // Google descontinuó "uc?id=" para enlazar imágenes: en el navegador falla
-    // aunque el archivo sea público. lh3 sí sirve y además permite pedir tamaño.
-    if(/drive\.google\.com/.test(ev.img)){
-      var m=ev.img.match(/\/d\/([^/?&]+)/) || ev.img.match(/[?&]id=([^&]+)/);
-      if(m) ev.img='https://lh3.googleusercontent.com/d/'+m[1]+'=w1200';
-    }
+    ev.img=urlAfiche(ev.imagen||IMG_FALLBACK[ev.id]||'img/temporadas/el-rey-leon-2025-00.jpg', 1200);
     var el=document.createElement('button'); el.className='ev';
     var estado = ev.venta || 'abierta';
     var chip = estado==='cerrada' ? '<span class="tag cerrada">Venta cerrada</span>'
@@ -810,6 +877,7 @@ function abrirEvento(ev){
   vbNow=[0,0,VB.w,VB.h];   // arranca en vista general del teatro
   $('p2Nombre').textContent=ev.nombre;
   $('p2Meta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
+  vestirEvento(ev);
   goStep(2);
   $('seatBox').innerHTML='<div class="spin"></div>';
   return Promise.all([
@@ -1456,6 +1524,7 @@ function avisoCorreoSi(aviso){
   state.enPasarela=false;
   if(guardado && guardado.evento){ state.event=guardado.evento; state.sel=guardado.sel||{};
                                    state.total=guardado.total||0; state.token=guardado.token||null; }
+  vestirEvento(state.event);
   goStep(4);
   var caja=$('resumenPago');
   // La caja de resultado trae sus propias salidas; el botón "Confirmar
@@ -1656,24 +1725,24 @@ function emitirBoletas(boletas, evento){
      dejar al cliente colgado con el pago hecho sería mucho peor. */
   if(evento && evento.nombre) state.event=Object.assign({}, state.event||{}, evento);
   if(!state.event || !state.event.nombre) state.event=Object.assign({nombre:'Tu evento',fecha:'',hora:'',lugar:''}, state.event||{});
+  var arte=aficheDe(state.event);
+  // una fila sin dato (p. ej. evento sin hora) no se pinta vacía
+  function fila(k,v){ return v ? '<div class="row"><span>'+k+'</span><b>'+esc(v)+'</b></div>' : ''; }
   (boletas||[]).forEach(function(b){
     // QR generado aquí mismo: sin depender de ningún servicio externo, que
     // podría estar caído justo el día de la función.
     var qrSvg='';
     try{ qrSvg=QREncoder.svg(b.token,{tam:180}); }catch(e){ qrSvg=''; }
-    var el=document.createElement('div'); el.className='ticket';
-    el.innerHTML='<div class="stub">'+
+    var el=document.createElement('div'); el.className='ticket'+(arte?' con-arte':'');
+    el.innerHTML=(arte?'<div class="arte"><img src="'+esc(urlAfiche(arte,480))+'" alt=""></div>':'')+
+      '<div class="stub">'+
         (qrSvg
           ? qrSvg
           : '<div style="font-family:monospace;font-size:.62rem;color:#fff;word-break:break-all;text-align:center">'+esc(b.token)+'</div>')+
         '<small>'+esc(b.id)+'</small></div>'+
-      '<div class="info"><div class="ev">'+esc(state.event.nombre)+'</div>'+
-        '<div class="row"><span>Fecha</span><b>'+esc(state.event.fecha)+'</b></div>'+
-        '<div class="row"><span>Hora</span><b>'+esc(state.event.hora)+'</b></div>'+
-        '<div class="row"><span>Lugar</span><b>'+esc(state.event.lugar)+'</b></div>'+
-        '<div class="row"><span>Ubicación</span><b>'+esc(b.etiqueta)+'</b></div>'+
-        '<div class="row"><span>Zona</span><b>'+esc(b.zona)+'</b></div>'+
-        (b.estudiante?'<div class="row"><span>Estudiante</span><b>'+esc(b.estudiante)+'</b></div>':'')+
+      '<div class="info"><div class="nombre">'+esc(state.event.nombre)+'</div>'+
+        fila('Fecha', state.event.fecha)+fila('Hora', state.event.hora)+fila('Lugar', state.event.lugar)+
+        fila('Ubicación', b.etiqueta)+fila('Zona', b.zona)+fila('Estudiante', b.estudiante)+
       '</div>';
     box.appendChild(el);
   });
