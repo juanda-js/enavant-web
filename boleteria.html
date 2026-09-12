@@ -479,11 +479,8 @@ body.paso-mapa .wrap{max-width:1560px}
     <div class="holdbar" id="holdbar4"></div>
     <div class="form">
       <div class="resumen" id="resumenPago"></div>
-      <div class="testbanner">
-        <b>⚠ Modo de prueba — no se cobra dinero.</b><br>
-        Cuando ePayco active la cuenta, este botón abrirá el pago real (tarjeta, PSE, Nequi). Por ahora solo confirmamos la orden y se emiten las boletas de ejemplo.
-      </div>
-      <div class="btn-row">
+      <div class="testbanner" id="avisoModo" hidden></div>
+      <div class="btn-row" id="filaPagar">
         <button class="btn btn-ghost" onclick="goStep(3)">Volver</button>
         <button class="btn" id="payBtn">Confirmar orden <span id="payAmount"></span></button>
       </div>
@@ -635,7 +632,12 @@ window.addEventListener('pagehide', function(){
   try{ navigator.sendBeacon(API, new Blob([body],{type:'text/plain;charset=utf-8'})); }catch(e){}
 });
 // "Volver al mapa": libera lo apartado para no dejar sillas bloqueadas a los demás
+function mostrarFilaPagar(){
+  var fp=$('filaPagar'); if(fp) fp.hidden=false;
+  pintarAvisoModo(state.pasarela);
+}
 function volverAlMapa(){
+  mostrarFilaPagar();
   var tenia=!!state.expira;
   soltarHold().then(function(){ if(tenia && state.event) refrescarDisponibilidad(); });
   goStep(2);
@@ -680,6 +682,8 @@ function cargarEventos(){
  return apiGet('action=eventos').then(function(r){
   if(r && r.servicio) state.servicioCfg=r.servicio;
   pintarAvisoServicio();
+  state.pasarela=(r && r.pasarela)||null;
+  pintarAvisoModo(state.pasarela);
   var g=$('evGrid');
   if(!r.ok||!r.eventos.length){ g.innerHTML='<p class="evsub">Por ahora no hay eventos disponibles.</p>'; return; }
   g.innerHTML='';
@@ -1032,6 +1036,28 @@ function renderLegend(){
   pintarAvisoServicio();
 }
 
+/* El aviso de la pantalla de pago depende de cómo esté la pasarela, y eso
+   solo lo sabe el servidor:
+     sin pasarela      → modo demostración: se confirma sin cobrar
+     pasarela en pruebas → se cobra con tarjetas de prueba, nada real
+     producción        → ningún aviso (¡jamás decirle a un cliente real
+                         que "no se cobra dinero"!) */
+function pintarAvisoModo(p){
+  var el=$('avisoModo'); if(!el) return;
+  p=p||{};
+  if(!p.activa){
+    el.hidden=false;
+    el.innerHTML='<b>⚠ Modo de demostración — no se cobra dinero.</b><br>'+
+      'La pasarela de pagos todavía no está conectada. Al confirmar se emiten boletas de ejemplo.';
+  }else if(p.pruebas){
+    el.hidden=false;
+    el.innerHTML='<b>⚠ Pasarela en modo de prueba — no se cobra dinero.</b><br>'+
+      'El pago se procesa con ePayco en ambiente de pruebas: solo funcionan las tarjetas de prueba.';
+  }else{
+    el.hidden=true; el.innerHTML='';
+  }
+}
+
 /* Cómo se le explica el cargo al cliente. Devuelve '' cuando no hay
    cargo: en ese caso no se anuncia nada, porque no habría nada que
    anunciar y el aviso seria falso. */
@@ -1378,6 +1404,10 @@ function avisoCorreoSi(aviso){
   goStep(4);
   var caja=$('resumenPago');
   if(caja) caja.innerHTML='<div class="r"><span>Verificando tu pago…</span></div>';
+  // La caja de resultado trae sus propias salidas; el botón "Confirmar
+  // orden" y el aviso de modo confundirían aquí.
+  var fp=$('filaPagar'); if(fp) fp.hidden=true;
+  var am=$('avisoModo'); if(am) am.hidden=true;
 
   apiPost({action:'verificarpago', orden:(guardado&&guardado.orden)||'', transaccion:tx}).then(function(r){
     if(r && r.ok){
