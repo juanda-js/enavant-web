@@ -6,6 +6,9 @@
 <title>Boletería | En Avant — Eventos de fin de año</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#121014">
+<!-- Los afiches vienen de Drive por lh3, que limita por "referer": con muchas
+     visitas devuelve 429 y el afiche sale roto. Sin referer no aplica ese tope. -->
+<meta name="referrer" content="no-referrer">
 <link rel="icon" href="img/logo-en-avant.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -778,9 +781,9 @@ function urlAfiche(u, ancho){
   u=String(u||''); if(!u) return '';
   if(/drive\.google\.com/.test(u)){
     var m=u.match(/\/d\/([^/?&]+)/) || u.match(/[?&]id=([^&]+)/);
-    if(m) return 'https://lh3.googleusercontent.com/d/'+m[1]+'=w'+(ancho||1200);
+    if(m) return 'https://lh3.googleusercontent.com/d/'+m[1]+'=w'+(ancho||1200)+'-rj';   // -rj: en JPEG, pesa una fracción
   }
-  if(/lh3\.googleusercontent\.com/.test(u)) return u.replace(/=w\d+$/,'')+'=w'+(ancho||1200);
+  if(/lh3\.googleusercontent\.com/.test(u)) return u.replace(/=w\d+(-rj)?$/,'')+'=w'+(ancho||1200)+'-rj';
   return u;
 }
 function aficheDe(ev){ return ev ? (ev.img || urlAfiche(ev.imagen, 1200)) : ''; }
@@ -876,7 +879,7 @@ function abrirEvento(ev){
   state.event=ev; state.sel={}; state.seccion=null; state.orden=null; state.token=null; limpiarHold();
   vbNow=[0,0,VB.w,VB.h];   // arranca en vista general del teatro
   $('p2Nombre').textContent=ev.nombre;
-  $('p2Meta').textContent=ev.fecha+' · '+ev.hora+' · '+ev.lugar;
+  $('p2Meta').textContent=[ev.fecha,ev.hora,ev.lugar].filter(Boolean).join(' · ');   // sin separadores colgando si falta la hora
   vestirEvento(ev);
   goStep(2);
   $('seatBox').innerHTML='<div class="spin"></div>';
