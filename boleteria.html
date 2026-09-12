@@ -531,11 +531,16 @@ body[data-tema] #ambiente{opacity:1}
 
 /* control de música: píldora fija abajo a la derecha; en el celular sube
    cuando aparece la barra del carrito */
-.musica{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;
+.musica-caja{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;
+  display:flex;flex-direction:column;align-items:flex-end;gap:6px;transition:bottom .25s var(--e-out)}
+.musica-credito{display:none;max-width:min(78vw,420px);text-align:right;font-size:.66rem;line-height:1.35;color:rgba(255,255,255,.55);
+  padding:0 4px;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.musica[aria-pressed="true"] ~ .musica-credito, .musica-caja:has(.musica[aria-pressed="true"]) .musica-credito{display:block}
+.musica{position:relative;
   display:inline-flex;align-items:center;gap:8px;padding:9px 13px 9px 11px;border-radius:100px;
   background:rgba(12,12,16,.82);border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.85);
   font-size:.78rem;font-weight:600;letter-spacing:.02em;backdrop-filter:blur(10px);
-  box-shadow:0 12px 30px -14px rgba(0,0,0,.9);transition:border-color .25s,color .25s,bottom .25s var(--e-out)}
+  box-shadow:0 12px 30px -14px rgba(0,0,0,.9);transition:border-color .25s,color .25s}
 .musica svg{width:15px;height:15px}
 .musica .ondas{display:none;align-items:flex-end;gap:2px;height:12px}
 .musica .ondas i{width:2px;background:var(--accent);border-radius:1px;height:4px;animation:onda 1.1s ease-in-out infinite}
@@ -546,7 +551,7 @@ body[data-tema] #ambiente{opacity:1}
 .musica[aria-pressed="true"] svg{display:none}
 .musica:hover{border-color:var(--accent)}
 .musica:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-body.con-carrito .musica{bottom:calc(84px + env(safe-area-inset-bottom))}
+body.con-carrito .musica-caja{bottom:calc(84px + env(safe-area-inset-bottom))}
 @media (prefers-reduced-motion:reduce){ .musica .ondas i{animation:none;height:8px} }
 
 /* — Navidad (El Grinch): pino profundo, dorado de los destellos del
@@ -586,11 +591,14 @@ body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
 <div id="ambiente" aria-hidden="true"></div>
 <!-- Música ambiente del evento (si la tiene). Arranca al entrar al evento,
      suave, y aquí se apaga; la decisión se recuerda. -->
+<div class="musica-caja" id="musicaCaja">
+<small class="musica-credito" id="musicaCredito"></small>
 <button id="musica" class="musica" hidden aria-pressed="false" title="Música ambiente">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
   <span class="ondas" aria-hidden="true"><i></i><i></i><i></i></span>
   <span class="lbl">Música</span>
 </button>
+</div>
 
 <div class="top">
   <div class="top-in">
@@ -952,14 +960,33 @@ function ambiente(tema){
 }
 
 /* Música ambiente por evento. La pista viene de la columna `musica` de
-   la hoja (una URL) o de este mapa por id, para archivos que viven en el
-   sitio (audio/…). Los navegadores solo dejan sonar después de un toque
-   del visitante: por eso arranca dentro del clic que abre el evento, con
-   fundido y a volumen bajo, y nunca sola al volver de la pasarela. */
-var MUSICA_POR_EVENTO={};   // p. ej. { elcisne:'audio/el-cisne.mp3' }
+   la hoja (una URL) o, si no, del tema del evento: fragmentos en bucle
+   de grabaciones de dominio público que viven en audio/ (ver
+   audio/LEEME.md para la procedencia). Los navegadores solo dejan sonar
+   después de un toque del visitante: por eso arranca dentro del clic que
+   abre el evento, con fundido y a volumen bajo, y nunca sola al volver
+   de la pasarela. */
+var MUSICA_POR_TEMA={
+  navidad:{src:'audio/navidad-carol-of-the-bells.mp3',
+           credito:'Carol of the Bells · U.S. Air Force Band of the Rockies · dominio público'},
+  cisnes: {src:'audio/cisnes-lago-de-los-cisnes.mp3',
+           credito:'El lago de los cisnes, Tchaikovsky · Ballet Française Symphony Orchestra (1958) · dominio público'}
+};
 var MUS={audio:null,url:'',fade:0,quiere:false};
 var MUS_VOL=.32;
-function musicaDe(ev){ return ev ? String(ev.musica || MUSICA_POR_EVENTO[ev.id] || '').trim() : ''; }
+function musicaDe(ev){
+  if(!ev) return '';
+  // Solo en la vista local: ?musica=archivo.mp3 para probar una pista antes de subirla.
+  if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)){
+    var prueba=new URLSearchParams(location.search).get('musica'); if(prueba) return prueba;
+  }
+  if(String(ev.musica||'').trim()) return String(ev.musica).trim();
+  var t=MUSICA_POR_TEMA[temaDe(ev)]; return t ? t.src : '';
+}
+function creditoMusica(ev){
+  if(!ev || String(ev.musica||'').trim()) return '';
+  var t=MUSICA_POR_TEMA[temaDe(ev)]; return t ? t.credito : '';
+}
 function musicaBoton(sonando){
   var b=$('musica'); if(!b) return;
   b.setAttribute('aria-pressed', sonando?'true':'false');
@@ -1009,6 +1036,7 @@ function musicaPreparar(ev, gesto){
   }
   if(MUS.url!==url){ MUS.audio.pause(); MUS.audio.src=url; MUS.url=url; }
   if(b) b.hidden=false;
+  var cr=$('musicaCredito'); if(cr) cr.textContent=creditoMusica(ev);
   var apagada=false; try{ apagada=localStorage.getItem('ea_musica')==='off'; }catch(e){}
   if(gesto && !apagada) musicaSonar(); else musicaBoton(false);
 }
