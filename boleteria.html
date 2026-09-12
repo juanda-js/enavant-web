@@ -499,9 +499,64 @@ body.paso-mapa .wrap,body.paso-mapa .top-in,body.paso-mapa .steps{max-width:1560
 .cupon.puesto .quitar:hover{color:#fff;background:none}
 .cupon-msg{font-size:.82rem;margin:7px 0 0;min-height:1em;color:var(--muted)}
 .cupon-msg.mal{color:#FF9C93}
+
+/* ==========================================================
+   TEMAS POR EVENTO — cada evento trae su mundo: acento, atmósfera y
+   un motivo ambiental (nieve, plumas). Se elige con la columna `tema`
+   de la hoja Eventos o se infiere del nombre. El plano del teatro no
+   cambia: ahí los colores significan zona / libre / ocupada / tuya.
+   Añadir un tema = un bloque body[data-tema="x"] aquí + su motivo en
+   TEMAS (JS). Sin tema, la página es la de siempre.
+   ========================================================== */
+:root{--accent-rgb:164,15,196;--accent-contrast:#fff}
+.step.active .n{color:var(--accent-contrast)}
+.btn-back-map:hover{color:var(--accent-contrast)}
+.ev:hover .go{color:var(--accent-contrast)}
+.f input:focus,.cupon input:focus{box-shadow:0 0 0 3px rgba(var(--accent-rgb),.28)}
+.ev .cuenta{background:rgba(var(--accent-rgb),.14);border-color:rgba(var(--accent-rgb),.42)}
+body{transition:background-color .8s}
+body[data-tema] .top,body[data-tema] .cartbar{transition:background-color .8s}
+
+/* capa ambiental: fija, detrás del contenido y delante del fondo */
+#ambiente{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity 1.4s var(--e-out)}
+#ambiente canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+body[data-tema] #ambiente{opacity:1}
+
+/* — Navidad (El Grinch): pino profundo, dorado de los destellos del
+     afiche, nieve escasa y lenta. El rojo lo pone el afiche. — */
+body[data-tema="navidad"]{
+  --accent:#E9BE55;--accent-ink:#F2D27C;--accent-rgb:233,190,85;--accent-contrast:#1A1204;
+  --surface:#111a15;--canvas:#070d0a;--line:rgba(220,240,225,.14);
+  background-color:#0a1410;
+  background-image:radial-gradient(900px 560px at 10% -12%,rgba(34,98,52,.55),transparent 64%),
+                   radial-gradient(760px 520px at 102% 104%,rgba(128,26,26,.30),transparent 62%),
+                   linear-gradient(168deg,#070c09 0%,#0f1d16 48%,#090d0a 100%);
+}
+body[data-tema="navidad"] .top{background:rgba(8,15,11,.84)}
+body[data-tema="navidad"] .cartbar{background:rgba(10,19,14,.97)}
+body[data-tema="navidad"] .cart h3,body[data-tema="navidad"] .evstrip .met{color:var(--accent)}
+body[data-tema="navidad"] .ticket .stub{background:#0a1a11}
+body[data-tema="navidad"] .done .check{background:#2E7D32}
+
+/* — Cisnes (El Lago de los Cisnes): medianoche azul con luz de luna,
+     plateado lavanda, plumas a la deriva. El título en cursiva. — */
+body[data-tema="cisnes"]{
+  --accent:#AFC1FF;--accent-ink:#C9D4FF;--accent-rgb:175,193,255;--accent-contrast:#0B1030;
+  --surface:#12162a;--canvas:#07091a;--line:rgba(200,210,255,.15);
+  background-color:#090c1c;
+  background-image:radial-gradient(720px 500px at 86% -14%,rgba(196,208,255,.24),transparent 60%),
+                   radial-gradient(900px 640px at 6% 112%,rgba(46,64,150,.30),transparent 64%),
+                   linear-gradient(168deg,#06081a 0%,#0f132b 48%,#080a18 100%);
+}
+body[data-tema="cisnes"] .top{background:rgba(8,10,26,.84)}
+body[data-tema="cisnes"] .cartbar{background:rgba(11,14,32,.97)}
+body[data-tema="cisnes"] h1.title{font-style:italic;font-weight:400;letter-spacing:-.01em}
+body[data-tema="cisnes"] .cart h3,body[data-tema="cisnes"] .evstrip .met{color:var(--accent)}
+body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
 </style>
 </head>
 <body>
+<div id="ambiente" aria-hidden="true"></div>
 
 <div class="top">
   <div class="top-in">
@@ -761,6 +816,7 @@ function renderSteps(){
 }
 function goStep(n){
   pasoActual=n; renderSteps();
+  if(n===1) vestirEvento(null);
   document.body.classList.toggle('paso-mapa', n===2);
   ['p1','p2','p3','p4','p5'].forEach(function(id,i){ $(id).classList.toggle('active', i+1===n); });
   window.scrollTo({top:0,behavior:RM?'auto':'smooth'});
@@ -787,8 +843,83 @@ function urlAfiche(u, ancho){
   return u;
 }
 function aficheDe(ev){ return ev ? (ev.img || urlAfiche(ev.imagen, 1200)) : ''; }
-/* Viste el mapa y las franjas con el afiche del evento abierto. */
+/* El tema de un evento: la columna `tema` de la hoja si está, o se
+   infiere del nombre. Solo valen los temas que existen aquí. */
+function temaDe(ev){
+  if(!ev) return '';
+  var t=String(ev.tema||'').trim().toLowerCase();
+  if(t) return TEMAS[t] ? t : '';
+  var n=String(ev.nombre||'').toLowerCase();
+  if(/grinch|navid|natal|christmas/.test(n)) return 'navidad';
+  if(/cisne|ballet|lago/.test(n)) return 'cisnes';
+  return '';
+}
+
+/* Motivos ambientales: pocas partículas, lentas, en un canvas fijo
+   detrás del contenido. Se pausa con la pestaña oculta y, si el
+   visitante pidió menos movimiento, se pinta una sola vez y quieto. */
+var TEMAS={
+  navidad:{ n:64,
+    crear:function(w,h,inicio){ var oro=Math.random()<.14;
+      return {x:Math.random()*w, y:inicio?Math.random()*h:-8, r:oro?1.1+Math.random()*1.2:1+Math.random()*2.1,
+              v:.22+Math.random()*.5, f:Math.random()*6.283, a:oro?.55+Math.random()*.3:.28+Math.random()*.4, oro:oro}; },
+    mover:function(p,t,w,h){ p.y+=p.v; p.x+=Math.sin(t/1500+p.f)*.22; return p.y<h+10 && p.x>-10 && p.x<w+10; },
+    pintar:function(c,p,t){ c.globalAlpha=p.a*(p.oro?(.7+.3*Math.sin(t/400+p.f)):1); c.fillStyle=p.oro?'#F2D27C':'#FFFFFF';
+      c.beginPath(); c.arc(p.x,p.y,p.r,0,6.283); c.fill(); } },
+  cisnes:{ n:12,
+    crear:function(w,h,inicio){ return {x:Math.random()*w, y:inicio?Math.random()*h:-30, s:.7+Math.random()*.8,
+      v:.12+Math.random()*.2, f:Math.random()*6.283, a:.08+Math.random()*.12, rot:Math.random()*6.283}; },
+    mover:function(p,t,w,h){ p.y+=p.v; p.x+=Math.sin(t/2600+p.f)*.35+.08; p.rot=Math.sin(t/3000+p.f)*.6; return p.y<h+40 && p.x<w+40; },
+    pintar:function(c,p){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.scale(p.s,p.s); c.globalAlpha=p.a;
+      c.fillStyle='#E6ECFF'; c.beginPath(); c.moveTo(0,-16); c.bezierCurveTo(7,-9,7,7,0,16); c.bezierCurveTo(-7,7,-7,-9,0,-16); c.fill();
+      c.globalAlpha=p.a*.7; c.strokeStyle='#0B1030'; c.lineWidth=.8; c.beginPath(); c.moveTo(0,-14); c.lineTo(0,14); c.stroke(); c.restore(); } }
+};
+var AMB={canvas:null,ctx:null,parts:[],raf:0,tema:'',w:0,h:0};
+function ambienteMedir(){
+  if(!AMB.canvas) return;
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  AMB.w=innerWidth; AMB.h=innerHeight;
+  AMB.canvas.width=Math.round(AMB.w*dpr); AMB.canvas.height=Math.round(AMB.h*dpr);
+  AMB.ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function ambiente(tema){
+  var spec=TEMAS[tema], capa=$('ambiente');
+  if(AMB.raf){ cancelAnimationFrame(AMB.raf); AMB.raf=0; }
+  AMB.tema=tema||''; AMB.parts=[];
+  if(!capa) return;
+  if(!spec){ if(AMB.ctx) AMB.ctx.clearRect(0,0,AMB.w,AMB.h); return; }
+  if(!AMB.canvas){
+    AMB.canvas=document.createElement('canvas'); capa.appendChild(AMB.canvas); AMB.ctx=AMB.canvas.getContext('2d');
+    var esperaMedida=null;
+    window.addEventListener('resize', function(){ clearTimeout(esperaMedida); esperaMedida=setTimeout(ambienteMedir,150); });
+  }
+  ambienteMedir();
+  // la cantidad sigue al área de la pantalla: ni desierto en un monitor
+  // grande ni tormenta en un celular
+  var n=Math.round(spec.n*Math.min(2,Math.max(.45,(AMB.w*AMB.h)/(1280*800))));
+  for(var i=0;i<n;i++) AMB.parts.push(spec.crear(AMB.w,AMB.h,true));
+  function cuadro(t){
+    if(AMB.tema!==tema) return;
+    if(!document.hidden){
+      var c=AMB.ctx; c.clearRect(0,0,AMB.w,AMB.h);
+      for(var i=0;i<AMB.parts.length;i++){
+        var p=AMB.parts[i];
+        if(!spec.mover(p,t,AMB.w,AMB.h)) AMB.parts[i]=p=spec.crear(AMB.w,AMB.h,false);
+        spec.pintar(c,p,t);
+      }
+      c.globalAlpha=1;
+    }
+    if(!RM) AMB.raf=requestAnimationFrame(cuadro);
+  }
+  cuadro(performance.now());
+}
+
+/* Viste el mapa y las franjas con el afiche del evento abierto, y la
+   página entera con su tema. */
 function vestirEvento(ev){
+  var tema=temaDe(ev);
+  if(tema) document.body.setAttribute('data-tema', tema); else document.body.removeAttribute('data-tema');
+  if(AMB.tema!==tema) ambiente(tema);
   var img=aficheDe(ev), mq=$('marquesina'), af=$('p2Afiche');
   if(mq){
     mq.classList.toggle('con-afiche', !!img);
