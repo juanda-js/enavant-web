@@ -535,7 +535,7 @@ h2 em{font-style:italic;font-weight:340}
 .testi-dot{width:30px;height:26px;background:none;border:none;padding:0;cursor:pointer;position:relative;transition:width .4s var(--ease)}
 .testi-dot::before{content:"";position:absolute;left:0;right:0;top:50%;margin-top:-1.5px;height:3px;background:var(--line)}
 .testi-dot.active{width:48px}
-.testi-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill 7s linear forwards}
+.testi-dot.active::after{content:"";position:absolute;left:0;width:100%;top:50%;margin-top:-1.5px;height:3px;background:var(--ink);transform-origin:left;transform:scaleX(0);animation:barFill var(--dur,7s) linear forwards}
 @keyframes barFill{to{transform:scaleX(1)}}
 .testi-arrows{margin-left:auto;display:flex;gap:10px}
 .testi-arrow{
@@ -1340,10 +1340,30 @@ footer h5{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:r
           <cite><b>Ana María Suárez</b><span>Profesora</span></cite>
         </div>
       </div>
+      <div class="testi">
+        <div class="testi-photo-wrap">
+          <img class="testi-photo" src="img/laura-baracaldo.jpg" alt="Laura Baracaldo" loading="lazy">
+        </div>
+        <div>
+          <blockquote>Llegué a la academia hace ya casi cinco años y desde el principio ha sido increíble, y cada día lo siento más como un hogar. La academia para mí es mi hogar, es amor, es un lugar seguro, es donde puedo ser yo y donde sé que encuentro el apoyo en todo aspecto de personas a quienes quiero y admiro montones, sean maestros o amigas que genuinamente se han vuelto mi familia.</blockquote>
+          <cite><b>Laura Baracaldo</b><span>Estudiante</span></cite>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-photo-wrap">
+          <img class="testi-photo" src="img/familia-cleves-saavedra.jpg" alt="Familia Cleves Saavedra" loading="lazy">
+        </div>
+        <div>
+          <blockquote>Nuestra experiencia en En Avant ha sido muy gratificante. Nos sentimos tranquilos al saber que nuestros hijos no solo están aprendiendo danza y música, sino que además están en un entorno de confianza, familiaridad y seguridad que contribuye también a su formación como seres humanos.</blockquote>
+          <cite><b>Familia Cleves Saavedra</b><span>Padres de familia</span></cite>
+        </div>
+      </div>
     </div>
     <div class="testi-nav">
       <button class="testi-dot active" data-i="0" aria-label="Testimonio 1"></button>
       <button class="testi-dot" data-i="1" aria-label="Testimonio 2"></button>
+      <button class="testi-dot" data-i="2" aria-label="Testimonio 3"></button>
+      <button class="testi-dot" data-i="3" aria-label="Testimonio 4"></button>
       <div class="testi-arrows">
         <button class="testi-arrow" id="testiPrev" aria-label="Anterior">
           <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
@@ -1778,14 +1798,17 @@ let ti=0,tTimer;
 function showTesti(i){
   ti=(i+testis.length)%testis.length;
   testis.forEach((t,j)=>t.classList.toggle('active',j===ti));
-  dots.forEach((d,j)=>d.classList.toggle('active',j===ti));
+  dots.forEach((d,j)=>{d.classList.toggle('active',j===ti);if(j===ti)d.style.setProperty('--dur',tiempoTesti(ti)+'ms')});
 }
-function autoTesti(){clearInterval(tTimer);tTimer=setInterval(()=>showTesti(ti+1),7000)}
-dots.forEach(d=>d.addEventListener('click',()=>{clearInterval(tTimer);showTesti(+d.dataset.i);autoTesti()}));
-document.getElementById('testiPrev').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti-1);autoTesti()});
-document.getElementById('testiNext').addEventListener('click',()=>{clearInterval(tTimer);showTesti(ti+1);autoTesti()});
+/* Cada testimonio se queda el tiempo que toma leerlo (≈ 3 s + 45 ms por
+   letra): los cortos no se alargan y los largos no se cortan a medias. */
+function tiempoTesti(i){const t=testis[i]?.querySelector('blockquote')?.textContent.length||0;return Math.min(16000,3000+t*45)}
+function autoTesti(){clearTimeout(tTimer);tTimer=setTimeout(()=>{showTesti(ti+1);autoTesti()},tiempoTesti(ti))}
+dots.forEach(d=>d.addEventListener('click',()=>{clearTimeout(tTimer);showTesti(+d.dataset.i);autoTesti()}));
+document.getElementById('testiPrev').addEventListener('click',()=>{clearTimeout(tTimer);showTesti(ti-1);autoTesti()});
+document.getElementById('testiNext').addEventListener('click',()=>{clearTimeout(tTimer);showTesti(ti+1);autoTesti()});
 autoTesti();
-pausable(document.getElementById('testimonios'),()=>clearInterval(tTimer),autoTesti);
+pausable(document.getElementById('testimonios'),()=>clearTimeout(tTimer),autoTesti);
 
 /* Texto que se ilumina letra por letra al hacer scroll */
 (function(){
