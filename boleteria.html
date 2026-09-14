@@ -257,6 +257,19 @@ body{overflow-x:clip}   /* la banda de la marquesina sale del contenedor */
   .verificando .arco{animation:latir 2s ease-in-out infinite alternate;stroke-dasharray:140 49;transform:rotate(-90deg)}
   .verificando.listo .aro,.verificando.pendiente .aro,.verificando.listo .chulo,.verificando.pendiente .reloj{transition:opacity .2s}
 }
+/* Página de "mis boletas" (desde el correo): sin pasos ni chulo verde;
+   el afiche del evento hace de portada arriba de las boletas. */
+body.mis-boletas .steps{display:none}
+body.mis-boletas .done .check{display:none}
+body.mis-boletas .done{margin-top:10px}
+.portada-boletas{display:none;max-width:560px;margin:0 auto 22px;border-radius:16px;overflow:hidden;aspect-ratio:3/1;background:#000;
+  box-shadow:0 24px 48px -26px rgba(0,0,0,.9)}
+.portada-boletas img{width:100%;height:100%;object-fit:cover;object-position:center 28%;display:block}
+body.mis-boletas .portada-boletas.con{display:block}
+body.mis-boletas.sin-boletas .btn-row{display:none}
+.ticket.usada{opacity:.6}
+.ticket .usada-tag{display:inline-block;margin-top:8px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 9px;border-radius:100px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.85)}
 /* La barra del apartado vacía (al volver de la pasarela) no debe verse */
 .holdbar:empty{display:none}
 /* Al volver de la pasarela el paso 4 deja de ser un formulario y es un
@@ -681,16 +694,17 @@ body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
 
   <!-- PASO 5 -->
   <section class="panel" id="p5">
+    <div class="portada-boletas" id="portadaBoletas" aria-hidden="true"></div>
     <div class="done">
       <div class="check"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-      <h2>¡Compra confirmada!</h2>
-      <p>Tus boletas se enviaron a tu correo. Preséntalas (impresas o en el celular) el día del evento; escanearemos el código QR en la entrada.</p>
+      <h2 id="p5Titulo">¡Compra confirmada!</h2>
+      <p id="p5Texto">Tus boletas se enviaron a tu correo. Preséntalas (impresas o en el celular) el día del evento; escanearemos el código QR en la entrada.</p>
       <p id="avisoCorreo" style="display:none;background:rgba(192,50,43,.08);border:1px solid rgba(192,50,43,.3);border-radius:10px;padding:12px;margin-top:14px;color:#8a201b;font-size:.88rem"></p>
     </div>
     <div class="tickets" id="tickets"></div>
     <div class="btn-row" style="max-width:560px;margin:22px auto 0">
       <button class="btn btn-ghost" onclick="window.print()">Imprimir / guardar PDF</button>
-      <button class="btn" onclick="location.reload()">Comprar más</button>
+      <button class="btn" onclick="location.href='boleteria.html'">Comprar más</button>
     </div>
   </section>
 </div>
@@ -886,7 +900,10 @@ function urlAfiche(u, ancho){
   if(/lh3\.googleusercontent\.com/.test(u)) return u.replace(/=w\d+(-rj)?$/,'')+'=w'+(ancho||1200)+'-rj';
   return u;
 }
-function aficheDe(ev){ return ev ? (ev.img || urlAfiche(ev.imagen, 1200)) : ''; }
+/* La imagen que viste la compra: `arte` (la limpia, sin textos) si el
+   evento la tiene; si no, el afiche. La tarjeta de la lista sigue usando
+   el afiche, que ahí sí conviene con fecha y lugar. */
+function aficheDe(ev){ return ev ? (ev.arte ? urlAfiche(ev.arte, 1200) : (ev.img || urlAfiche(ev.imagen, 1200))) : ''; }
 /* El tema de un evento: la columna `tema` de la hoja si está, o se
    infiere del nombre. Solo valen los temas que existen aquí. */
 function temaDe(ev){
@@ -1777,6 +1794,42 @@ function avisoCorreoSi(aviso){
    confirma consultando a ePayco desde el servidor, nunca creyendo lo
    que diga la URL.
    ============================================================ */
+/* ============================================================
+   MIS BOLETAS — el enlace del correo (?orden=…&clave=…) abre esta
+   misma página en el mundo del evento con las boletas de la compra.
+   La clave la comprueba el servidor; aquí solo se pinta.
+   ============================================================ */
+(function misBoletas(){
+  var qs=new URLSearchParams(location.search);
+  var oid=qs.get('orden'), clave=qs.get('clave');
+  if(!oid||!clave) return;
+  document.body.classList.add('mis-boletas');
+  goStep(5);
+  $('p5Titulo').textContent='Buscando tus boletas…'; $('p5Texto').textContent='';
+  apiGet('action=misboletas&orden='+encodeURIComponent(oid)+'&clave='+encodeURIComponent(clave)).then(function(r){
+    if(!r||!r.ok){
+      document.body.classList.add('sin-boletas');
+      $('p5Titulo').textContent='No encontramos estas boletas';
+      var e=String((r&&r.error)||'El enlace no es válido').replace(/\.$/,'');
+      $('p5Texto').textContent=e+'. Si compraste y no las ves, escríbenos con tu número de compra.';
+      return;
+    }
+    var ev=r.evento||{}; ev.img=aficheDe(ev);
+    state.event=ev;
+    vestirEvento(ev);
+    musicaPreparar(ev, false);           // sin clic no puede sonar sola: queda el botón
+    var n=(r.boletas||[]).length;
+    $('p5Titulo').textContent=(n===1?'Tu boleta para ':'Tus boletas para ')+(ev.nombre||'el evento');
+    $('p5Texto').textContent='Preséntalas en la entrada, impresas o desde el celular: escaneamos el código QR. Cada código sirve una sola vez.';
+    var pb=$('portadaBoletas'); if(pb && ev.img){ pb.innerHTML='<img src="'+esc(ev.img)+'" alt="">'; pb.classList.add('con'); }
+    emitirBoletas(r.boletas, ev);
+  }).catch(function(){
+    document.body.classList.add('sin-boletas');
+    $('p5Titulo').textContent='No pudimos cargar tus boletas';
+    $('p5Texto').innerHTML='Revisa tu conexión y <a href="#" onclick="location.reload();return false;" style="color:inherit">vuelve a intentar</a>.';
+  });
+})();
+
 (function retornoDePasarela(){
   var qs=new URLSearchParams(location.search);
   var tx=qs.get('ref_payco'); if(!tx) return;
@@ -1997,7 +2050,8 @@ function emitirBoletas(boletas, evento){
     // podría estar caído justo el día de la función.
     var qrSvg='';
     try{ qrSvg=QREncoder.svg(b.token,{tam:180}); }catch(e){ qrSvg=''; }
-    var el=document.createElement('div'); el.className='ticket'+(arte?' con-arte':'');
+    var usada=String(b.estado||'')==='usada';
+    var el=document.createElement('div'); el.className='ticket'+(arte?' con-arte':'')+(usada?' usada':'');
     el.innerHTML=(arte?'<div class="arte"><img src="'+esc(urlAfiche(arte,480))+'" alt=""></div>':'')+
       '<div class="stub">'+
         (qrSvg
@@ -2007,6 +2061,7 @@ function emitirBoletas(boletas, evento){
       '<div class="info"><div class="nombre">'+esc(state.event.nombre)+'</div>'+
         fila('Fecha', state.event.fecha)+fila('Hora', state.event.hora)+fila('Lugar', state.event.lugar)+
         fila('Ubicación', b.etiqueta)+fila('Zona', b.zona)+fila('Estudiante', b.estudiante)+
+        (usada?'<span class="usada-tag">Ya se usó en la entrada</span>':'')+
       '</div>';
     box.appendChild(el);
   });
