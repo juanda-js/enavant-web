@@ -108,6 +108,11 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .grada{fill:rgba(255,255,255,.055);stroke:rgba(255,255,255,.14);stroke-width:1.2}
 .grada-linea{stroke:rgba(255,255,255,.075);stroke-width:1}
 .zona-lbl{fill:rgba(255,255,255,.34);font:700 22px var(--body);letter-spacing:.22em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
+.corral{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1.2}
+.corral-num{fill:rgba(255,255,255,.55);font:600 9px var(--body);text-anchor:middle;pointer-events:none}
+.seat-num{fill:#111;font:600 4.4px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
+.seat.occ + .seat-num{opacity:.35}
+.pasillo-linea{stroke:rgba(255,255,255,.28);stroke-width:2;stroke-linecap:round}
 .stage-shape{fill:#E0362B}
 .stage-txt{fill:#fff;font:600 18px var(--body);letter-spacing:5px;text-anchor:middle}
 .area-shape{fill:rgba(255,255,255,.05);stroke:rgba(255,255,255,.42);stroke-width:1.3}
@@ -1179,8 +1184,11 @@ function abrirEvento(ev){
   vestirEvento(ev);
   goStep(2);
   $('seatBox').innerHTML='<div class="spin"></div>';
+  // Solo en la vista local: ?mapa=archivo.json prueba un plano antes de subirlo a la hoja.
+  var mapaPrueba=/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('mapa') : null;
   return Promise.all([
-    apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')),
+    mapaPrueba ? fetch(mapaPrueba).then(function(r){return r.json();}).then(function(m){return {ok:true,mapa:m};})
+               : apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')),
     apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))
   ]).then(function(r){
     if(!r[0].ok){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">No pudimos cargar el mapa.</p>'; return false; }
@@ -1202,13 +1210,46 @@ function expandirFilas(txt){
   return txt?[txt]:[];
 }
 // Todas las sillas de una sección (bloque o palco), con id/etiqueta/zona idénticos al backend
+/* Números de una fila de un bloque, de izquierda a derecha. Misma regla
+   que numerosFilaGS en el backend (columnas sillas / desde / orden):
+   `sillas` es un número, o una lista por fila separada con "|", o
+   números y rangos explícitos ("300-303 311-314"); `desde` es el primer
+   número; `orden` "desc" numera bajando de izquierda a derecha. */
+function numerosFila(b, fi){
+  var spec=String(b.sillas==null?'':b.sillas).trim(), desde=Number(b.desde)||1;
+  var partes=spec.indexOf('|')>=0 ? spec.split('|') : [spec];
+  var item=String(partes[Math.min(fi,partes.length-1)]||'').trim(), nums=[];
+  if(/^\d+$/.test(item)){ for(var c=0;c<Number(item);c++) nums.push(desde+c); }
+  else item.split(/\s+/).forEach(function(t){
+    var m=t.match(/^(\d+)-(\d+)$/);
+    if(m){ for(var i=Number(m[1]);i<=Number(m[2]);i++) nums.push(i); }
+    else if(/^\d+$/.test(t)) nums.push(Number(t));
+  });
+  nums.sort(function(a,c){return a-c;});
+  if(String(b.orden||'').toLowerCase()==='desc') nums.reverse();
+  return nums;
+}
 function sillasDe(sec){
   var out=[];
   if(sec.tipo==='bloque'){
-    var b=sec.data, filas=expandirFilas(b.filas);
-    filas.forEach(function(f,fi){ for(var c=1;c<=b.sillas;c++){
-      out.push({id:b.id+'-'+f+c, zona:b.zona, etiqueta:b.nombre+' · Fila '+f+' · Silla '+c, lx:(c-1)*SEP, ly:fi*SEP});
-    }});
+    var b=sec.data, filas=expandirFilas(b.filas), desc=String(b.orden||'').toLowerCase()==='desc';
+    var porFila=filas.map(function(f,fi){ return numerosFila(b,fi); });
+    /* Cada silla ocupa el "carril" de su número: así un hueco en la
+       numeración (las consolas en la fila N) deja el espacio físico, y
+       un abanico numerado desde el mismo lado queda alineado solo. */
+    var desde=Number(b.desde)||1, max=desde;
+    porFila.forEach(function(ns){ ns.forEach(function(n){ if(n>max) max=n; }); });
+    var ancho=max-desde+1, pasillo=Number(b.pasillo)||0, alinear=String(b.alinear||'');
+    filas.forEach(function(f,fi){
+      var ns=porFila[fi]; if(!ns.length) return;
+      var carriles=ns.map(function(n){ var c=desc ? (max-n) : (n-desde); return c + (pasillo && c>=pasillo ? 1 : 0); });
+      var minC=Math.min.apply(null,carriles), maxC=Math.max.apply(null,carriles), total=ancho+(pasillo?1:0);
+      var corr = alinear==='centro' ? (total-1-maxC-minC)/2 : alinear==='izquierda' ? -minC : alinear==='derecha' ? (total-1-maxC) : 0;
+      ns.forEach(function(n,i){
+        out.push({id:b.id+'-'+f+n, zona:b.zona, etiqueta:b.nombre+' · Fila '+f+' · Silla '+n, numero:n, fila:f,
+                  lx:(carriles[i]+corr)*SEP, ly:fi*SEP});
+      });
+    });
   } else {
     // Palco rectangular de dos filas: la de atrás lleva una silla más cuando
     // el número es impar (5 → 3 atrás y 2 adelante; 10 → 5 y 5).
@@ -1218,7 +1259,7 @@ function sillasDe(sec){
       var ancho=(f.cant-1)*SEP;
       for(var c=0;c<f.cant;c++){
         i++;
-        out.push({id:'P'+p.palco+'-'+i, zona:p.zona, palco:String(p.palco),
+        out.push({id:'P'+p.palco+'-'+i, zona:p.zona, palco:String(p.palco), numero:i,
                   etiqueta:'Palco '+p.palco+' · Silla '+i,
                   lx:c*SEP-ancho/2, ly:f.ly});
       }
@@ -1248,6 +1289,8 @@ function simboloArea(etiqueta){
     d='<path d="M4 -8h5v16H4"/><path d="M-9 0h9M-3.4 -4.6 1.2 0l-4.6 4.6"/>';
   } else if(t.indexOf('salida')>=0){                               // salida: flecha hacia afuera
     d='<path d="M-4 -8h-5v16h5"/><path d="M-1 0h10M4.4 -4.6 9 0l-4.6 4.6"/>';
+  } else if(t.indexOf('fotograf')>=0 || t.indexOf('camara')>=0){   // fotografía: cámara
+    d='<rect x="-8" y="-5" width="16" height="11" rx="2"/><circle cx="1" cy="0.5" r="3"/><path d="M-6 -5l2-3h4l2 3"/>';
   } else if(t.indexOf('cabina')>=0 || t.indexOf('sonido')>=0){     // cabina: consola de sonido
     d='<path d="M-6 -8v16M0 -8v16M6 -8v16"/><path class="f" d="M-8 -3.6h4v2.2h-4zM-2 1.4h4v2.2h-4zM4 -5.6h4v2.2h-4z"/>';
   } else { return ''; }
@@ -1313,6 +1356,9 @@ function renderMapa(){
   (state.mapa.areas||[]).forEach(function(a){
     if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
       s+='<rect class="stage-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/><text class="stage-txt" x="'+a.x+'" y="'+(a.y+a.h/2+6)+'">ESCENARIO</text>';
+    } else if(slugTxt(a.etiqueta).indexOf('pasillo')>=0 || slugTxt(a.etiqueta).indexOf('linea')>=0){
+      // una línea: el pasillo entre bloques o el borde de la cancha
+      s+='<line class="pasillo-linea" x1="'+(a.x-a.w/2)+'" x2="'+(a.x+a.w/2)+'" y1="'+a.y+'" y2="'+a.y+'"/>';
     } else {
       var sim=simboloArea(a.etiqueta);
       var k=Math.min(1.35, Math.max(.6, Math.min(a.w,a.h)/34));
@@ -1327,6 +1373,12 @@ function renderMapa(){
     var activa = !vistaSeccion || state.seccion===si;
     var sillas=sillasDe(sec);
     s+='<g transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')" opacity="'+(activa?1:.18)+'">';
+    if(sec.tipo==='palco'){
+      // el corral del palco (los separadores de la vida real) y su número
+      var c=cajaLocal(sec, RS+4);
+      s+='<rect class="corral" x="'+c.minx+'" y="'+c.miny+'" width="'+(c.maxx-c.minx)+'" height="'+(c.maxy-c.miny)+'" rx="4"/>'+
+         '<text class="corral-num" x="0" y="'+(c.miny-4)+'">'+esc(sec.data.palco)+'</text>';
+    }
     sillas.forEach(function(st){
       var cls='seat', extra='';
       if(state.occ[st.id]||state.blq[st.id]){ cls+=' occ'; }
@@ -1334,6 +1386,8 @@ function renderMapa(){
       if(state.sel[st.id]){ cls+=' sel'; }
       var fill = state.sel[st.id]?'#4E9A23':(state.occ[st.id]||state.blq[st.id]?'#CFCAD6':col);
       s+='<circle class="'+cls+'" data-sec="'+si+'" data-id="'+esc(st.id)+'" cx="'+st.lx+'" cy="'+st.ly+'" r="'+RS+'" fill="'+fill+'" stroke="#00000022"/>';
+      // el número dentro de la silla se lee al acercar la zona, como en un plano de teatro
+      if(vistaSeccion && activa && st.numero!=null) s+='<text class="seat-num" x="'+st.lx+'" y="'+st.ly+'">'+st.numero+'</text>';
     });
     s+='</g>';
   });
