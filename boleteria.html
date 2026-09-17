@@ -111,6 +111,8 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .corral{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1.2}
 .corral-num{fill:rgba(255,255,255,.55);font:600 9px var(--body);text-anchor:middle;pointer-events:none}
 .seat-num{fill:#111;font:600 4.4px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
+.fila-lbl{fill:rgba(255,255,255,.62);font:600 5.5px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
+.nivel-lbl{fill:rgba(255,255,255,.26);font:600 10px var(--body);letter-spacing:.14em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
 .seat.occ + .seat-num{opacity:.35}
 .pasillo-linea{stroke:rgba(255,255,255,.28);stroke-width:2;stroke-linecap:round}
 .stage-shape{fill:#E0362B}
@@ -1315,7 +1317,8 @@ function dibujarRecinto(secs){
     var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
     planas.forEach(function(sec){ var c=cajaLocal(sec,18);
       minx=Math.min(minx,sec.x+c.minx); maxx=Math.max(maxx,sec.x+c.maxx); miny=Math.min(miny,sec.y+c.miny); maxy=Math.max(maxy,sec.y+c.maxy); });
-    s+='<rect class="piso" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="18"/>';
+    s+='<rect class="piso" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="18"/>'+
+       '<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(maxy-8)+'">Primer piso · cancha</text>';
   }
   // graderías: plataforma con peldaños (una línea por fila)
   gradas.forEach(function(sec){
@@ -1342,7 +1345,9 @@ function dibujarRecinto(secs){
         sillasDe(sec).forEach(function(p){ var wx=sec.x+p.lx*cos-p.ly*sin, wy=sec.y+p.lx*sin+p.ly*cos; minx=Math.min(minx,wx); maxx=Math.max(maxx,wx); miny=Math.min(miny,wy); });
       });
       var nombre=(state.zonas[z]||{}).nombre||z;
-      s+='<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-16)+'">'+esc(nombre)+'</text>';
+      var enAlto=g.secs.every(function(sec){ return (sec.rot||0)!==0 && sec.tipo==='bloque'; });   // las tribunas inclinadas son el balcón
+      s+='<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-(enAlto?30:16))+'">'+esc(nombre)+'</text>'+
+         (enAlto?'<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-14)+'">Segundo piso</text>':'');
     });
   });
   return s;
@@ -1379,6 +1384,13 @@ function renderMapa(){
       s+='<rect class="corral" x="'+c.minx+'" y="'+c.miny+'" width="'+(c.maxx-c.minx)+'" height="'+(c.maxy-c.miny)+'" rx="4"/>'+
          '<text class="corral-num" x="0" y="'+(c.miny-4)+'">'+esc(sec.data.palco)+'</text>';
     }
+    if(vistaSeccion && activa && sec.tipo==='bloque'){
+      // la letra de la fila a los dos lados, como en un plano impreso
+      var filasV={};
+      sillas.forEach(function(p){ var k=Math.round(p.ly); var r=filasV[k]=filasV[k]||{fila:p.fila,min:1e9,max:-1e9}; r.min=Math.min(r.min,p.lx); r.max=Math.max(r.max,p.lx); });
+      Object.keys(filasV).forEach(function(k){ var r=filasV[k];
+        s+='<text class="fila-lbl" x="'+(r.min-RS-9)+'" y="'+k+'">'+esc(r.fila)+'</text><text class="fila-lbl" x="'+(r.max+RS+9)+'" y="'+k+'">'+esc(r.fila)+'</text>'; });
+    }
     sillas.forEach(function(st){
       var cls='seat', extra='';
       if(state.occ[st.id]||state.blq[st.id]){ cls+=' occ'; }
@@ -1396,13 +1408,21 @@ function renderMapa(){
     secciones().forEach(function(sec,si){
       var z=state.zonas[sec.zona]||{}, sillas=sillasDe(sec);
       // bbox local aproximado
-      var xs=sillas.map(function(p){return p.lx;}), ys=sillas.map(function(p){return p.ly;});
-      var minx=Math.min.apply(null,xs)-10,maxx=Math.max.apply(null,xs)+10,miny=Math.min.apply(null,ys)-10,maxy=Math.max.apply(null,ys)+10;
-      var cx=(minx+maxx)/2, cy=(miny+maxy)/2;
-      var esPalco = sec.tipo==='palco';
-      s+='<g class="sect-hit'+(esPalco?' es-palco':'')+'" data-sec="'+si+'" data-tipo="'+sec.tipo+'" transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')">'+
-        '<rect class="sect-fill" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="8" fill="'+(z.color||'#888')+'" opacity="0.32"/>'+
-        '</g>';
+      var esPalco = sec.tipo==='palco', col=z.color||'#888', forma='';
+      if(esPalco){
+        var c=cajaLocal(sec,10);
+        forma='<rect class="sect-fill" x="'+c.minx+'" y="'+c.miny+'" width="'+(c.maxx-c.minx)+'" height="'+(c.maxy-c.miny)+'" rx="8" fill="'+col+'" opacity="0.32"/>';
+      } else {
+        /* Un abanico o una fila con hueco no es un rectángulo: la mancha
+           de la zona se arma fila por fila y sigue la silueta real. */
+        var porFila={};
+        sillas.forEach(function(p){ var k=Math.round(p.ly); (porFila[k]=porFila[k]||[]).push(p.lx); });
+        Object.keys(porFila).forEach(function(k){
+          var xs=porFila[k], a=Math.min.apply(null,xs)-RS-3, b=Math.max.apply(null,xs)+RS+3;
+          forma+='<rect class="sect-fill" x="'+a+'" y="'+(Number(k)-SEP/2)+'" width="'+(b-a)+'" height="'+SEP+'" rx="3" fill="'+col+'" opacity="0.32"/>';
+        });
+      }
+      s+='<g class="sect-hit'+(esPalco?' es-palco':'')+'" data-sec="'+si+'" data-tipo="'+sec.tipo+'" transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')">'+forma+'</g>';
     });
   }
   s+='</svg>';
