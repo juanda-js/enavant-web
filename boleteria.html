@@ -101,6 +101,13 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .sect-hit:hover .sect-fill{opacity:.55}
 .sect-lbl{fill:#fff;font:600 15px var(--body);text-anchor:middle;pointer-events:none}
 .sect-price{fill:rgba(255,255,255,.7);font:500 12px var(--body);text-anchor:middle;pointer-events:none}
+/* Arquitectura del recinto, dibujada detrás de las sillas: el piso, las
+   graderías con sus peldaños y el nombre de cada zona. No cambia ningún
+   color de silla. */
+.piso{fill:rgba(255,255,255,.028);stroke:rgba(255,255,255,.07);stroke-width:1.2}
+.grada{fill:rgba(255,255,255,.055);stroke:rgba(255,255,255,.14);stroke-width:1.2}
+.grada-linea{stroke:rgba(255,255,255,.075);stroke-width:1}
+.zona-lbl{fill:rgba(255,255,255,.34);font:700 22px var(--body);letter-spacing:.22em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
 .stage-shape{fill:#E0362B}
 .stage-txt{fill:#fff;font:600 18px var(--body);letter-spacing:5px;text-anchor:middle}
 .area-shape{fill:rgba(255,255,255,.05);stroke:rgba(255,255,255,.42);stroke-width:1.3}
@@ -1247,9 +1254,61 @@ function simboloArea(etiqueta){
   return '<g class="ico">'+d+'</g>';
 }
 
+/* Caja local de una sección (sin rotar), con margen. */
+function cajaLocal(sec, m){
+  var sillas=sillasDe(sec); m=m||10;
+  var xs=sillas.map(function(p){return p.lx;}), ys=sillas.map(function(p){return p.ly;});
+  return {minx:Math.min.apply(null,xs)-m, maxx:Math.max.apply(null,xs)+m, miny:Math.min.apply(null,ys)-m, maxy:Math.max.apply(null,ys)+m};
+}
+/* El recinto detrás de las sillas: un piso bajo las secciones planas, una
+   gradería con peldaños detrás de cada bloque inclinado (así se lee que
+   son tribunas y no sillas sueltas) y el nombre de cada zona sobre su
+   grupo. Todo sale de los datos del mapa; no hay que configurar nada. */
+function dibujarRecinto(secs){
+  var s='', planas=[], gradas=[];
+  secs.forEach(function(sec){ ((sec.rot||0)!==0 && sec.tipo==='bloque') ? gradas.push(sec) : planas.push(sec); });
+  // piso: caja que abarca todas las secciones planas
+  if(planas.length){
+    var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+    planas.forEach(function(sec){ var c=cajaLocal(sec,18);
+      minx=Math.min(minx,sec.x+c.minx); maxx=Math.max(maxx,sec.x+c.maxx); miny=Math.min(miny,sec.y+c.miny); maxy=Math.max(maxy,sec.y+c.maxy); });
+    s+='<rect class="piso" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="18"/>';
+  }
+  // graderías: plataforma con peldaños (una línea por fila)
+  gradas.forEach(function(sec){
+    var c=cajaLocal(sec,12), filas=expandirFilas(sec.data.filas).length;
+    s+='<g transform="translate('+sec.x+','+sec.y+') rotate('+sec.rot+')">'+
+       '<rect class="grada" x="'+c.minx+'" y="'+c.miny+'" width="'+(c.maxx-c.minx)+'" height="'+(c.maxy-c.miny)+'" rx="6"/>';
+    for(var f=1; f<filas; f++){ var y=(f-.5)*SEP; s+='<line class="grada-linea" x1="'+c.minx+'" x2="'+c.maxx+'" y1="'+y+'" y2="'+y+'"/>'; }
+    s+='</g>';
+  });
+  // nombre de cada zona sobre cada grupo (los grupos separados, p. ej. las
+  // graderías de cada lado, llevan cada uno el suyo)
+  var porZona={};
+  secs.forEach(function(sec){ (porZona[sec.zona]=porZona[sec.zona]||[]).push(sec); });
+  Object.keys(porZona).forEach(function(z){
+    var lista=porZona[z].slice().sort(function(a,b){return a.x-b.x;}), grupos=[];
+    lista.forEach(function(sec){
+      var g=grupos[grupos.length-1];
+      if(g && sec.x-g.ultimoX<260){ g.secs.push(sec); g.ultimoX=sec.x; } else grupos.push({secs:[sec], ultimoX:sec.x});
+    });
+    grupos.forEach(function(g){
+      var minx=1e9,maxx=-1e9,miny=1e9;
+      g.secs.forEach(function(sec){
+        var rad=(sec.rot||0)*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
+        sillasDe(sec).forEach(function(p){ var wx=sec.x+p.lx*cos-p.ly*sin, wy=sec.y+p.lx*sin+p.ly*cos; minx=Math.min(minx,wx); maxx=Math.max(maxx,wx); miny=Math.min(miny,wy); });
+      });
+      var nombre=(state.zonas[z]||{}).nombre||z;
+      s+='<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-16)+'">'+esc(nombre)+'</text>';
+    });
+  });
+  return s;
+}
+
 function renderMapa(){
   var vistaSeccion = state.seccion !== null;
   var s='<svg id="seatSvg" viewBox="0 0 '+VB.w+' '+VB.h+'" xmlns="http://www.w3.org/2000/svg">';
+  if(!vistaSeccion) s+=dibujarRecinto(secciones());
   // Áreas + escenario
   (state.mapa.areas||[]).forEach(function(a){
     if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
