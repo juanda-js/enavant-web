@@ -108,6 +108,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .grada{fill:rgba(255,255,255,.055);stroke:rgba(255,255,255,.14);stroke-width:1.2}
 .grada-linea{stroke:rgba(255,255,255,.075);stroke-width:1}
 .zona-lbl{fill:rgba(255,255,255,.34);font:700 22px var(--body);letter-spacing:.22em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
+.zona-hit{cursor:pointer} .zona-hit text{pointer-events:auto} .zona-hit:hover .zona-lbl{fill:rgba(255,255,255,.7)}
 .corral{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1.2}
 .corral-num{fill:rgba(255,255,255,.55);font:600 9px var(--body);text-anchor:middle;pointer-events:none}
 .seat-num{fill:#111;font:600 4.4px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
@@ -660,7 +661,7 @@ body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
           <span class="hint" id="mapHint">Elige una zona para acercarte.</span>
         </div>
         <div class="canvas"><div id="seatBox"><div class="spin"></div></div>
-          <button class="btn-back-map" id="verTodo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg> Ver todo el teatro</button>
+          <button class="btn-back-map" id="verTodo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg> <span class="lbl">Ver todo el teatro</span></button>
         </div>
         <div class="legend" id="legend"></div>
         <p class="nota-serv" id="notaServMapa" hidden></p>
@@ -1198,7 +1199,7 @@ function abrirEvento(ev){
     state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
     state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=1; });
-    vbNow=bboxContenido();          // encuadra el teatro ya con el mapa en mano
+    vbNow=bboxCancha();             // arranca en la cancha; los balcones, a un toque
     renderMapa(); renderLegend(); renderCart();
     return true;
   }).catch(function(){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">Error de conexión.</p>'; return false; });
@@ -1317,8 +1318,7 @@ function dibujarRecinto(secs){
     var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
     planas.forEach(function(sec){ var c=cajaLocal(sec,18);
       minx=Math.min(minx,sec.x+c.minx); maxx=Math.max(maxx,sec.x+c.maxx); miny=Math.min(miny,sec.y+c.miny); maxy=Math.max(maxy,sec.y+c.maxy); });
-    s+='<rect class="piso" x="'+minx+'" y="'+miny+'" width="'+(maxx-minx)+'" height="'+(maxy-miny)+'" rx="18"/>'+
-       '<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(maxy-8)+'">Primer piso · cancha</text>';
+    s+='<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(maxy+24)+'">Primer piso · cancha</text>';
   }
   // graderías: plataforma con peldaños (una línea por fila)
   gradas.forEach(function(sec){
@@ -1346,8 +1346,10 @@ function dibujarRecinto(secs){
       });
       var nombre=(state.zonas[z]||{}).nombre||z;
       var enAlto=g.secs.every(function(sec){ return (sec.rot||0)!==0 && sec.tipo==='bloque'; });   // las tribunas inclinadas son el balcón
-      s+='<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-(enAlto?30:16))+'">'+esc(nombre)+'</text>'+
-         (enAlto?'<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-14)+'">Segundo piso</text>':'');
+      var idx=g.secs.map(function(sec){ return secs.indexOf(sec); }).join(',');
+      s+='<g class="zona-hit" data-secs="'+idx+'">'+
+         '<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-(enAlto?30:16))+'">'+esc(nombre)+'</text>'+
+         (enAlto?'<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-14)+'">Segundo piso</text>':'')+'</g>';
     });
   });
   return s;
@@ -1363,7 +1365,8 @@ function renderMapa(){
       s+='<rect class="stage-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/><text class="stage-txt" x="'+a.x+'" y="'+(a.y+a.h/2+6)+'">ESCENARIO</text>';
     } else if(slugTxt(a.etiqueta).indexOf('pasillo')>=0 || slugTxt(a.etiqueta).indexOf('linea')>=0){
       // una línea: el pasillo entre bloques o el borde de la cancha
-      s+='<line class="pasillo-linea" x1="'+(a.x-a.w/2)+'" x2="'+(a.x+a.w/2)+'" y1="'+a.y+'" y2="'+a.y+'"/>';
+      s+='<line class="pasillo-linea" x1="'+(a.x-a.w/2)+'" x2="'+(a.x+a.w/2)+'" y1="'+a.y+'" y2="'+a.y+'"'+
+         (a.rot?' transform="rotate('+a.rot+' '+a.x+' '+a.y+')"':'')+'/>';
     } else {
       var sim=simboloArea(a.etiqueta);
       var k=Math.min(1.35, Math.max(.6, Math.min(a.w,a.h)/34));
@@ -1434,7 +1437,7 @@ function renderMapa(){
   svg.addEventListener('click', onMapClick);
   svg.addEventListener('pointermove', onMapHover);
   svg.addEventListener('pointerleave', function(){ $('tip').classList.remove('show'); });
-  $('verTodo').classList.toggle('show', vistaSeccion);
+  pintarBotonVista();
   $('mapHint').textContent = vistaSeccion ? 'Toca las sillas para elegirlas.' : 'Elige una zona para acercarte.';
 }
 
@@ -1456,6 +1459,40 @@ function bboxContenido(){
   if(!hay) return [0,0,VB.w,VB.h];
   var padX=34, padY=30;
   return conAspecto([minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2]);
+}
+
+/* La cancha: las secciones planas (palcos y filas) y el escenario. Es la
+   vista inicial; con los balcones a 45° el coliseo entero dejaba todo
+   demasiado chico, sobre todo en el celular. */
+function bboxCancha(){
+  var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9, hay=false;
+  function ver(x,y){ hay=true; if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y; }
+  secciones().forEach(function(sec){
+    if((sec.rot||0)!==0 && sec.tipo==='bloque') return;
+    sillasDe(sec).forEach(function(p){ ver(sec.x+p.lx, sec.y+p.ly); });
+  });
+  ((state.mapa&&state.mapa.areas)||[]).forEach(function(a){
+    if(String(a.etiqueta).toUpperCase()!=='ESCENARIO') return;
+    ver(a.x-a.w/2, a.y); ver(a.x+a.w/2, a.y+a.h);
+  });
+  if(!hay) return bboxContenido();
+  var padX=40, padY=34;
+  return conAspecto([minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2+40]);
+}
+function vistaEsCancha(){ var c=bboxCancha(); return vbNow.every(function(v,i){ return Math.abs(v-c[i])<1; }); }
+function hayBalcones(){ return secciones().some(function(sec){ return (sec.rot||0)!==0 && sec.tipo==='bloque'; }); }
+/* Recuadro que abarca un grupo de secciones (p. ej. las dos tribunas de un lado). */
+function bboxSecciones(lista){
+  var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  lista.forEach(function(si){ var sec=secciones()[si]; var rad=(sec.rot||0)*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
+    sillasDe(sec).forEach(function(p){ var x=sec.x+p.lx*cos-p.ly*sin, y=sec.y+p.lx*sin+p.ly*cos; minx=Math.min(minx,x); maxx=Math.max(maxx,x); miny=Math.min(miny,y); maxy=Math.max(maxy,y); }); });
+  return conAspecto([minx-40, miny-60, (maxx-minx)+80, (maxy-miny)+100]);
+}
+function pintarBotonVista(){
+  var b=$('verTodo'), lbl=b.querySelector('.lbl'); if(!b) return;
+  var enSeccion=state.seccion!==null;
+  b.classList.toggle('show', enSeccion || hayBalcones());
+  if(lbl) lbl.textContent = enSeccion ? 'Ver todo el teatro' : (vistaEsCancha() ? 'Ver todo el coliseo' : 'Ver la cancha');
 }
 
 /* Crece el recuadro hasta la proporción del lienzo, manteniendo el centro.
@@ -1503,6 +1540,11 @@ function setViewBox(target, animar){
 }
 
 function onMapClick(e){
+  var zh=e.target.closest('.zona-hit');
+  if(zh){ // el nombre de una zona acerca su grupo (así se llega a los balcones desde la cancha)
+    var lista=zh.dataset.secs.split(',').map(Number);
+    setViewBox(bboxSecciones(lista), true); setTimeout(pintarBotonVista, 560); return;
+  }
   var hit=e.target.closest('.sect-hit');
   if(hit){
     // Los palcos se venden completos: no tiene sentido ampliarlos para elegir
@@ -1527,7 +1569,14 @@ $('volverEventos').addEventListener('click', function(){
   state.sel={}; state.seccion=null; renderCart();
   goStep(1);
 });
-$('verTodo').addEventListener('click', function(){ state.seccion=null; renderMapa(); setViewBox(bboxContenido(), true); });
+$('verTodo').addEventListener('click', function(){
+  var salir=state.seccion!==null, sec=salir?secciones()[state.seccion]:null;
+  state.seccion=null; renderMapa();
+  // al salir de una sección de la cancha se vuelve a la cancha; de un balcón, al coliseo entero
+  var aCancha = salir ? !((sec.rot||0)!==0 && sec.tipo==='bloque') : !vistaEsCancha();
+  setViewBox(aCancha ? bboxCancha() : bboxContenido(), true);
+  setTimeout(pintarBotonVista, 0);
+});
 
 function seatData(id){
   var found=null;
