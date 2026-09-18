@@ -91,9 +91,12 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .canvas{position:relative;background:var(--canvas);border-radius:16px;overflow:hidden;aspect-ratio:2/1;touch-action:none}
 #seatSvg{width:100%;height:100%;display:block;cursor:default}
 #seatSvg text{user-select:none}
-.seat{transition:opacity .2s,transform .12s}
+/* Al pasar por una silla crece el radio, no un transform: Safari ignora
+   transform-box en círculos dentro de un grupo rotado y la silla saltaba
+   hacia el origen del plano y volvía. */
+.seat{transition:opacity .2s,r .12s,stroke-width .12s}
 .seat.pick{cursor:pointer}
-.seat.pick:hover{transform:scale(1.35);transform-box:fill-box;transform-origin:center}
+.seat.pick:hover{r:7.6;stroke:#fff;stroke-width:1.4}
 .seat.occ{opacity:.35;cursor:not-allowed}
 .seat.sel{stroke:#fff;stroke-width:2}
 .sect-hit{cursor:pointer}
