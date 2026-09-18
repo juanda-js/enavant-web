@@ -1777,7 +1777,7 @@ function aplicarCupon(){
   var cod=inp.value.trim();
   if(!cod){ msg.textContent='Escribe el código.'; msg.className='cupon-msg mal'; return; }
   btn.disabled=true; btn.textContent='…'; msg.textContent=''; msg.className='cupon-msg';
-  apiPost({action:'probarcupon', codigo:cod, evento:state.event.id,
+  apiPost({action:'probarcupon', codigo:cod, evento:state.event.id, token:state.token,
     sillas:Object.keys(state.sel).map(function(id){ return {id:id, zona:state.sel[id].zona}; })
   }).then(function(r){
     btn.disabled=false; btn.textContent='Aplicar';
@@ -1943,7 +1943,7 @@ $('payBtn').addEventListener('click', function(){
     // Cortesía o cupón que cubre todo: no hay nada que cobrar.
     if(r && r.ok && r.gratis){
       btn.textContent='Emitiendo boletas…';
-      return apiPost({action:'confirmargratis', orden:state.orden}).then(function(g){
+      return apiPost({action:'confirmargratis', orden:state.orden, token:state.token}).then(function(g){
         restaurar();
         if(!g || !g.ok){ alert((g&&g.error)||'No pudimos emitir las boletas.'); return; }
         limpiarHold(); state.orden=null;
