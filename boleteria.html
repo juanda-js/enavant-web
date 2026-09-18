@@ -1209,7 +1209,7 @@ function abrirEvento(ev){
     state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
     state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=String(b.motivo||'').trim()||'Bloqueada'; });
-    vbNow=bboxCancha();             // arranca en la cancha; los balcones, a un toque
+    vbNow=bboxCancha(); vbObjetivo=null; vbAntesDeSeccion=null;   // arranca en el mapa de boletería; los balcones, a un toque
     renderMapa(); renderLegend(); renderCart();
     return true;
   }).catch(function(){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">Error de conexión.</p>'; return false; });
@@ -1490,7 +1490,7 @@ function bboxCancha(){
   var padX=40, padY=34;
   return conAspecto([minx-padX, miny-padY, (maxx-minx)+padX*2, (maxy-miny)+padY*2+40]);
 }
-function vistaEsCancha(){ var c=bboxCancha(); return vbNow.every(function(v,i){ return Math.abs(v-c[i])<1; }); }
+function vistaEsCancha(){ var c=bboxCancha(), v=vbObjetivo||vbNow; return v.every(function(x,i){ return Math.abs(x-c[i])<1; }); }
 function hayBalcones(){ return secciones().some(function(sec){ return (sec.rot||0)!==0 && sec.tipo==='bloque'; }); }
 /* Recuadro que abarca un grupo de secciones (p. ej. las dos tribunas de un lado). */
 function bboxSecciones(lista){
@@ -1533,8 +1533,10 @@ function bboxSeccion(si){
 // anima el viewBox
 var vbNow=[0,0,VB.w,VB.h], vbRaf=null;
 var vbFin=null;
+var vbObjetivo=null;   // el último encuadre pedido (aunque la animación siga en curso)
 function setViewBox(target, animar){
   var svg=$('seatSvg'); if(!svg) return;
+  vbObjetivo=target.slice();
   function fijar(){ vbNow=target.slice(); var el=$('seatSvg'); if(el) el.setAttribute('viewBox',target.join(' ')); }
   if(RM||!animar){ fijar(); return; }
   var from=vbNow.slice(), t0=performance.now(), dur=520, listo=false;
@@ -1570,10 +1572,11 @@ function onMapClick(e){
   var seat=e.target.closest('.seat.pick');
   if(seat) toggleSeat(seat.dataset.id);
 }
+var vbAntesDeSeccion=null;
 function entrarSeccion(si){
+  vbAntesDeSeccion=(vbObjetivo||vbNow).slice();   // para volver al mismo encuadre al salir
   state.seccion=si; renderMapa();
   setViewBox(bboxSeccion(si), true);
-  // re-render dibuja vb sin animar; forzamos animación desde vista general
 }
 $('volverEventos').addEventListener('click', function(){
   if(state.expira) soltarHold();          // no dejar sillas apartadas al salir
@@ -1583,11 +1586,14 @@ $('volverEventos').addEventListener('click', function(){
 $('vaciarCarrito').addEventListener('click', vaciarSeleccion);
 $('vaciarBar').addEventListener('click', vaciarSeleccion);
 $('verTodo').addEventListener('click', function(){
-  var salir=state.seccion!==null, sec=salir?secciones()[state.seccion]:null;
+  var salir=state.seccion!==null;
   state.seccion=null; renderMapa();
-  // al salir de una sección de la cancha se vuelve a la cancha; de un balcón, al coliseo entero
-  var aCancha = salir ? !((sec.rot||0)!==0 && sec.tipo==='bloque') : !vistaEsCancha();
-  setViewBox(aCancha ? bboxCancha() : bboxContenido(), true);
+  /* Al salir de una sección se vuelve exactamente al encuadre desde el que
+     se entró (el mapa de boletería, todo el teatro o un balcón acercado):
+     antes se iba a un encuadre fijo y parecía un zoom de más. Sin sección,
+     el botón alterna entre el mapa de boletería y todo el teatro. */
+  var destino = salir ? (vbAntesDeSeccion || bboxCancha()) : (vistaEsCancha() ? bboxContenido() : bboxCancha());
+  setViewBox(destino, true);
   setTimeout(pintarBotonVista, 0);
 });
 
