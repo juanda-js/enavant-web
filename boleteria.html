@@ -740,7 +740,17 @@ body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
 
 <script>
 var API='https://script.google.com/macros/s/AKfycbzxQtuagUbRwzr5EmxJrW20mzwnduak6FZXxmrrcutPFXj6PfU1lMS8HOI43lgIkcs/exec';
-function apiGet(p){ return fetch(API+'?'+p).then(function(r){return r.json();}); }
+/* Las lecturas (eventos, mapa, disponibilidad) se pueden repetir sin
+   riesgo: si Google devuelve su página de "demasiadas peticiones" en vez
+   del JSON, o la red falla, se vuelve a pedir con esperas crecientes. */
+function apiGet(p, intento){
+  intento=intento||0;
+  return fetch(API+'?'+p).then(function(r){ return r.json(); })
+    .catch(function(e){
+      if(intento<ESPERAS.length) return espera(ESPERAS[intento]).then(function(){ return apiGet(p,intento+1); });
+      throw e;
+    });
+}
 
 /* El cliente no tiene por qué enterarse de que el servidor está congestionado.
    Si la respuesta dice que está ocupado, o si la red falla, se reintenta solo
