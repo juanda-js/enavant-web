@@ -98,7 +98,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .seat.pick{cursor:pointer}
 .seat.pick:hover{r:7.6;stroke:#fff;stroke-width:1.4}
 .seat.occ{opacity:.35;cursor:not-allowed}
-.seat.sel{stroke:#fff;stroke-width:2}
+.seat.sel{stroke:#fff;stroke-width:2.2}
 .sect-hit{cursor:pointer}
 .sect-fill{transition:opacity .25s}
 .sect-hit:hover .sect-fill{opacity:.55}
@@ -788,6 +788,9 @@ function $(id){ return document.getElementById(id); }
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 var VB={w:1800,h:900}, SEP=13, RS=5.6;
+/* Color de la silla elegida: cian, que no lo usa ninguna zona (el verde
+   es el del Balcón lateral y ahí una silla elegida no se distinguía). */
+var SEL_COLOR='#22D3EE';
 var MAX_SILLAS=25;   // tope de sillas por compra   // debe coincidir con admin-boleteria.html
 var state={ event:null, mapa:null, occ:{}, zonas:{}, blq:{}, sel:{}, seccion:null, orden:null, total:0,
             token:null, expira:0,
@@ -1403,7 +1406,7 @@ function renderMapa(){
       else if(vistaSeccion && activa){ cls+=' pick'; }
       if(state.sel[st.id]){ cls+=' sel'; }
       // una silla bloqueada por la producción (fotografía y video) se distingue de una vendida
-      var fill = state.sel[st.id]?'#4E9A23':(state.blq[st.id]?'#8E6AA8':(state.occ[st.id]?'#CFCAD6':col));
+      var fill = state.sel[st.id]?SEL_COLOR:(state.blq[st.id]?'#8E6AA8':(state.occ[st.id]?'#CFCAD6':col));
       s+='<circle class="'+cls+'" data-sec="'+si+'" data-id="'+esc(st.id)+'" cx="'+st.lx+'" cy="'+st.ly+'" r="'+RS+'" fill="'+fill+'" stroke="#00000022"/>';
       // el número dentro de la silla se lee al acercar la zona, como en un plano de teatro
       if(vistaSeccion && activa && st.numero!=null) s+='<text class="seat-num" x="'+st.lx+'" y="'+st.ly+'">'+st.numero+'</text>';
@@ -1627,7 +1630,7 @@ function toggleSeat(id){
 
 function renderLegend(){
   var lg=(state.mapa.zonas||[]).map(function(z){ return '<span><i style="background:'+z.color+'"></i>'+esc(z.nombre)+' · '+pesos(z.precio)+'</span>'; }).join('');
-  lg+='<span><i style="background:#4E9A23"></i>Elegida</span><span><i style="background:#CFCAD6"></i>No disponible</span>';
+  lg+='<span><i style="background:'+SEL_COLOR+'"></i>Elegida</span><span><i style="background:#CFCAD6"></i>No disponible</span>';
   // cada motivo de bloqueo (p. ej. "Fotografía y video") con su color
   var motivos={}; (state.mapa.bloqueadas||[]).forEach(function(b){ var m=String(b.motivo||'').trim(); if(m) motivos[m]=1; });
   Object.keys(motivos).forEach(function(m){ lg+='<span><i style="background:#8E6AA8"></i>'+esc(m)+'</span>'; });
