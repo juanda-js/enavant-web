@@ -113,7 +113,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .corral-num{fill:rgba(255,255,255,.55);font:600 9px var(--body);text-anchor:middle;pointer-events:none}
 .seat-num{fill:#111;font:600 4.4px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
 .fila-lbl{fill:rgba(255,255,255,.62);font:600 5.5px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
-.nivel-lbl{fill:rgba(255,255,255,.26);font:600 10px var(--body);letter-spacing:.14em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
+.nivel-lbl{fill:rgba(255,255,255,.3);font:600 12px var(--body);letter-spacing:.18em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
 .seat.occ + .seat-num{opacity:.35}
 .pasillo-linea{stroke:rgba(255,255,255,.28);stroke-width:2;stroke-linecap:round}
 .stage-shape{fill:#E0362B}
@@ -661,7 +661,7 @@ body[data-tema="cisnes"] .ticket .stub{background:#0b0e24}
           <span class="hint" id="mapHint">Elige una zona para acercarte.</span>
         </div>
         <div class="canvas"><div id="seatBox"><div class="spin"></div></div>
-          <button class="btn-back-map" id="verTodo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg> <span class="lbl">Ver todo el teatro</span></button>
+          <button class="btn-back-map" id="verTodo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/></svg> <span class="lbl">Volver al mapa</span></button>
         </div>
         <div class="legend" id="legend"></div>
         <p class="nota-serv" id="notaServMapa" hidden></p>
@@ -1198,7 +1198,7 @@ function abrirEvento(ev){
     state.mapa=r[0].mapa;
     state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
-    state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=1; });
+    state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=String(b.motivo||'').trim()||'Bloqueada'; });
     vbNow=bboxCancha();             // arranca en la cancha; los balcones, a un toque
     renderMapa(); renderLegend(); renderCart();
     return true;
@@ -1318,7 +1318,6 @@ function dibujarRecinto(secs){
     var minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
     planas.forEach(function(sec){ var c=cajaLocal(sec,18);
       minx=Math.min(minx,sec.x+c.minx); maxx=Math.max(maxx,sec.x+c.maxx); miny=Math.min(miny,sec.y+c.miny); maxy=Math.max(maxy,sec.y+c.maxy); });
-    s+='<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(maxy+24)+'">Primer piso · cancha</text>';
   }
   // graderías: plataforma con peldaños (una línea por fila)
   gradas.forEach(function(sec){
@@ -1345,11 +1344,9 @@ function dibujarRecinto(secs){
         sillasDe(sec).forEach(function(p){ var wx=sec.x+p.lx*cos-p.ly*sin, wy=sec.y+p.lx*sin+p.ly*cos; minx=Math.min(minx,wx); maxx=Math.max(maxx,wx); miny=Math.min(miny,wy); });
       });
       var nombre=(state.zonas[z]||{}).nombre||z;
-      var enAlto=g.secs.every(function(sec){ return (sec.rot||0)!==0 && sec.tipo==='bloque'; });   // las tribunas inclinadas son el balcón
       var idx=g.secs.map(function(sec){ return secs.indexOf(sec); }).join(',');
       s+='<g class="zona-hit" data-secs="'+idx+'">'+
-         '<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-(enAlto?30:16))+'">'+esc(nombre)+'</text>'+
-         (enAlto?'<text class="nivel-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-14)+'">Segundo piso</text>':'')+'</g>';
+         '<text class="zona-lbl" x="'+((minx+maxx)/2)+'" y="'+(miny-16)+'">'+esc(nombre)+'</text></g>';
     });
   });
   return s;
@@ -1363,6 +1360,9 @@ function renderMapa(){
   (state.mapa.areas||[]).forEach(function(a){
     if(String(a.etiqueta).toUpperCase()==='ESCENARIO'){
       s+='<rect class="stage-shape" x="'+(a.x-a.w/2)+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="8"/><text class="stage-txt" x="'+a.x+'" y="'+(a.y+a.h/2+6)+'">ESCENARIO</text>';
+    } else if(/^(primer|segundo|tercer)\s+piso|^nivel/.test(slugTxt(a.etiqueta))){
+      // rótulo de nivel: solo texto, donde la hoja lo ponga (los niveles los define el teatro, no una regla)
+      s+='<text class="nivel-lbl" x="'+a.x+'" y="'+a.y+'">'+esc(a.etiqueta)+'</text>';
     } else if(slugTxt(a.etiqueta).indexOf('pasillo')>=0 || slugTxt(a.etiqueta).indexOf('linea')>=0){
       // una línea: el pasillo entre bloques o el borde de la cancha
       s+='<line class="pasillo-linea" x1="'+(a.x-a.w/2)+'" x2="'+(a.x+a.w/2)+'" y1="'+a.y+'" y2="'+a.y+'"'+
@@ -1399,7 +1399,8 @@ function renderMapa(){
       if(state.occ[st.id]||state.blq[st.id]){ cls+=' occ'; }
       else if(vistaSeccion && activa){ cls+=' pick'; }
       if(state.sel[st.id]){ cls+=' sel'; }
-      var fill = state.sel[st.id]?'#4E9A23':(state.occ[st.id]||state.blq[st.id]?'#CFCAD6':col);
+      // una silla bloqueada por la producción (fotografía y video) se distingue de una vendida
+      var fill = state.sel[st.id]?'#4E9A23':(state.blq[st.id]?'#8E6AA8':(state.occ[st.id]?'#CFCAD6':col));
       s+='<circle class="'+cls+'" data-sec="'+si+'" data-id="'+esc(st.id)+'" cx="'+st.lx+'" cy="'+st.ly+'" r="'+RS+'" fill="'+fill+'" stroke="#00000022"/>';
       // el número dentro de la silla se lee al acercar la zona, como en un plano de teatro
       if(vistaSeccion && activa && st.numero!=null) s+='<text class="seat-num" x="'+st.lx+'" y="'+st.ly+'">'+st.numero+'</text>';
@@ -1492,7 +1493,7 @@ function pintarBotonVista(){
   var b=$('verTodo'), lbl=b.querySelector('.lbl'); if(!b) return;
   var enSeccion=state.seccion!==null;
   b.classList.toggle('show', enSeccion || hayBalcones());
-  if(lbl) lbl.textContent = enSeccion ? 'Ver todo el teatro' : (vistaEsCancha() ? 'Ver todo el coliseo' : 'Ver la cancha');
+  if(lbl) lbl.textContent = enSeccion ? 'Volver al mapa' : (vistaEsCancha() ? 'Ver todo el teatro' : 'Ver el mapa de boletería');
 }
 
 /* Crece el recuadro hasta la proporción del lienzo, manteniendo el centro.
@@ -1624,6 +1625,9 @@ function toggleSeat(id){
 function renderLegend(){
   var lg=(state.mapa.zonas||[]).map(function(z){ return '<span><i style="background:'+z.color+'"></i>'+esc(z.nombre)+' · '+pesos(z.precio)+'</span>'; }).join('');
   lg+='<span><i style="background:#4E9A23"></i>Elegida</span><span><i style="background:#CFCAD6"></i>No disponible</span>';
+  // cada motivo de bloqueo (p. ej. "Fotografía y video") con su color
+  var motivos={}; (state.mapa.bloqueadas||[]).forEach(function(b){ var m=String(b.motivo||'').trim(); if(m) motivos[m]=1; });
+  Object.keys(motivos).forEach(function(m){ lg+='<span><i style="background:#8E6AA8"></i>'+esc(m)+'</span>'; });
   $('legend').innerHTML=lg;
   pintarAvisoServicio();
 }
@@ -1826,10 +1830,14 @@ function onMapHover(e){
     tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px';
     tip.classList.add('show'); return;
   }
-  var seat=e.target.closest('.seat.pick');
-  if(!seat){ tip.classList.remove('show'); return; }
-  var st=seatData(seat.dataset.id), z2=state.zonas[st.zona]||{};
-  tip.innerHTML='<b>'+esc(st.etiqueta)+'</b> · <span class="p">'+pesos(z2.precio)+'</span>';
+  var seat=e.target.closest('.seat');
+  if(!seat || !seat.dataset.id){ tip.classList.remove('show'); return; }
+  var st=seatData(seat.dataset.id); if(!st){ tip.classList.remove('show'); return; }
+  var z2=state.zonas[st.zona]||{};
+  var estadoS = state.blq[st.id] ? '<span class="no">'+esc(state.blq[st.id])+'</span>'
+              : state.occ[st.id] ? '<span class="no">No disponible</span>'
+              : '<span class="p">'+pesos(z2.precio)+'</span>';
+  tip.innerHTML='<b>'+esc(st.etiqueta)+'</b> · '+estadoS;
   tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px';
   tip.classList.add('show');
 }
