@@ -968,8 +968,10 @@ var TEMAS={
   navidad:{ n:220,
     crear:function(w,h,inicio){ var oro=Math.random()<.1, cerca=Math.random()<.25;
       return {x:Math.random()*w, y:inicio?Math.random()*h:-8, r:oro?1.1+Math.random()*1.2:(cerca?2.6+Math.random()*2:1.2+Math.random()*2.1),
-              v:(cerca?.45:.22)+Math.random()*.5, f:Math.random()*6.283, a:oro?.55+Math.random()*.3:(cerca?.5+Math.random()*.35:.3+Math.random()*.4), oro:oro}; },
-    mover:function(p,t,w,h){ p.y+=p.v; p.x+=Math.sin(t/1500+p.f)*.22; return p.y<h+10 && p.x>-10 && p.x<w+10; },
+              v:(cerca?1.9:.9)+Math.random()*1.1, f:Math.random()*6.283, a:oro?.55+Math.random()*.3:(cerca?.5+Math.random()*.35:.3+Math.random()*.4), oro:oro}; },
+    /* k = cuántos cuadros de 60 Hz pasaron: así cae a la misma velocidad
+       en una pantalla de 120 Hz o cuando el navegador salta cuadros. */
+    mover:function(p,t,w,h,k){ p.y+=p.v*k; p.x+=Math.sin(t/1200+p.f)*.45*k; return p.y<h+10 && p.x>-10 && p.x<w+10; },
     pintar:function(c,p,t){ c.globalAlpha=p.a*(p.oro?(.7+.3*Math.sin(t/400+p.f)):1); c.fillStyle=p.oro?'#F2D27C':'#FFFFFF';
       c.beginPath(); c.arc(p.x,p.y,p.r,0,6.283); c.fill(); } },
   /* Más plumas (el doble y algo) y un poco más presentes, sin dejar de
@@ -977,8 +979,9 @@ var TEMAS={
   cisnes:{ n:80,
     crear:function(w,h,inicio){ var s=.5+Math.random()*1.1;
       return {x:Math.random()*w, y:inicio?Math.random()*h:-30, s:s,
-      v:.1+Math.random()*.22*s, f:Math.random()*6.283, a:.16+Math.random()*.24, rot:Math.random()*6.283}; },
-    mover:function(p,t,w,h){ p.y+=p.v; p.x+=Math.sin(t/2600+p.f)*.35+.08; p.rot=Math.sin(t/3000+p.f)*.6; return p.y<h+40 && p.x<w+40; },
+      v:.55+Math.random()*.7*s, f:Math.random()*6.283, a:.16+Math.random()*.24, rot:Math.random()*6.283}; },
+    // cae meciéndose, como una pluma: baja despacio pero se ve bajar
+    mover:function(p,t,w,h,k){ p.y+=p.v*k; p.x+=(Math.sin(t/1800+p.f)*.8+.12)*k; p.rot=Math.sin(t/2200+p.f)*.7; return p.y<h+40 && p.x<w+40; },
     pintar:function(c,p){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.scale(p.s,p.s); c.globalAlpha=p.a;
       c.fillStyle='#E6ECFF'; c.beginPath(); c.moveTo(0,-16); c.bezierCurveTo(7,-9,7,7,0,16); c.bezierCurveTo(-7,7,-7,-9,0,-16); c.fill();
       c.globalAlpha=p.a*.7; c.strokeStyle='#0B1030'; c.lineWidth=.8; c.beginPath(); c.moveTo(0,-14); c.lineTo(0,14); c.stroke(); c.restore(); } }
@@ -1007,13 +1010,15 @@ function ambiente(tema){
   // grande ni tormenta en un celular
   var n=Math.round(spec.n*Math.min(2,Math.max(.45,(AMB.w*AMB.h)/(1280*800))));
   for(var i=0;i<n;i++) AMB.parts.push(spec.crear(AMB.w,AMB.h,true));
+  var antes=performance.now();
   function cuadro(t){
     if(AMB.tema!==tema) return;
+    var k=Math.min(3,(t-antes)/16.667); antes=t;   // cuadros de 60 Hz transcurridos (tope: tras una pestaña oculta no salta)
     if(!document.hidden){
       var c=AMB.ctx; c.clearRect(0,0,AMB.w,AMB.h);
       for(var i=0;i<AMB.parts.length;i++){
         var p=AMB.parts[i];
-        if(!spec.mover(p,t,AMB.w,AMB.h)) AMB.parts[i]=p=spec.crear(AMB.w,AMB.h,false);
+        if(!spec.mover(p,t,AMB.w,AMB.h,k)) AMB.parts[i]=p=spec.crear(AMB.w,AMB.h,false);
         spec.pintar(c,p,t);
       }
       c.globalAlpha=1;
