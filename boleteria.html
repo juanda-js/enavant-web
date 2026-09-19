@@ -982,25 +982,32 @@ var TEMAS={
       v:.15+Math.random()*.25*s, f:Math.random()*6.283, a:.16+Math.random()*.24, rot:Math.random()*6.283}; },
     // cae meciéndose, como una pluma: baja despacio pero se ve bajar
     mover:function(p,t,w,h,k){ p.y+=p.v*k; p.x+=(Math.sin(t/2200+p.f)*.5+.1)*k; p.rot=Math.sin(t/2600+p.f)*.65; return p.y<h+40 && p.x<w+40; },
-    /* Una pluma, no una hoja: el vano es asimétrico, ancho hacia la punta
-       y se cierra antes de llegar al cañón (que sobresale desnudo), con un
-       par de muescas donde se abre y barbas finas inclinadas hacia la punta. */
+    /* Silueta de pluma como la del ícono que pasó Juan David: vano lleno y
+       redondeado en la punta, raquis marcado como una línea que lo parte,
+       tres o cuatro cortes inclinados en el vano, plumón suelto abajo y el
+       cañón curvándose hacia un lado. Los cortes y el raquis se "borran"
+       del vano (destination-out) para que se vea el fondo a través. */
     pintar:function(c,p){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.scale(p.s,p.s);
-      c.globalAlpha=p.a; c.fillStyle='#F1F4FF'; c.beginPath();
-      c.moveTo(0,-18);
-      c.quadraticCurveTo(5.5,-15, 6.5,-9);          // hombro derecho, el lado ancho
-      c.lineTo(3.2,-6.5); c.lineTo(7,-3.5);         // muesca
-      c.quadraticCurveTo(6.5,3, 2.8,8);             // baja cerrándose hacia el raquis
-      c.lineTo(0,7); c.lineTo(-2.2,8.5);
-      c.quadraticCurveTo(-5.5,2, -5,-3);            // lado izquierdo, más estrecho
-      c.lineTo(-2.6,-5); c.lineTo(-5.5,-8);         // muesca
-      c.quadraticCurveTo(-4.5,-14, 0,-18);
+      c.globalAlpha=p.a; c.fillStyle='#EEF2FF'; c.strokeStyle='#EEF2FF'; c.lineCap='round';
+      // vano
+      c.beginPath(); c.moveTo(2,-21);
+      c.bezierCurveTo(7.5,-19, 8,-6, 5.5,6);        // borde derecho
+      c.quadraticCurveTo(4,10.5, 1,11.5);            // base del vano
+      c.quadraticCurveTo(-3,11, -5,6);
+      c.bezierCurveTo(-8,-4, -6,-16, 2,-21);         // borde izquierdo, un poco más curvo
       c.fill();
-      c.globalAlpha=p.a*.55; c.strokeStyle='#9AA7DD'; c.lineWidth=.5; c.beginPath();
-      for(var y=-14;y<6;y+=2.4){ var w=6*(1-Math.abs(y+4)/15); c.moveTo(0,y); c.lineTo(w,y-2.2); c.moveTo(0,y); c.lineTo(-w*.8,y-1.9); }
-      c.stroke();                                    // barbas
-      c.globalAlpha=p.a*.95; c.strokeStyle='#C3CCEE'; c.lineWidth=1.1; c.beginPath();
-      c.moveTo(.6,19); c.quadraticCurveTo(.2,2, 0,-17); c.stroke();   // raquis: sobresale como cañón por abajo
+      // plumón suelto en la base
+      c.lineWidth=.9; c.globalAlpha=p.a*.8; c.beginPath();
+      c.moveTo(1,11); c.lineTo(4,15); c.moveTo(0,11.5); c.lineTo(1.5,16.5); c.moveTo(-1.5,11); c.lineTo(-3.5,15); c.stroke();
+      // cañón, curvándose hacia un lado
+      c.lineWidth=1.3; c.globalAlpha=p.a; c.beginPath(); c.moveTo(-.5,11); c.quadraticCurveTo(-1.5,17, -4,23); c.stroke();
+      // raquis y cortes: se recortan del vano para dejar ver el fondo
+      c.globalCompositeOperation='destination-out'; c.globalAlpha=1; c.strokeStyle='#000';
+      c.lineWidth=.9; c.beginPath(); c.moveTo(2,-19.5); c.quadraticCurveTo(.5,-4, -.5,11); c.stroke();
+      c.lineWidth=.8; c.beginPath();
+      c.moveTo(1.2,-11); c.lineTo(-7,-5.5);   c.moveTo(.4,-3.5); c.lineTo(-6.5,2);   c.moveTo(-.2,4); c.lineTo(-5,8.5);   // izquierda
+      c.moveTo(1.6,-8); c.lineTo(8,-3);                                                                                  // derecha
+      c.stroke();
       c.restore(); } }
 };
 var AMB={canvas:null,ctx:null,parts:[],raf:0,tema:'',w:0,h:0};
