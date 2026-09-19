@@ -974,49 +974,57 @@ var TEMAS={
     mover:function(p,t,w,h,k){ p.y+=p.v*k; p.x+=Math.sin(t/1500+p.f)*.3*k; return p.y<h+10 && p.x>-10 && p.x<w+10; },
     pintar:function(c,p,t){ c.globalAlpha=p.a*(p.oro?(.7+.3*Math.sin(t/400+p.f)):1); c.fillStyle=p.oro?'#F2D27C':'#FFFFFF';
       c.beginPath(); c.arc(p.x,p.y,p.r,0,6.283); c.fill(); } },
-  /* Más plumas (el doble y algo) y un poco más presentes, sin dejar de
-     ser un fondo: siguen translúcidas para no competir con el mapa. */
-  cisnes:{ n:48,
+  /* Plumas de El Cisne. Dibujadas a línea, como la referencia de Juan
+     David: contorno fino, raquis de doble trazo que sigue como cañón
+     largo, el vano partido en lóbulos por trazos curvos que van del borde
+     hacia el raquis, y plumón rizado en la base. Casi sin relleno: lo
+     delicado está en la línea.
+
+     Y caen como cae una pluma: despacio y oscilando. El aire frena su
+     superficie ancha, así que se mece de lado a lado como un péndulo,
+     se inclina hacia donde va, y baja más rápido en medio del vaivén y
+     casi nada en los extremos. */
+  cisnes:{ n:44,
     crear:function(w,h,inicio){ var s=.9+Math.random()*1.2;
-      return {x:Math.random()*w, y:inicio?Math.random()*h:-50, s:s,
-      v:.12+Math.random()*.2*s, f:Math.random()*6.283, a:.28+Math.random()*.3, rot:Math.random()*6.283}; },
-    // cae meciéndose, como una pluma: baja despacio pero se ve bajar
-    mover:function(p,t,w,h,k){ p.y+=p.v*k; p.x+=(Math.sin(t/2200+p.f)*.5+.1)*k; p.rot=Math.sin(t/2600+p.f)*.65; return p.y<h+60 && p.x<w+60; },
-    /* La pluma de referencia (el ícono que pasó Juan David) pero delicada:
-       la misma silueta, alta y estrecha, con el vano apenas insinuado y
-       dibujada sobre todo con líneas finas: el raquis, decenas de barbas
-       inclinadas hacia la punta que salen del raquis hasta el borde, tres
-       claros por lado donde el vano se abre, plumón en la base y el cañón
-       largo curvándose a la izquierda. Unidades: 1/16 del ícono, centradas
-       en el raquis. Rellena y sólida parecía una hoja. */
+      return {x0:Math.random()*w, x:0, y:inicio?Math.random()*h:-60, s:s,
+      v:.09+Math.random()*.14*s, f:Math.random()*6.283, a:.3+Math.random()*.3,
+      A:18+Math.random()*34, T:2800+Math.random()*2400, R:.4+Math.random()*.4, deriva:(Math.random()-.5)*.05, rot:0}; },
+    mover:function(p,t,w,h,k){
+      var th=t/p.T*6.283+p.f, c=Math.cos(th);
+      p.x0+=p.deriva*k; p.x=p.x0+Math.sin(th)*p.A;          // vaivén de péndulo
+      p.rot=c*p.R;                                            // se inclina hacia donde se mueve
+      p.y+=p.v*(.5+.5*Math.abs(c))*k;                         // cae más en medio del vaivén, casi nada en los extremos
+      return p.y<h+70 && p.x>-90 && p.x<w+90; },
     pintar:function(c,p){ c.save(); c.translate(p.x,p.y); c.rotate(p.rot); c.scale(p.s,p.s); c.lineCap='round'; c.lineJoin='round';
-      // contorno calcado: cadena derecha (punta → base) y cadena izquierda (base → punta)
-      var der=[[-3.1,-21.6],[-.6,-21.3],[1.6,-19.1],[3.4,-15.6],[4.3,-12.2],[4.5,-11.2],[5.8,-10.4],[6.7,-5],[7,-.6],[6.7,3.75],[5.7,7.5],[3.9,10.6],[2.6,13.1],[1.3,15]];
-      var izq=[[-.75,15],[-2.5,12.5],[-3.75,8.75],[-4.7,5],[-5.3,0],[-5.9,-5],[-5.75,-11.25],[-5.1,-16.25],[-4.1,-19.7],[-3.1,-21.6]];
-      var v=der.concat([[.4,17.5],[-1.4,21.6],[-2.1,22.2],[-1.9,21.75],[-.3,17.5]],izq.slice(0,-1));
-      // vano: apenas un velo, para que manden las líneas
-      c.globalAlpha=p.a*.38; c.fillStyle='#E8EDFF';
+      // contorno calcado (unidades: 1/16 del ícono, centradas en el raquis; la punta se inclina a la derecha)
+      var der=[[3.1,-21.6],[4.1,-19.7],[5.1,-16.25],[5.75,-11.25],[5.9,-5],[5.3,0],[4.7,5],[3.75,8.75],[2.5,12.5],[.75,15]];
+      var izq=[[-1.3,15],[-2.6,13.1],[-3.9,10.6],[-5.7,7.5],[-6.7,3.75],[-7,-.6],[-6.7,-5],[-5.8,-10.4],[-4.5,-11.2],[-4.3,-12.2],[-3.4,-15.6],[-1.6,-19.1],[.6,-21.3],[3.1,-21.6]];
+      var v=der.concat(izq.slice(0,-1));
+      function xEn(cad,y){ for(var k=1;k<cad.length;k++){ var a=cad[k-1],b=cad[k]; if((y-a[1])*(y-b[1])<=0 && a[1]!==b[1]) return a[0]+(b[0]-a[0])*(y-a[1])/(b[1]-a[1]); } return null; }
+      function raquis(y){ return -1.25+1.85*(y+13.4)/28.4; }
+      c.strokeStyle='#F3F5FF'; c.fillStyle='#E8EDFF';
+      // vano: un velo apenas, y el contorno a línea
       c.beginPath(); var n=v.length, m0=[(v[n-1][0]+v[0][0])/2,(v[n-1][1]+v[0][1])/2]; c.moveTo(m0[0],m0[1]);
       for(var i=0;i<n;i++){ var q=v[(i+1)%n]; c.quadraticCurveTo(v[i][0],v[i][1],(v[i][0]+q[0])/2,(v[i][1]+q[1])/2); }
-      c.closePath(); c.fill();
-      // x del raquis y de cada borde a una altura y (interpolación sobre las cadenas)
-      function xEn(cad,y){ for(var k=1;k<cad.length;k++){ var a=cad[k-1],b=cad[k]; if((y-a[1])*(y-b[1])<=0 && a[1]!==b[1]) return a[0]+(b[0]-a[0])*(y-a[1])/(b[1]-a[1]); } return null; }
-      function raquis(y){ return 1.25-1.85*(y+13.4)/28.4; }
-      // barbas: salen del raquis hacia el borde, subiendo; tres claros por lado
-      c.strokeStyle='#F4F6FF'; c.lineWidth=.32; c.globalAlpha=p.a*.95; c.beginPath();
-      var clarosD=[-9.5,-1,7], clarosI=[-7,1.5,8.5];
-      for(var y=-18;y<14.5;y+=1.15){
-        var xr=raquis(y), d=xEn(der,y), l=xEn(izq,y), sube=1.1*Math.min(1,(y+21.6)/7);   // cerca de la punta suben menos, para no salirse
-        if(d!=null && !clarosD.some(function(g){return Math.abs(y-g)<.9;})){ var w=d-xr; c.moveTo(xr,y); c.quadraticCurveTo(xr+w*.55,y-w*.35, d-.15,y-w*sube*.6); }
-        if(l!=null && !clarosI.some(function(g){return Math.abs(y-g)<.9;})){ var w2=xr-l; c.moveTo(xr,y); c.quadraticCurveTo(xr-w2*.55,y-w2*.35, l+.15,y-w2*sube*.6); }
-      }
+      c.closePath(); c.globalAlpha=p.a*.14; c.fill(); c.globalAlpha=p.a; c.lineWidth=.55; c.stroke();
+      // lóbulos: trazos curvos del borde hacia el raquis, bajando
+      c.lineWidth=.4; c.globalAlpha=p.a*.9; c.beginPath();
+      [-15.5,-10,-4.5,1,6.5].forEach(function(y){
+        var d=xEn(der,y), l=xEn(izq,y), r1=raquis(y+3.8);
+        if(d!=null){ c.moveTo(d-.1,y); c.quadraticCurveTo(d-(d-r1)*.45,y+.9, r1+.35,y+3.8); }
+        if(l!=null){ c.moveTo(l+.1,y+1.5); c.quadraticCurveTo(l+(r1-l)*.45,y+2.4, r1-.35,y+5.2); }
+      });
       c.stroke();
-      // raquis y cañón
-      c.lineWidth=.5; c.globalAlpha=p.a; c.beginPath(); c.moveTo(1.25,-19.5); c.quadraticCurveTo(.9,0, -.6,15); c.quadraticCurveTo(-1.5,18.5, -2.4,22.2); c.stroke();
-      // plumón en la base, más largo y suelto
-      c.lineWidth=.3; c.globalAlpha=p.a*.7; c.beginPath();
-      c.moveTo(-.4,14.2); c.quadraticCurveTo(1.6,15.2, 3.6,15.4); c.moveTo(-.5,15); c.quadraticCurveTo(1.3,16.4, 3,17.6); c.moveTo(-.6,15.8); c.quadraticCurveTo(.6,17.2, 1.8,19);
-      c.moveTo(-.7,14.6); c.quadraticCurveTo(-2.4,15.3, -3.9,15.2); c.moveTo(-.8,15.5); c.quadraticCurveTo(-2.2,16.8, -3.2,18.2);
+      // raquis de doble trazo, que sigue como cañón largo
+      c.lineWidth=.4; c.globalAlpha=p.a; c.beginPath();
+      c.moveTo(raquis(-18.5),-18.5); c.quadraticCurveTo(raquis(0)-.3,0, raquis(15)-.32,15); c.quadraticCurveTo(1.6,18.5, 2.5,22.4);
+      c.moveTo(raquis(-18.5),-18.5); c.quadraticCurveTo(raquis(0)+.3,0, raquis(15)+.32,15); c.quadraticCurveTo(2.2,18.5, 3.1,22.2);
+      c.moveTo(2.5,22.4); c.lineTo(3.1,22.2);
+      c.stroke();
+      // plumón rizado en la base
+      c.lineWidth=.35; c.globalAlpha=p.a*.8; c.beginPath();
+      c.moveTo(.7,14.6); c.quadraticCurveTo(2.8,14.2, 3.6,15.6); c.moveTo(.6,15.4); c.quadraticCurveTo(2.4,16.4, 2.6,18.2); c.moveTo(.4,16.2); c.quadraticCurveTo(1,17.8, .4,19.4);
+      c.moveTo(-1.3,14.8); c.quadraticCurveTo(-3.2,14.6, -4.2,16.2); c.moveTo(-1.2,15.7); c.quadraticCurveTo(-2.6,17, -2.4,18.8); c.moveTo(-.6,16.4); c.quadraticCurveTo(-1.2,18, -.4,19.6);
       c.stroke();
       c.restore(); } }
 };
