@@ -45,6 +45,10 @@ a{color:inherit}
 .step .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:transparent;border:1.5px solid var(--line);font-size:.85rem;transition:all .25s}
 .step.active{color:var(--ink)} .step.active .n{background:var(--accent);border-color:var(--accent);color:#fff}
 .step.done .n{background:var(--ink);border-color:var(--ink);color:#fff}
+/* ".done" también es el panel de compra confirmada; sin esto, sus
+   márgenes (26px arriba, auto a los lados) se colaban en los pasos ya
+   hechos y en el celular quedaban hundidos y corridos. */
+.step.done{margin:0;max-width:none;text-align:left}
 .step .sep{width:22px;height:1px;background:var(--line)}
 @media(max-width:640px){ .step .lbl{display:none} .step.active .lbl{display:inline} }
 
@@ -602,6 +606,14 @@ body[data-tema] #ambiente{opacity:1}
 .musica:hover{border-color:var(--accent)}
 .musica:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 body.con-carrito .musica-caja{bottom:calc(84px + env(safe-area-inset-bottom))}
+/* En el celular la píldora tapaba el botón "Continuar" de Datos y Pago:
+   se vuelve solo el ícono, y las filas de botones dejan sitio debajo
+   para que al llegar al final de la página el botón quede por encima. */
+@media(max-width:640px){
+  .musica .lbl{display:none}
+  .musica{padding:10px;gap:0}
+  .btn-row,.acciones{padding-bottom:64px}
+}
 @media (prefers-reduced-motion:reduce){ .musica .ondas i{animation:none;height:8px} }
 
 /* — Navidad (El Grinch): pino profundo, dorado de los destellos del
@@ -920,7 +932,10 @@ function volverAlMapa(){
   soltarHold().then(function(){ if(tenia && state.event) refrescarDisponibilidad(); });
   goStep(2);
 }
+var ultimoRefresco=0;
 function refrescarDisponibilidad(){
+  if(!state.event) return Promise.resolve();
+  ultimoRefresco=Date.now();
   return apiGet('action=disponibilidad&evento='+encodeURIComponent(state.event.id)+
                 (state.token?'&token='+encodeURIComponent(state.token):''))
     .then(function(r){
@@ -930,6 +945,22 @@ function refrescarDisponibilidad(){
       renderMapa(); renderCart();
     }).catch(function(){});
 }
+/* El mapa se mantiene al día solo: mientras el cliente esté mirándolo
+   (paso 2, pestaña visible) se vuelve a pedir la disponibilidad cada
+   ~45 s con algo de azar, al volver a la pestaña, y al tocar una silla
+   que se ve ocupada (por si acaba de quedar libre). Antes, si otra
+   persona soltaba sus sillas, el mapa no se enteraba hasta recargar. */
+var refrescoTimer=null;
+function programarRefresco(){
+  clearTimeout(refrescoTimer);
+  refrescoTimer=setTimeout(function(){
+    if(pasoActual===2 && state.event && !document.hidden) refrescarDisponibilidad();
+    programarRefresco();
+  }, 45000*(0.75+Math.random()*0.5));
+}
+function refrescarSiHaceRato(seg){ if(pasoActual===2 && state.event && Date.now()-ultimoRefresco>seg*1000) refrescarDisponibilidad(); }
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) refrescarSiHaceRato(10); });
+programarRefresco();
 
 /* ---------- Pasos ---------- */
 var PASOS=['Evento','Sillas','Datos','Pago','Boletas'], pasoActual=1;
@@ -1695,6 +1726,7 @@ function sillasDelPalco(id){
   return sec ? sillasDe(sec) : null;
 }
 function toggleSeat(id){
+  if(state.occ[id] && !state.blq[id]){ refrescarSiHaceRato(8); return; }   // ¿ya quedó libre? se comprueba
   if(state.occ[id]||state.blq[id]) return;
   var grupo=sillasDelPalco(id);
 
