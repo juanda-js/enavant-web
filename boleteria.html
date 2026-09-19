@@ -98,6 +98,10 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .seat.pick{cursor:pointer}
 .seat.pick:hover{r:7.6;stroke:#fff;stroke-width:1.4}
 .seat.occ{opacity:.35;cursor:not-allowed}
+/* Bloqueada por la producción: se pinta del color de la leyenda a plena
+   opacidad. Con la misma transparencia de una vendida, el morado se
+   confundía con el fondo y en la leyenda parecía que no existía. */
+.seat.blq{opacity:.95;cursor:not-allowed}
 .seat.sel{stroke:#fff;stroke-width:2.2}
 .sect-hit{cursor:pointer}
 .sect-fill{transition:opacity .25s}
@@ -118,6 +122,7 @@ h1.title{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,3.5vw
 .fila-lbl{fill:rgba(255,255,255,.62);font:600 5.5px var(--body);text-anchor:middle;pointer-events:none;dominant-baseline:central}
 .nivel-lbl{fill:rgba(255,255,255,.3);font:600 12px var(--body);letter-spacing:.18em;text-anchor:middle;pointer-events:none;text-transform:uppercase}
 .seat.occ + .seat-num{opacity:.35}
+.seat.blq + .seat-num{opacity:.7}
 .pasillo-linea{stroke:rgba(255,255,255,.28);stroke-width:2;stroke-linecap:round}
 .stage-shape{fill:#E0362B}
 .stage-txt{fill:#fff;font:600 18px var(--body);letter-spacing:5px;text-anchor:middle}
@@ -1427,7 +1432,8 @@ function renderMapa(){
     }
     sillas.forEach(function(st){
       var cls='seat', extra='';
-      if(state.occ[st.id]||state.blq[st.id]){ cls+=' occ'; }
+      if(state.blq[st.id]){ cls+=' blq'; }
+      else if(state.occ[st.id]){ cls+=' occ'; }
       else if(vistaSeccion && activa){ cls+=' pick'; }
       if(state.sel[st.id]){ cls+=' sel'; }
       // una silla bloqueada por la producción (fotografía y video) se distingue de una vendida
