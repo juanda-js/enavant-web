@@ -747,7 +747,7 @@ function apiGet(p, intento){
   intento=intento||0;
   return fetch(API+'?'+p).then(function(r){ return r.json(); })
     .catch(function(e){
-      if(intento<ESPERAS.length) return espera(ESPERAS[intento]).then(function(){ return apiGet(p,intento+1); });
+      if(intento<ESPERAS.length) return espera(conAzar(ESPERAS[intento])).then(function(){ return apiGet(p,intento+1); });
       throw e;
     });
 }
@@ -761,7 +761,10 @@ function apiGet(p, intento){
    repetir a ciegas (podría cobrar dos veces). Por eso solo se reintenta
    cuando el servidor dice explícitamente que no hizo nada — "ocupado" —
    o cuando la petición ni siquiera llegó. */
-var ESPERAS=[400,900,1800,3000,5000];
+var ESPERAS=[400,900,1800,3000,5000,8000,8000,8000];
+/* Con azar: si cien navegadores fallan en el mismo instante y todos
+   esperan exactamente lo mismo, vuelven a chocar todos a la vez. */
+function conAzar(ms){ return Math.round(ms*(0.7+Math.random()*0.6)); }
 
 /* "ocupado" quiere decir que el servidor NO hizo nada: no consiguió el
    candado y se dio la vuelta. Repetir eso siempre es seguro. */
@@ -785,13 +788,13 @@ function apiPost(b, intento){
     .then(function(r){ return r.json(); })
     .then(function(r){
       if(ocupado(r) && intento<ESPERAS.length){
-        return espera(ESPERAS[intento]).then(function(){ return apiPost(b,intento+1); });
+        return espera(conAzar(ESPERAS[intento])).then(function(){ return apiPost(b,intento+1); });
       }
       return r;
     })
     .catch(function(e){
       if(esRepetible(b) && intento<ESPERAS.length){
-        return espera(ESPERAS[intento]).then(function(){ return apiPost(b,intento+1); });
+        return espera(conAzar(ESPERAS[intento])).then(function(){ return apiPost(b,intento+1); });
       }
       throw e;
     });
@@ -1209,14 +1212,22 @@ function abrirEvento(ev){
   $('seatBox').innerHTML='<div class="spin"></div>';
   // Solo en la vista local: ?mapa=archivo.json prueba un plano antes de subirlo a la hoja.
   var mapaPrueba=/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? new URLSearchParams(location.search).get('mapa') : null;
-  return Promise.all([
-    mapaPrueba ? fetch(mapaPrueba).then(function(r){return r.json();}).then(function(m){return {ok:true,mapa:m};})
-               : apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')),
-    apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))
-  ]).then(function(r){
-    if(!r[0].ok){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">No pudimos cargar el mapa.</p>'; return false; }
-    state.mapa=r[0].mapa;
-    state.occ={}; (r[1].ok?r[1].ocupadas:[]).forEach(function(s){ state.occ[s]=1; });
+  // Mapa y disponibilidad llegan en una sola petición ("sala"): una menos por visitante.
+  var sala=mapaPrueba
+    ? Promise.all([fetch(mapaPrueba).then(function(r){return r.json();}), apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))])
+        .then(function(r){ return {ok:true, mapa:r[0], ocupadas:(r[1].ok?r[1].ocupadas:[])}; })
+    : apiGet('action=sala&evento='+encodeURIComponent(ev.id)+'&recinto='+encodeURIComponent(ev.recinto||'vermont'))
+        .then(function(r){
+          if(r && r.ok===false && /desconocida/.test(r.error||'')){   // backend anterior a "sala": dos peticiones
+            return Promise.all([apiGet('action=mapa&recinto='+encodeURIComponent(ev.recinto||'vermont')), apiGet('action=disponibilidad&evento='+encodeURIComponent(ev.id))])
+              .then(function(q){ return {ok:q[0].ok, mapa:q[0].mapa, ocupadas:(q[1].ok?q[1].ocupadas:[])}; });
+          }
+          return r;
+        });
+  return sala.then(function(r){
+    if(!r||!r.ok||!r.mapa){ $('seatBox').innerHTML='<p style="color:#fff;text-align:center;padding:40px">No pudimos cargar el mapa.</p>'; return false; }
+    state.mapa=r.mapa;
+    state.occ={}; (r.ocupadas||[]).forEach(function(s){ state.occ[s]=1; });
     state.zonas={}; state.mapa.zonas.forEach(function(z){ state.zonas[z.id]=z; });
     state.blq={}; (state.mapa.bloqueadas||[]).forEach(function(b){ state.blq[b.id]=String(b.motivo||'').trim()||'Bloqueada'; });
     vbNow=bboxCancha(); vbObjetivo=null; vbAntesDeSeccion=null;   // arranca en el mapa de boletería; los balcones, a un toque
